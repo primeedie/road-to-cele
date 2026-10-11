@@ -1,6 +1,7 @@
 import { COURSES, COURSE_BY_ID, SPECIALIZATIONS, MASTERY_SCOPE } from './curriculum.mjs';
+import { defaultCosmetics } from './cosmetics.mjs';
 export function newProgress() {
- return { version:3, academicYear:1, specializationProgression:{ selectedSpecialization:null, specializationStatus:'UNDECIDED', confirmedAt:null, confirmationMethod:null, previousSpecializationHistory:[] }, academicRecords:{}, masteryRecords:{}, quizAttempts:[], integrationAssessments:[] };
+ return { version:3, academicYear:1, specializationProgression:{ selectedSpecialization:null, specializationStatus:'UNDECIDED', confirmedAt:null, confirmationMethod:null, previousSpecializationHistory:[] }, academicRecords:{}, masteryRecords:{}, quizAttempts:[], integrationAssessments:[],cosmetics:defaultCosmetics() };
 }
 const clone = p => structuredClone(p);
 export function selected(p) { return p.specializationProgression.specializationStatus === 'CONFIRMED' ? p.specializationProgression.selectedSpecialization : null; }

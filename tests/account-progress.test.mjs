@@ -100,3 +100,8 @@ test('an unreadable guest save is preserved until an explicit reset',()=>{
  assert.equal(model.state().phase,'local-error');model.save(completed());assert.equal(store.getItem(STORAGE_KEY),'bad json');
  model.resetGuest();assert.deepEqual(loadProgress(store),newProgress());assert.equal(model.state().phase,'guest');
 });
+test('failed device storage and failed cloud saving never claim the record is saved on the device',async()=>{
+ const store=storage(),service=backend();service.rows.set(a.id,{progress:newProgress(),revision:1});const model=createAccountProgress({storage:store,service});await model.setUser(a);
+ store.setItem=()=>{throw Error('storage blocked');};service.setFail(true);model.save(completed());await model.flush();
+ assert.equal(model.state().deviceSaved,false);assert.match(model.state().message,/Export a backup/);assert.match(accountMarkup(model.state()),/Session only/);
+});

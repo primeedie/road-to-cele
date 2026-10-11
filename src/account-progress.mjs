@@ -9,12 +9,12 @@ export function createAccountProgress({storage,service=null,onProgress=()=>{},on
  let current,guestReadable=true;try{current=loadProgress(storage);}catch{current=newProgress();guestReadable=false;}
  let user=null,epoch=0,base=0,dirty=false,ready=!service,phase=service?'connecting':'guest',message='',choice=null,remote=null;
  if(!guestReadable&&!service){phase='local-error';message='An existing guest save could not be read. It is retained until you explicitly reset; export this session before leaving.';}
- let queue=Promise.resolve(),loading=Promise.resolve();
- const state=()=>({user,phase,ready,dirty,message,choice,configured:!!service});
+ let queue=Promise.resolve(),loading=Promise.resolve(),deviceSaved=guestReadable;
+ const state=()=>({user,phase,ready,dirty,message,choice,configured:!!service,deviceSaved});
  const emit=()=>onState(state());
  const publish=()=>{onProgress(structuredClone(current));emit();};
  const cache=()=>{if(user)storage.setItem(accountStorageKey(user.id),JSON.stringify({progress:current,revision:base,dirty}));else {if(!guestReadable)throw Error('Unreadable guest save');saveProgress(storage,current);}};
- const safeCache=()=>{try{cache();return true;}catch{message='Device storage is unavailable. Export a backup before leaving.';return false;}};
+ const safeCache=()=>{try{cache();deviceSaved=true;return true;}catch{deviceSaved=false;message='Device storage is unavailable. Export a backup before leaving.';return false;}};
  const enqueue=()=>{
   const owner=user?.id,token=epoch;
   queue=queue.catch(()=>{}).then(async()=>{
@@ -27,7 +27,7 @@ export function createAccountProgress({storage,service=null,onProgress=()=>{},on
     base=result.revision;
     dirty=JSON.stringify(current)!==JSON.stringify(snapshot);
     safeCache();phase=dirty?'pending':'saved';message='';emit();
-   }catch(error){if(token!==epoch)return;phase='offline';message=error.message;emit();}
+   }catch(error){if(token!==epoch)return;phase='offline';message=deviceSaved?error.message:'Cloud and device saving are unavailable. Export a backup before leaving.';emit();}
   });
   return queue;
  };
@@ -50,9 +50,9 @@ export function createAccountProgress({storage,service=null,onProgress=()=>{},on
   setUser(next) {
    if(next?.id===user?.id&&(ready||user))return loading;
    const token=++epoch;user=next;choice=null;remote=null;message='';dirty=false;base=0;
-   if(!user){try{current=loadProgress(storage);guestReadable=true;}catch{current=newProgress();guestReadable=false;}ready=true;phase=guestReadable?'guest':'local-error';publish();return Promise.resolve();}
-   current=newProgress();
-   try{const raw=storage.getItem(accountStorageKey(user.id));if(raw){const saved=JSON.parse(raw);current=hydrateProgress(saved.progress);if(!Number.isSafeInteger(saved.revision)||saved.revision<0)throw Error();base=saved.revision;dirty=saved.dirty===true;}}
+   if(!user){try{current=loadProgress(storage);guestReadable=true;}catch{current=newProgress();guestReadable=false;}deviceSaved=guestReadable;ready=true;phase=guestReadable?'guest':'local-error';publish();return Promise.resolve();}
+   current=newProgress();deviceSaved=false;
+   try{const raw=storage.getItem(accountStorageKey(user.id));if(raw){const saved=JSON.parse(raw);current=hydrateProgress(saved.progress);if(!Number.isSafeInteger(saved.revision)||saved.revision<0)throw Error();base=saved.revision;dirty=saved.dirty===true;deviceSaved=true;}}
    catch{current=newProgress();base=0;dirty=false;message='The account cache could not be read. Loading the cloud copy.';}
    ready=false;phase='loading';publish();loading=reconcile(token);return loading;
   },
@@ -60,7 +60,7 @@ export function createAccountProgress({storage,service=null,onProgress=()=>{},on
    if(!ready||choice)throw Error('Finish loading or choosing your account save first.');
    current=hydrateProgress(next);dirty=!!user;
    const stored=safeCache();
-   if(user){phase='pending';emit();if(phase!=='offline')enqueue();}
+   if(user){phase='pending';emit();enqueue();}
    else {phase=stored?'guest':'local-error';emit();}
   },
   resetGuest() {if(user)throw Error('Guest reset requires guest mode');const clean=newProgress();saveProgress(storage,clean);guestReadable=true;current=clean;dirty=false;phase='guest';message='';emit();return clean;},
@@ -71,7 +71,7 @@ export function createAccountProgress({storage,service=null,onProgress=()=>{},on
     current=which==='guest'?loadProgress(storage):newProgress();base=0;
    } else {
     if(!['cloud','device'].includes(which))throw Error('Choose the cloud or device copy.');
-    if(which==='cloud'){current=remote.progress;base=remote.revision;dirty=false;choice=null;ready=true;phase='saved';message='';safeCache();publish();return;}
+    if(which==='cloud'){storage.setItem(accountStorageKey(user.id)+'.conflict-backup',JSON.stringify({progress:current,revision:base}));current=remote.progress;base=remote.revision;dirty=false;choice=null;ready=true;phase='saved';message='';safeCache();publish();return;}
     // Explicitly preserve a recoverable copy before replacing the cloud snapshot.
     storage.setItem(accountStorageKey(user.id)+'.conflict-backup',JSON.stringify(remote));
     base=remote.revision;

@@ -4,3 +4,5 @@
 *.otf binary
 *.woff binary
 *.woff2 binary
+# The SDK contains intentional whitespace inside bundled third-party strings.
+dist/supabase-client.mjs -whitespace

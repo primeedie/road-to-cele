@@ -1,0 +1,181 @@
+.avatar-badge {
+  display:inline-flex;
+  width:54px;
+  height:54px;
+  flex:none
+}
+.avatar-badge svg {
+  width:100%;
+  height:100%;
+  overflow:visible
+}
+.frame-first-light {
+  filter:drop-shadow(0 0 5px #b69c4a18)
+}
+.frame-starbound {
+  filter:drop-shadow(0 0 6px #b3a0d038)
+}
+
+.companion-button {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  border:0;
+  background:transparent;
+  padding:0;
+  cursor:pointer
+}
+.companion-button>span:last-child {
+  font-size:12px;
+  text-align:left;
+  color:#b9b2a3
+}
+.companion-button small {
+  display:block;
+  color:#817d72;
+  font-size:10px;
+  margin-top:5px
+}
+
+#wardrobe-dialog {
+  width:min(720px,calc(100vw - 28px));
+  max-height:90dvh;
+  padding:38px;
+  border:1px solid #8177615c;
+  border-radius:12px;
+  background:#0b0b09f5;
+  color:#e6dfcf;
+  box-shadow:0 30px 100px #000c;
+  overflow:auto
+}
+#wardrobe-dialog::backdrop {
+  background:#010201ce;
+  backdrop-filter:blur(5px)
+}
+
+.wardrobe-kicker {
+  font-size:10px;
+  letter-spacing:2px;
+  color:#9b907a
+}
+.wardrobe-heading h2 {
+  font-size:32px;
+  margin:13px 0
+}
+.wardrobe-heading p {
+  color:#a6a08f;
+  font-size:14px;
+  line-height:1.6;
+  margin:0
+}
+.wardrobe-preview {
+  display:flex;
+  align-items:center;
+  gap:20px;
+  margin:25px 0 30px;
+  border-bottom:1px solid #d8c49724;
+  padding-bottom:24px
+}
+.wardrobe-preview>.avatar-badge {
+  width:100px;
+  height:100px
+}
+.wardrobe-preview>span:last-child {
+  font-size:22px;
+  color:#e9dfc5
+}
+.wardrobe-preview small {
+  display:block;
+  font-size:12px;
+  color:#a79b82;
+  margin-top:7px
+}
+
+.wardrobe-section {
+  margin-top:24px
+}
+.wardrobe-section h3 {
+  font-size:17px;
+  font-weight:800;
+  display:flex;
+  justify-content:space-between;
+  align-items:center
+}
+.wardrobe-section h3 span {
+  color:#8d887a;
+  font-size:11px
+}
+.cosmetic-grid {
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:12px
+}
+.cosmetic-option {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:10px;
+  background:#11120f;
+  border:1px solid #c5b99425;
+  border-radius:8px;
+  padding:18px 8px 15px;
+  cursor:pointer;
+  min-width:0;
+  color:#c3bcaa
+}
+.cosmetic-option>.avatar-badge {
+  width:70px;
+  height:70px
+}
+.cosmetic-option strong {
+  font-size:12px
+}
+.cosmetic-option small {
+  font-size:10px;
+  color:#8d8779
+}
+.cosmetic-option:hover {
+  background:#1b1b15;
+  border-color:#b0a28088
+}
+.cosmetic-option.equipped {
+  background:#25231866;
+  border-color:#c2ad7399
+}
+.cosmetic-option.equipped small {
+  color:#c7b581
+}
+.cosmetic-option.cosmetic-locked {
+  opacity:.48;
+  cursor:default
+}
+.wardrobe-footnote {
+  font-size:11px;
+  line-height:1.6;
+  color:#8f897b;
+  margin:26px 0 0
+}
+
+@media(max-width:600px) {
+  #wardrobe-dialog {
+  padding:27px 20px;
+  max-height:92dvh
+}
+.cosmetic-grid {
+  grid-template-columns:repeat(2,minmax(0,1fr))
+}
+.companion-button .avatar-badge {
+  width:43px;
+  height:43px
+}
+.companion-button>span:last-child {
+  display:none
+}
+.wardrobe-section h3 span {
+  font-size:10px
+}
+.wardrobe-heading h2 {
+  font-size:27px
+}
+
+}

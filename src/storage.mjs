@@ -1,5 +1,6 @@
 import { newProgress } from './progression.mjs';
 import { SPECIALIZATIONS } from './curriculum.mjs';
+import { hydrateCosmetics } from './cosmetics.mjs';
 export const STORAGE_KEY='cele-atlas.progress.v3';
 export function hydrateProgress(raw) {
  if(!raw || raw.version!==3)throw Error('Unsupported progress format');
@@ -11,7 +12,7 @@ export function hydrateProgress(raw) {
  if(r.specializationStatus==='UNDECIDED' && r.selectedSpecialization!==null)throw Error('Invalid undecided path');
  for(const key of ['academicRecords','masteryRecords'])if(!raw[key] || typeof raw[key]!=='object' || Array.isArray(raw[key]))throw Error('Invalid records');
  for(const key of ['quizAttempts','integrationAssessments'])if(!Array.isArray(raw[key]))throw Error('Invalid history');
- return structuredClone({...p,...raw});
+ return structuredClone({...p,...raw,cosmetics:hydrateCosmetics(raw.cosmetics)});
 }
 export function loadProgress(storage) {const raw=storage.getItem(STORAGE_KEY);return raw?hydrateProgress(JSON.parse(raw)):newProgress();}
 export function saveProgress(storage,p) {storage.setItem(STORAGE_KEY,JSON.stringify(p));}

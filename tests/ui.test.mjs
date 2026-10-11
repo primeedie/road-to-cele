@@ -18,6 +18,22 @@ test('actual website interactions keep exploration separate from academic progre
  const $=s=>document.querySelector(s),click=s=>$(s).click();
  await import('../src/app.js');
  const saved=()=>JSON.parse(localStorage.getItem(STORAGE_KEY));
+ await t.test('specializations begin collapsed and browsing the dropdown never saves progress',()=>{
+  assert.equal($('#specialization-menu').open,false);
+  $('#specialization-menu summary').click();assert.equal($('#specialization-menu').open,true);
+  assert.equal(document.querySelectorAll('#branch-cards .branch-card').length,5);
+  click('.branch-card[data-branch="STE"]');assert.equal($('#specialization-menu').open,false);assert.match($('#specialization-selection').textContent,/STE.*Preview/);
+  assert.equal(localStorage.getItem(STORAGE_KEY),null);click('.branch-card[data-branch="STE"]');
+ });
+ await t.test('wardrobe choices persist cosmetics without changing academic progress or mastering a course',()=>{
+  click('#companion-button');assert.equal($('#wardrobe-dialog').open,true);
+  assert.ok($('#wardrobe-dialog [data-frame="first-light"]').disabled);
+  click('#wardrobe-dialog [data-avatar="fox"]');assert.equal(saved().cosmetics.avatar,'fox');assert.deepEqual(saved().academicRecords,{});assert.deepEqual(saved().masteryRecords,{});
+  assert.equal($('#wardrobe-dialog [data-avatar="fox"]').getAttribute('aria-pressed'),'true');
+  click('#wardrobe-dialog [data-avatar="owl"]');click('[data-action="close-wardrobe"]');assert.equal($('#wardrobe-dialog').open,false);
+  // Restore isolated test storage so subsequent preview checks start from a pristine journey.
+  localStorage.removeItem(STORAGE_KEY);
+ });
  await t.test('all years share one sky and year navigation moves without filtering or saving',()=>{
   const total=document.querySelectorAll('.course-node').length;
   assert.ok(total>60);

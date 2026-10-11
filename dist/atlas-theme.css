@@ -1,0 +1,1036 @@
+/* The atlas lives in the dark;
+   warm ink is reserved for controls and milestones. */
+:root {
+  --surface:#080908;
+  --paper:#080908;
+  --edge:#35362e;
+  --line:#33362e;
+  --text:#e5e0d3;
+  --ink:#e5e0d3;
+  --muted:#97988d;
+  --quiet:#8c8d82;
+  --accent:#c7b784;
+  --atlas-border:#ccc5ac22;
+  --atlas-serif:'CELE WenHei',Georgia,serif
+}
+
+body {
+  background:#040504;
+  color:#e5e0d3
+}
+button {
+  border-radius:5px
+}
+button:focus-visible,a:focus-visible,summary:focus-visible {
+  outline:2px solid #c7b784;
+  outline-offset:4px
+}
+
+.rail {
+  height:88px;
+  padding:0 34px;
+  border-color:#c9c4ad1a;
+  background:#080908;
+  gap:25px
+}
+.brand-title {
+  color:#ddd2b4;
+  font-size:30px;
+  letter-spacing:1px
+}
+.brand-prefix {
+  color:#aaa38f;
+  font-size:12px;
+  letter-spacing:1.5px
+}
+.brand-mark {
+  color:#c6b986;
+  width:28px
+}
+.rail nav {
+  gap:15px;
+  margin-left:30px
+}
+.nav-item {
+  color:#989a8e;
+  font-size:13px
+}
+.nav-item.active {
+  color:#e0d7bb
+}
+.nav-item.active:after {
+  height:1px;
+  background:#bcaf83;
+  left:10px;
+  right:10px;
+  bottom:19px
+}
+.nav-item.active .nav-symbol {
+  color:#b8b38e
+}
+.player {
+  margin-left:auto
+}
+.player strong {
+  color:#949181
+}
+.player span {
+  color:#c1b8a4
+}
+
+.account-panel {
+  margin:0;
+  padding-left:22px;
+  border-color:#d4c7a924;
+  max-width:220px;
+  position:relative
+}
+.account-identity strong {
+  font-size:11px;
+  color:#b7af9f;
+  max-width:170px
+}
+.account-status {
+  font-size:10px;
+  color:#8a8e80;
+  margin:5px 0
+}
+.account-identity {
+  gap:6px
+}
+.account-actions {
+  gap:5px
+}
+.account-panel button {
+  padding:8px 13px;
+  min-height:34px;
+  background:#141711;
+  border-color:#afa87e40;
+  color:#d3c6a8;
+  border-radius:4px;
+  font-size:11px
+}
+.account-panel button:hover {
+  background:#27271c
+}
+.account-message {
+  position:absolute;
+  right:0;
+  top:100%;
+  width:260px;
+  padding:14px;
+  background:#131611;
+  border:1px solid #807e5a44;
+  z-index:4
+}
+.account-light.synced {
+  background:#a2af87;
+  box-shadow:0 0 7px #abb58030
+}
+
+.map-toolbar {
+  background:#080908;
+  border:0;
+  padding:17px 34px 4px;
+  gap:20px
+}
+.year-tabs {
+  gap:3px
+}
+.year-tabs button {
+  min-height:44px;
+  padding:10px 17px;
+  border:0;
+  border-radius:4px;
+  font-size:13px;
+  color:#858a7d;
+  background:transparent
+}
+.year-tabs button.active {
+  color:#d5c89e;
+  background:#24251b66;
+  box-shadow:none
+}
+.year-tabs button:hover {
+  background:#1a1d16
+}
+.map-tools {
+  gap:10px
+}
+.explore-button {
+  background:transparent;
+  border-color:#afa58544;
+  color:#b4b29d;
+  font-size:11px;
+  min-height:42px;
+  padding:10px 13px;
+  border-radius:4px
+}
+.explore-button:hover,.explore-button[aria-pressed=true] {
+  background:#23251a;
+  color:#d0c5a2;
+  border-color:#a4a08066
+}
+.explore-button svg {
+  color:#b3ab82;
+  width:17px
+}
+.reset-progress-button {
+  background:transparent;
+  border:0;
+  color:#97817a;
+  font-size:10px;
+  min-height:42px;
+  padding:8px 10px
+}
+.reset-progress-button:hover {
+  background:#261c1766;
+  color:#cab3a3
+}
+.reset-progress-button svg {
+  width:15px
+}
+
+.map-caption {
+  padding:20px 34px 15px;
+  background:#080908;
+  gap:12px
+}
+.map-caption #map-title {
+  font:800 24px/1.25 var(--atlas-serif);
+  color:#dfd8c4;
+  letter-spacing:0
+}
+.map-caption #map-mode {
+  font-size:8px;
+  font-weight:800;
+  color:#848e7b;
+  letter-spacing:1.1px
+}
+.text-button {
+  border-color:#b8ad8133;
+  color:#b1a58b;
+  min-width:36px;
+  min-height:36px
+}
+
+.specialization-menu {
+  position:relative;
+  border-bottom:1px solid #bcb59c1b;
+  background:#080908;
+  padding:0 34px 16px
+}
+.specialization-menu summary {
+  list-style:none;
+  display:inline-flex;
+  align-items:center;
+  gap:12px;
+  min-height:44px;
+  cursor:pointer;
+  color:#a5ac96;
+  font-size:12px;
+  padding:8px 15px;
+  border:1px solid #c5b68e30;
+  border-radius:5px;
+  background:#11140e
+}
+.specialization-menu summary::-webkit-details-marker {
+  display:none
+}
+.specialization-menu summary::after {
+  content:'⌄';
+  font:20px/1 Georgia;
+  transition:transform .2s;
+  color:#a69a79
+}
+.specialization-menu[open] summary::after {
+  transform:rotate(180deg)
+}
+#specialization-selection {
+  font-size:10px;
+  color:#c9c29e
+}
+.specialization-menu .branch-cards {
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:12px;
+  padding:18px 0 0;
+  background:transparent
+}
+.specialization-menu:not([open]) .branch-cards {
+  display:none
+}
+.branch-card {
+  border:1px solid #c3b79424;
+  border-radius:7px;
+  padding:15px 12px;
+  gap:8px;
+  background:#10130e;
+  flex-wrap:wrap;
+  min-height:68px;
+  box-shadow:none
+}
+.branch-card:hover {
+  background:#1b2014;
+  border-color:color-mix(in srgb,var(--sky-accent) 45%,#a69a79)
+}
+.branch-card.viewing {
+  background:#21241b;
+  border-color:var(--sky-accent)
+}
+.branch-card strong,.branch-card.current strong {
+  color:#c4c7b1;
+  font-size:16px
+}
+.branch-card .branch-name {
+  color:#999e8c;
+  font-size:11px
+}
+.branch-card small {
+  font-size:9px;
+  color:#818779;
+  margin-left:auto
+}
+.branch-card .branch-symbol {
+  color:var(--sky-accent)
+}
+.branch-check {
+  color:#a6ad92;
+  border-color:#8b987449;
+  width:17px;
+  height:17px
+}
+.specialization-menu[open] {
+  padding-bottom:22px
+}
+
+.path-summary {
+  padding:13px 34px;
+  background:#080908;
+  border:0;
+  gap:15px
+}
+.path-dot {
+  width:5px;
+  height:5px;
+  background:#b8b185;
+  box-shadow:none
+}
+.path-identity strong {
+  font-size:11px;
+  color:#bdbba6
+}
+.path-scope {
+  font-size:10px;
+  color:#7f8777
+}
+.path-metrics {
+  font-size:10px;
+  color:#7f8777;
+  gap:15px
+}
+.path-metrics b {
+  color:#b2b89d
+}
+.path-link {
+  color:#aba78d;
+  font-size:11px
+}
+.journey-progress {
+  background:#080908;
+  padding:0 34px 16px;
+  border:0
+}
+.journey-label {
+  font-size:10px;
+  color:#929c83
+}
+.journey-label strong {
+  color:#c1c5ac;
+  font-size:11px
+}
+.journey-label strong span {
+  color:#7c866e;
+  font-size:10px
+}
+.journey-label>b {
+  color:#c1b57f;
+  font-size:11px
+}
+.journey-track {
+  height:7px;
+  border:0;
+  border-radius:2px;
+  background:#25271d
+}
+.journey-fill {
+  background:linear-gradient(90deg,#666b41,#a0a46c 75%,#d3c790);
+  box-shadow:0 0 8px #b3b25d1f
+}
+.journey-track:after {
+  display:none
+}
+.journey-fill>span {
+  color:#e1d49f;
+  font-size:11px
+}
+
+.map-viewport {
+  height:calc(100dvh - 323px);
+  min-height:470px;
+  background:#020402;
+  border-top:1px solid #bcb59c1b;
+  touch-action:none;
+  overscroll-behavior:contain
+}
+.sky-backdrop {
+  background:linear-gradient(180deg,#010301de,#010301d4),url('assets/galaxy-v1.png') center/cover;
+  filter:saturate(.55)
+}
+.map-viewport:before {
+  opacity:.16
+}
+.map-viewport:after {
+  background:radial-gradient(ellipse at center,transparent 35%,#010301b3 100%)
+}
+.map-controls {
+  background:#10140bee;
+  border:1px solid #b4aa8140;
+  border-radius:7px;
+  right:24px;
+  bottom:24px;
+  box-shadow:0 5px 20px #0009
+}
+.map-controls button {
+  color:#bdb89e;
+  min-width:44px;
+  min-height:44px;
+  touch-action:manipulation
+}
+.map-controls button:hover {
+  background:#29301d
+}
+.map-controls button:last-child {
+  border-color:#92976c40
+}
+.map-controls span {
+  color:#979e82;
+  font-size:10px
+}
+.pan-hint {
+  background:#091007aa;
+  color:#858f77;
+  font-size:10px;
+  border:0;
+  bottom:28px
+}
+.map-legend {
+  background:#080908;
+  color:#858f77;
+  border-color:#b0b29222;
+  font-size:9px;
+  gap:21px;
+  padding:13px 34px
+}
+.cluster-year {
+  color:#d3cebb
+}
+.cluster-term {
+  color:#87927d;
+  border-color:#b3bd8b30
+}
+.term-label strong {
+  font-size:29px
+}
+.term-label:after {
+  opacity:.5
+}
+.course-node .node-copy {
+  background:#070c086b;
+  border-color:color-mix(in srgb,var(--sky-accent) 35%,transparent);
+  border-radius:4px
+}
+.node-title {
+  background:#10170df5;
+  border-color:#969f7680;
+  color:#dedcc5
+}
+.course-node:hover .node-title,.course-node:focus-visible .node-title {
+  color:#ece8cd
+}
+.graph-lines .connection-line {
+  opacity:.26
+}
+.graph-lines .connection-line.path-selected,.graph-lines .connection-line.path-traced {
+  opacity:.95
+}
+.graph-lines .connection-hit {
+  stroke-width:20px
+}
+
+.primary,.dossier-academic {
+  background:#393c24;
+  border-color:#a49e6799;
+  color:#e4dfbd;
+  border-radius:5px
+}
+.primary:hover,.dossier-academic:hover {
+  background:#555837
+}
+.secondary {
+  background:transparent;
+  border-color:#8e93764d;
+  color:#b5bba2;
+  border-radius:5px
+}
+.secondary:hover {
+  background:#262c1c
+}
+.paper-card,.domain,.gate-illustration,.connection-inspector {
+  background:#0d110ae6;
+  border-color:#93996d30;
+  border-radius:9px;
+  box-shadow:none
+}
+.paper-card h2,.paper-card h3,.domain h3,.gate-illustration h2 {
+  color:#d3d4b7
+}
+.paper-card p,.domain p {
+  color:#a2ac90
+}
+.paper-card .card-note,.card-note {
+  color:#848e73
+}
+.eyebrow,.card-eyebrow,.section-heading>span {
+  color:#909b7b
+}
+#journal-page h1,#gate-page h1 {
+  color:#e0ddc8
+}
+#journal-page h1 em,#gate-page h1 em {
+  color:#b9b38d
+}
+.path-state {
+  background:#262e1866;
+  color:#b5bf93;
+  border-color:#79865444
+}
+.year-select,textarea {
+  color:#cbd2b6;
+  background:#161e10;
+  border-color:#8b98764d
+}
+.progress-track {
+  background:#262e1c
+}
+.progress-track>div {
+  background:#9ba472
+}
+.journal-records,.section-heading,.records-table td,.records-table th {
+  border-color:#8b987633
+}
+.records-table {
+  color:#b8c3a2
+}
+.records-table th {
+  color:#879774
+}
+.journal-empty {
+  background:#11170c;
+  color:#9fac8b;
+  border-color:#8a967c33
+}
+.domains .domain small {
+  color:#8d9b75
+}
+
+.course-dossier {
+  background:linear-gradient(110deg,#070c06cf,#080d06ee 65%),url('assets/galaxy-v1.png') center/cover;
+  border-color:#a6b18440;
+  border-radius:13px;
+  box-shadow:0 0 0 3px #c3c39308,0 35px 100px #000c;
+  --lavender:#a8b88b;
+  --gold:#cdbd87
+}
+.dossier-identity {
+  background:radial-gradient(ellipse at 50% 40%,#788e4e12,transparent 65%)
+}
+.dossier-heading h2,.dossier-section-heading h3 {
+  color:#e4e7cf
+}
+.dossier-path,.dossier-sky>span,.dossier-heading .course-meta {
+  color:#a7b18f
+}
+.dossier-close {
+  background:#1b2213bb;
+  border-color:#b3bb924d;
+  color:#d4dcbb
+}
+.dossier-tab {
+  color:#9bab83
+}
+.dossier-diamond {
+  background:#17220ddd;
+  border-color:#b5c59266;
+  box-shadow:none
+}
+.dossier-tab[aria-selected=true] .dossier-diamond {
+  background:#394c22;
+  box-shadow:0 0 0 3px #bbcd9a12,0 0 18px #b7ce711a
+}
+.dossier-thread {
+  background:linear-gradient(transparent,#859b5f 20%,#859b5f 80%,transparent);
+  box-shadow:none
+}
+.dossier-tab:hover .dossier-diamond {
+  background:#334923
+}
+.dossier-placeholder {
+  background:#19230e4d;
+  border-color:#a1b17540;
+  border-radius:9px
+}
+.dossier-placeholder h4,.dossier-connections h4 {
+  color:#d0dbba
+}
+.dossier-placeholder p,.dossier-reason,.dossier-connections>p {
+  color:#a5b58c
+}
+.dossier-prereq {
+  background:#1a25134d;
+  border-color:#7889573d;
+  border-radius:5px
+}
+.dossier-prereq button,.dossier-relation button strong {
+  color:#cbd8ad
+}
+.dossier-key,.dossier-mastery-scope {
+  color:#91a273
+}
+.dossier-readonly {
+  color:#b7c995;
+  background:#23361744;
+  border-color:#889e6966
+}
+.dossier-footer,.dossier-heading,.dossier-section-heading {
+  border-color:#98ad7133
+}
+.dossier-scroll {
+  scrollbar-color:#526238 transparent
+}
+
+#account-dialog,#path-dialog,#reset-dialog,#help-dialog {
+  background:#0b1008f2;
+  border-color:#9fad784d;
+  color:#d4dfbe;
+  border-radius:12px;
+  box-shadow:0 25px 90px #000b
+}
+#account-dialog p {
+  color:#a3b18d
+}
+.account-dialog-close {
+  color:#bcc7a4
+}
+.account-dialog-error {
+  color:#d5ab92!important
+}
+.connection-eyebrow,.connection-type {
+  color:#a8b888
+}
+.connection-inspector h2 {
+  color:#d1dec0
+}
+.connection-course {
+  background:#15200d;
+  border-color:#7a8a5940;
+  color:#c0d2a6
+}
+#toast {
+  background:#1a2712;
+  border-color:#81965e66;
+  color:#c7d8ad;
+  border-radius:6px;
+  font-size:12px;
+  max-width:calc(100vw - 32px)
+}
+
+@media(max-width:1200px) {
+  .rail {
+  padding:15px 24px;
+  gap:18px;
+  height:auto;
+  min-height:88px;
+  flex-wrap:wrap
+}
+.rail nav {
+  margin-left:0
+}
+.player {
+  display:block;
+  margin-left:auto
+}
+.companion-button>span:last-child {
+  display:none
+}
+.account-panel {
+  margin-left:0
+}
+.map-toolbar,.map-caption {
+  padding-left:24px;
+  padding-right:24px
+}
+.specialization-menu,.path-summary,.journey-progress {
+  padding-left:24px;
+  padding-right:24px
+}
+.specialization-menu .branch-cards {
+  grid-template-columns:repeat(3,minmax(0,1fr))
+}
+.branch-card .branch-name {
+  display:inline
+}
+
+}
+
+@media(max-width:760px) {
+  .rail {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto auto;
+  gap:10px;
+  padding:12px 16px
+}
+.brand {
+  font-size:20px;
+  gap:9px
+}
+.brand-title {
+  font-size:25px
+}
+.brand-mark {
+  width:25px
+}
+.rail nav {
+  grid-column:1/-1;
+  grid-row:2;
+  display:flex;
+  width:100%;
+  height:45px;
+  justify-content:space-between;
+  gap:6px
+}
+.nav-item {
+  padding:8px 10px;
+  min-height:44px;
+  flex:1;
+  font-size:11px;
+  justify-content:center
+}
+.nav-item.active:after {
+  bottom:1px
+}
+.nav-symbol svg {
+  width:17px;
+  height:17px
+}
+.account-panel {
+  border:0;
+  padding:0;
+  margin:0;
+  width:auto;
+  grid-column:2;
+  grid-row:1;
+  display:block;
+  max-width:96px
+}
+.player {
+  display:block;
+  grid-column:2;
+  grid-row:1;
+  margin:0
+}
+.account-panel {
+  grid-column:3
+}
+.account-login-provider,.account-setup-state {
+  display:none
+}
+.account-panel .account-identity {
+  display:none
+}
+.account-panel .account-status {
+  font-size:8px;
+  margin:4px 0;
+  text-align:right
+}
+.account-panel button {
+  min-height:44px;
+  max-width:96px;
+  font-size:10px;
+  padding:10px
+}
+.account-panel .account-message {
+  right:0;
+  width:240px
+}
+.map-toolbar {
+  padding:12px 14px 5px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:9px;
+  align-items:center
+}
+.year-tabs {
+  width:100%;
+  justify-content:space-between;
+  gap:4px
+}
+.year-tabs button {
+  font-size:12px;
+  padding:10px 13px;
+  flex:1;
+  min-height:44px
+}
+.map-tools {
+  width:100%;
+  justify-content:space-between;
+  gap:8px
+}
+.explore-button {
+  font-size:10px;
+  min-height:44px;
+  flex:1;
+  justify-content:center
+}
+.reset-progress-button {
+  font-size:9px;
+  min-height:44px;
+  flex:none;
+  padding:8px
+}
+.map-caption {
+  padding:15px 16px 8px;
+  flex-wrap:wrap
+}
+.map-caption #map-title {
+  font-size:19px;
+  max-width:none;
+  flex:1
+}
+.map-caption #map-mode {
+  max-width:none;
+  font-size:7px;
+  width:100%;
+  order:3;
+  text-align:left;
+  line-height:1.6
+}
+.specialization-menu {
+  padding:0 16px 10px
+}
+.specialization-menu summary {
+  display:flex;
+  width:100%;
+  justify-content:space-between;
+  font-size:11px;
+  padding:10px 12px
+}
+.specialization-menu .branch-cards {
+  grid-template-columns:1fr;
+  gap:7px
+}
+.branch-card {
+  min-height:54px;
+  padding:10px 13px;
+  flex-direction:row;
+  justify-content:flex-start
+}
+.branch-symbol {
+  display:inline-flex;
+  width:22px;
+  height:22px
+}
+.branch-card .branch-name {
+  display:inline;
+  font-size:11px
+}
+.branch-card small {
+  display:inline;
+  font-size:9px
+}
+.branch-card strong {
+  font-size:15px
+}
+.path-summary {
+  padding:10px 16px;
+  gap:9px
+}
+.path-identity {
+  font-size:10px;
+  width:auto
+}
+.path-identity strong {
+  font-size:10px
+}
+.path-metrics {
+  font-size:9px;
+  gap:12px
+}
+.path-metrics b {
+  font-size:10px
+}
+.journey-progress {
+  padding:0 16px 13px
+}
+.path-link {
+  font-size:10px;
+  min-height:40px
+}
+.journey-label {
+  font-size:10px
+}
+.map-viewport {
+  height:64dvh;
+  min-height:400px;
+  max-height:800px
+}
+.map-controls {
+  position:absolute;
+  bottom:18px;
+  right:14px
+}
+.map-controls button {
+  width:46px;
+  height:46px
+}
+.map-controls span {
+  width:40px
+}
+.pan-hint {
+  left:15px;
+  bottom:77px;
+  font-size:9px;
+  max-width:calc(100% - 30px)
+}
+.map-legend {
+  padding:12px 16px;
+  gap:9px 17px;
+  font-size:8px;
+  flex-wrap:wrap
+}
+.connection-inspector {
+  bottom:12px;
+  right:12px;
+  width:calc(100vw - 24px);
+  max-height:58dvh
+}
+.connection-course {
+  min-height:48px
+}
+.course-dossier {
+  width:calc(100vw - 16px);
+  height:94dvh;
+  max-height:94dvh;
+  border-radius:12px
+}
+.dossier-close {
+  width:44px;
+  height:44px;
+  right:13px;
+  top:13px
+}
+.dossier-identity {
+  padding:24px 68px 12px 20px
+}
+.dossier-heading h2 {
+  font-size:25px;
+  line-height:1.18
+}
+.dossier-heading .course-status {
+  position:static;
+  display:inline-block;
+  max-width:none;
+  margin-top:11px;
+  font-size:11px
+}
+.dossier-heading .course-meta {
+  font-size:12px;
+  gap:12px;
+  flex-wrap:wrap
+}
+.dossier-reading {
+  padding:10px 20px 20px
+}
+.dossier-prereq button {
+  min-height:44px;
+  font-size:13px
+}
+.dossier-academic {
+  min-height:48px;
+  font-size:15px
+}
+.dossier-scroll {
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch
+}
+.dossier-tabs {
+  padding:12px 15px
+}
+.dossier-tab {
+  width:60px;
+  height:60px
+}
+.dossier-tab-name {
+  display:none
+}
+#account-dialog,#path-dialog,#reset-dialog,#help-dialog {
+  padding:30px 22px;
+  width:calc(100vw - 28px);
+  max-height:90dvh;
+  overflow:auto
+}
+#account-dialog h2 {
+  font-size:27px
+}
+.account-choice button {
+  font-size:15px;
+  min-height:48px
+}
+#journal-page,#gate-page {
+  padding:25px 16px 35px
+}
+.records-table {
+  display:block;
+  max-width:100%;
+  overflow-x:auto
+}
+.paper-card h2 {
+  font-size:25px
+}
+textarea,select,input {
+  font-size:16px!important
+}
+.branch-option {
+  min-height:64px
+}
+.dialog-actions button {
+  min-height:48px
+}
+.brand-name {
+  line-height:1.1
+}
+main {
+  padding:0
+}
+
+}
+
+@media(prefers-reduced-motion:reduce) {
+  .specialization-menu summary::after {
+  transition:none
+}
+.avatar-badge {
+  filter:none
+}
+
+}

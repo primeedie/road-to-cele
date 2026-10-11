@@ -40,3 +40,13 @@ Guest progress resides in the current browser. With Supabase configured, Google 
 ## Authorship
 
 Application author: milch pogiman. The source and embedded page metadata carry the project author notice. `author-mark.mjs` preserves browser metadata, the build validates the required notices, and `dist/provenance.json` records SHA-256 fingerprints of the built assets. These mechanisms discourage casual removal; they do not prevent someone with full source control from changing the application. Third-party fonts and constellation data retain their own credits.
+
+## Companions and mobile atlas
+
+The specialization selector starts collapsed. Selecting a branch reveals it on the shared sky and closes the dropdown. Explore All opens it in read-only mode. The near-black atlas uses quiet warm controls while retaining the constellation colors and supplied font.
+
+My companion opens a wardrobe with four original illustrated avatars and milestone frames at 0, 1, 8 and 24 completed curriculum courses. Historical completion counts keep earned cosmetics available through specialization transfers. Cosmetic choices travel with the account progression JSON and are separate from academic/mastery requirements; older saves receive default cosmetics. No database migration is needed for these optional JSON fields.
+
+Touch controls support one-finger pan, midpoint-anchored two-finger zoom/pan, and one-finger continuation after a pinch. Gestures suppress accidental course clicks. Mobile controls are at least 44px, course chapters scroll internally, and profile/login actions remain available in the compact header.
+
+Account sign-in opens a short explanation before Google, pending cloud saves require a choice before signing out, and reconnecting automatically retries offline saves. Returning to a visible page refreshes an unchanged account journey from the cloud. Public production configuration can be checked at `/runtime-config.mjs`; empty values indicate a guest-only build.
