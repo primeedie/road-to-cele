@@ -1,12 +1,26 @@
+// milch pogiman made this, so u cant steal this lol
+import { installAuthorMark } from './author-mark.mjs';
+import { courseConnections, traceConnection, CONNECTION_TYPES } from './connections.mjs';
+import { completionMoment } from './completion.mjs';
+import { attachBackdropDismiss } from './dialog-dismiss.mjs';
+import { BRANCH_CONSTELLATIONS, SKY_NAMES, WORLD_WIDTH, WORLD_HEIGHT, NODE_GROUND_X, NODE_GROUND_Y, drawConstellation, starBadge } from './sky-layout.mjs';
+import { createSkyMap } from './map-curriculum.mjs';
+import { skyAccent } from './sky-palette.mjs';
+import { SHARED_WIDTH } from './sky-layout.mjs';
+import { COURSE_SECTIONS, renderCoursePanel } from './course-panel.mjs';
+import { attachMapPan } from './map-pan.mjs';
 import { COURSES, COURSE_BY_ID, SPECIALIZATIONS, CELE_DOMAINS } from './curriculum.mjs';
-import { newProgress, selected, previewBranch, courseAccess, setAcademicYear, confirmSpecialization, changeSpecialization, recordAcademicProgress, progressSummary, gateStatus } from './progression.mjs';
-import { loadProgress, saveProgress } from './storage.mjs';
+import { newProgress, selected, courseAccess, setAcademicYear, confirmSpecialization, changeSpecialization, recordAcademicProgress, progressSummary, gateStatus } from './progression.mjs';
+import { loadProgress, saveProgress, resetProgress } from './storage.mjs';
 const $=s=>document.querySelector(s);
+installAuthorMark(document);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let progress,storageOK=true;
 try{progress=loadProgress(localStorage);}catch{progress=newProgress();storageOK=false;setTimeout(()=>toast('Existing storage could not be read. This session will remain unsaved.'),500);}
-const view={year:1,branch:null,preview:false,course:null,page:'map',scale:1,x:0,y:0};
-let transferMode=false,toastTimer;
+const view={year:1,branch:selected(progress),preview:false,course:null,connection:null,reward:null,section:0,page:'map',scale:1,x:0,y:0};
+const initialAcademic=progressSummary(progress).academic;
+let resetOrigin;
+let transferMode=false,toastTimer,shownMap,previousAcademicFill=100*initialAcademic.complete/initialAcademic.total,sharedCamera=null,lastRenderedBranch=null;
 const icon=key=>`<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${{
  bridge:'<path d="M4 35H44M9 35V16M39 35V16M9 19Q24 41 39 19M15 35V27M21 35V30M27 35V30M33 35V27M6 16H12M36 16H42M4 38H44"/>',
  mountain:'<path d="M3 36L17 10L31 36M21 36L32 16L45 36M11 22L17 19L22 23M27 25L32 23L36 26M5 40H44M17 28L14 36M27 40L25 44M35 39L39 44"/>',
@@ -14,61 +28,143 @@ const icon=key=>`<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stro
  road:'<path d="M9 43L20 5M39 43L28 5M24 7V13M24 19V25M24 31V38M5 14H17M31 14H43M4 33H12M36 33H44M9 10V18M39 10V18"/>',
  crane:'<path d="M16 41V7L25 3V41M9 41H31M7 7H43L25 3M7 7L16 13H40M7 7V14M39 13V27M36 27Q36 32 40 31M16 14L25 22L16 29L25 37M25 14L16 22L25 29L16 37M3 43H45"/>'
 }[key] || ''}</svg>`;
-const terrain=`<svg class="terrain" viewBox="0 0 1040 790" aria-hidden="true"><defs><pattern id="dots" width="25" height="25" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r=".65" fill="#a2b193" opacity=".22"/></pattern></defs><rect width="1040" height="790" fill="url(#dots)"/><g class="contour"><path d="M-60 190C190 20 118 445 281 368S450 340 479 540S730 588 910 758"/><path d="M-50 218C176 76 149 436 293 391S415 368 455 541S740 625 875 790"/><path d="M-40 255C128 93 174 450 299 420S398 402 429 544S681 652 847 789"/><path d="M688 -20C793 83 905 -70 1039 116S822 317 1020 497"/><path d="M711 -20C810 61 892 -47 1012 121S830 319 1050 480"/><path d="M740 -20C834 46 879 -31 986 129S849 321 1080 469"/><path d="M-80 595C42 559 65 723 190 749S224 658 311 805"/><path d="M-80 621C34 585 65 746 189 773S223 687 289 813"/></g><path class="river" d="M980 0C811 189 1042 219 900 380S1011 606 970 790"/><path class="river-thin" d="M980 0C811 189 1042 219 900 380S1011 606 970 790"/><g class="sketch"><path d="M11 532L48 463L87 532M28 500L48 492L67 505M55 532L90 485L127 532M11 540H128M912 545L945 477L979 545M932 506L945 500L960 511M943 546L981 497L1021 546M911 554H1028"/><path d="M93 690V663M82 679L93 658L103 679M105 702V681M95 693L105 675L114 693M51 720V694M40 710L51 688L63 710M39 729H115"/></g><text x="487" y="767" fill="#9ca98d" font-family="Georgia" font-size="12" letter-spacing="4">TERRA CIVILIS</text></svg>`;
+const terrain='';
 function toast(message){$('#toast').textContent=message;$('#toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').classList.remove('show'),4500);}
 function commit(next,message){progress=next;try{if(storageOK)saveProgress(localStorage,progress);}catch{storageOK=false;toast('Progress is in memory. Export a backup; browser storage is unavailable.');}renderAll();if(message)toast(message);}
 function isPreview(c){return view.preview || (!!c.specialization && selected(progress)!==c.specialization);}
 function pathCard(){
- const branch=selected(progress),s=progressSummary(progress);
- $('#path-card').innerHTML=`<div class="paper-card"><div class="card-eyebrow">YOUR ACTIVE PATH <span>✧</span></div><h2>${branch?esc(SPECIALIZATIONS[branch].region):'An open horizon'}</h2><div class="path-state"><i></i>${branch?branch+' · Confirmed, self-reported':'Undecided · All paths explorable'}</div><div class="progress-label"><span>Academic completion</span><span>${s.academic.complete} / ${s.academic.total}</span></div><div class="progress-track"><div style="width:${s.academic.percent}%"></div></div><div class="progress-label"><span>Normal Mode mastery</span><span>${s.mastery.complete} / ${s.mastery.total}</span></div><div class="progress-track"><div style="width:${s.mastery.percent}%"></div></div><p class="card-note">${branch?'Shared technical courses + '+branch+'. Other branches are optional exploration.':'Shared technical progress is provisional until you confirm your specialization in Year 3.'}</p>${branch?'<button class="path-link" data-action="change">Change specialization ↗</button>':progress.academicYear>=3?'<button class="primary full" data-action="confirm">Confirm specialization →</button>':'<p class="card-note">Your commitment chapter begins in Year 3.</p>'}</div>`;
+ const branch=selected(progress),s=progressSummary(progress),a=s.academic,fill=100*a.complete/a.total;
+ $('#path-card').innerHTML=`<div class="path-summary"><div class="path-identity"><span class="path-dot"></span><strong>${branch?branch+' · Confirmed, self-reported':'Undecided'}</strong><span class="path-scope">${branch?'Shared + '+branch:'Shared curriculum · provisional'}</span></div><div class="path-metrics"><span>Academic <b>${a.complete} / ${a.total}</b></span><span>Mastery <b>${s.mastery.complete} / ${s.mastery.total}</b></span></div>${branch?'<button class="path-link" data-action="change">Change specialization</button>':progress.academicYear>=3?'<button class="primary" data-action="confirm">Confirm specialization</button>':''}</div><div class="journey-progress ${fill>previousAcademicFill?'journey-earned':''} ${a.complete===0?'journey-empty':''}"><div class="journey-label"><span>Academic journey</span><strong>${a.complete}<span> / ${a.total} courses</span></strong><b>${a.percent}%</b></div><div id="academic-progress" class="journey-track" role="progressbar" aria-label="Required academic courses completed" aria-valuemin="0" aria-valuemax="${a.total}" aria-valuenow="${a.complete}" aria-valuetext="${a.complete} of ${a.total} required courses completed${s.provisional?', provisional shared curriculum':''}"><div class="journey-fill" style="width:${previousAcademicFill}%"><span aria-hidden="true">✦</span></div></div></div>`;
+ // Preserve the previous fill across re-renders so completing a course advances the light.
+ void $('#academic-progress').offsetWidth;
+ requestAnimationFrame(()=>$('#academic-progress .journey-fill').style.width=fill+'%');
+ previousAcademicFill=fill;
 }
+
 function courseCard(){
- const c=COURSE_BY_ID[view.course];
- if(!c){$('#course-card').innerHTML='<div class="paper-card course-card-empty"><div class="empty-sigil">✥</div><h2>A world to discover</h2><p>Select a course on the map to inspect its place in your journey.</p><p class="card-note">Every branch is yours to explore.</p></div>';return;}
- const preview=isPreview(c),access=courseAccess(progress,c.id,{preview}),record=progress.academicRecords[c.id];
- const deps=[...c.hardPrerequisites.map(id=>({id,type:'H'})),...c.softPrerequisites.map(id=>({id,type:'S'})),...c.corequisites.map(id=>({id,type:'C'}))];
- const status=preview?'Preview only':record?.status==='COMPLETED'?'Academically completed':record?.status==='ACTIVE'?'Course active':access.allowed?'Ready to activate':'Not yet available';
- const met=(id,type)=>type==='H'?progress.academicRecords[id]?.status==='COMPLETED':!!progress.academicRecords[id];
- $('#course-card').innerHTML=`<div class="paper-card"><div class="card-eyebrow">FIELD NOTES <span>${c.specialization || 'SHARED'}</span></div><div class="course-code">${c.id}</div><h2>${esc(c.title)}</h2><div class="course-meta"><span>Year ${c.year}</span><span>Term ${c.term}</span><span>${c.units} unit${c.units!==1?'s':''}</span></div><div class="course-status ${preview?'preview-status':''}">${status}</div><div class="prerequisite-title">Prerequisites & connections</div>${deps.length?deps.map(d=>`<div class="prereq ${met(d.id,d.type)?'prereq-met':''}"><span title="${d.type==='H'?'Hard prerequisite — completion required':d.type==='S'?'Soft prerequisite — activated or completed':'Co-requisite — activated or completed'}">${d.type}</span><button data-course-link="${d.id}">${esc(COURSE_BY_ID[d.id].title)}</button></div>`).join(''):'<p>No course prerequisites. Start with curiosity.</p>'}<p class="card-note">H: pass first · S: take first · C: take together</p>${preview?`<p>${selected(progress)===c.specialization && view.preview?'Explore All is on. Return to your active path to record academic progress.':'This course is open for inspection. Preview courses do not contribute to your active academic path.'}</p>${view.preview && (!c.specialization || selected(progress)===c.specialization)?'<button class="secondary full" data-action="exit-preview">Return to active path</button>':''}`:record?.status==='COMPLETED'?'<p class="card-note">Completion recorded by you. Mastery is assessed separately in a future phase.</p>':`<p>${esc(access.reason)}</p>${access.missingHard?.length?'<p class="card-note">Pass: '+access.missingHard.join(', ')+'</p>':''}${access.missingSoft?.length?'<p class="card-note">Take first: '+access.missingSoft.join(', ')+'</p>':''}${access.missingCo?.length?'<p class="card-note">Take together: '+access.missingCo.join(', ')+'</p>':''}<button class="primary full" data-academic="${record?.status==='ACTIVE'?'COMPLETED':'ACTIVE'}" ${access.allowed?'':'disabled'}>${record?.status==='ACTIVE'?'Record academic completion ✓':'Activate course →'}</button>`}<p class="card-note">${c.requiredMastery?'Required mastery node on its active path.':'Academic node; excluded from the configured mastery scope.'} Quizzes and descriptions are coming in a later chapter.</p></div>`;
+ const dialog=$('#course-card'),c=COURSE_BY_ID[view.course];
+ if(!c){if(dialog.open)dialog.close();dialog.innerHTML='';return;}
+ dialog.innerHTML=renderCoursePanel(progress,c,{preview:isPreview(c),section:view.section,reward:view.reward});
+ if(!dialog.open)dialog.showModal();
 }
+function closeCourse(){const id=view.course;view.course=null;courseCard();renderMap();document.querySelector('[data-course="'+id+'"]')?.focus({preventScroll:true});}
 function branchCards(){
- $('#branch-cards').innerHTML=Object.entries(SPECIALIZATIONS).map(([id,b])=>`<button class="branch-card ${selected(progress)===id?'current':''} ${view.branch===id?'viewing':''}" style="--branch-color:${b.color}" data-branch="${id}" aria-pressed="${view.branch===id}"><div class="branch-card-top">${icon(b.icon)}<span>${id} ${selected(progress)===id?'· ACTIVE':'· EXPLORE'}</span></div><strong>${esc(b.region)}</strong><p>${esc(b.name)}</p><span class="arrow">↗</span></button>`).join('');
+ $('#branch-cards').innerHTML=Object.entries(SPECIALIZATIONS).map(([id,b])=>`<button class="branch-card ${selected(progress)===id?'current':''} ${view.branch===id?'viewing':''}" style="${skyAccent(BRANCH_CONSTELLATIONS[id])}" data-branch="${id}" aria-pressed="${view.branch===id}" title="${esc((view.branch===id?'Hide ':'Show ')+b.name+' on the shared sky')}"><span class="branch-check" aria-hidden="true">${view.branch===id?'✓':'+'}</span><span class="branch-symbol">${icon(b.icon)}</span><strong>${id}</strong><span class="branch-name">${SKY_NAMES[BRANCH_CONSTELLATIONS[id]]}</span><small>${selected(progress)===id?'Active path':'Preview'}</small></button>`).join('');
 }
-function courseButton(c,x,y){const preview=isPreview(c),r=progress.academicRecords[c.id],access=courseAccess(progress,c.id);const state=preview?'preview':r?.status==='COMPLETED'?'completed':r?.status==='ACTIVE'?'active-course':access.allowed?'available':'locked';return `<button class="course-node ${state} ${view.course===c.id?'selected-node':''}" style="left:${x}px;top:${y}px" data-course="${c.id}" aria-label="${esc(c.title)}, ${c.id}, ${state}"><span class="node-symbol">${state==='completed'?'✓':state==='preview'?'◇':state==='available'?'✧':state==='active-course'?'◉':'·'}</span><span class="node-copy"><strong>${esc(c.title)}</strong><small>${c.id} · ${c.units} UNITS</small></span></button>`;}
+function courseButton(c,p,trace=null){
+ const preview=isPreview(c),r=progress.academicRecords[c.id],access=courseAccess(progress,c.id);
+ const state=preview?'preview':r?.status==='COMPLETED'?'completed':r?.status==='ACTIVE'?'active-course':access.allowed?'available':'locked';
+ return `<button class="course-node ${state} ${c.specialization?'specialization-node':''} ${view.course===c.id?'selected-node':''} ${trace?(trace.ids.has(c.id)?'path-member':'path-muted'):''} ${view.reward?.id===c.id?'just-completed':''}" style="left:${p.x}px;top:${p.y}px;--label-x:${p.labelX}px;--label-y:${p.labelY}px;--node-perspective:${p.perspective.toFixed(3)};${skyAccent(p.chart)}" data-course="${c.id}" data-specialization="${c.specialization||''}" data-constellation="${p.chart}" aria-label="${c.id}, ${esc(c.title)}, ${state}">${starBadge()}<span class="node-copy"><strong class="node-code">${c.id}</strong><span class="node-title" aria-hidden="true">${esc(c.title)}</span></span></button>`;
+}
 function renderMap(reset=false){
- let courses,positions={},html=terrain;
- if(view.branch){
-  const b=SPECIALIZATIONS[view.branch];courses=previewBranch(progress,view.branch).courses;
-  $('#map-title').textContent=b.region;$('#map-mode').textContent=selected(progress)===view.branch&&!view.preview?'YOUR ACTIVE SPECIALIZATION':'PREVIEW MODE · NO PROGRESS CHANGES';
-  html+=`<button class="back-foundations" data-action="shared">← Back to shared foundations</button><div class="branch-heading" style="--branch-color:${b.color}">${esc(b.region)}<span>${esc(b.motto)}</span></div><div class="branch-art">${icon(b.icon)}</div>`;
-  const points=[[80,255],[390,340],[700,235],[700,450],[390,500]];
-  courses.forEach((c,i)=>{positions[c.id]={x:points[i][0],y:points[i][1]};});
-  html+=`<div class="region-footer"><span>One branch of a shared journey.</span><p>${selected(progress)===view.branch?'Your active academic path stays highlighted.':'Explore freely. Your academic records stay unchanged.'}</p></div>`;
- }else{
-  courses=COURSES.filter(c=>!c.specialization && c.year===view.year);
-  $('#map-title').textContent=['The Foundation Fields','The Mechanics Highlands','The Design Frontier','The Integration Summit'][view.year-1];
-  $('#map-mode').textContent=view.preview?'PREVIEW MODE · NO PROGRESS CHANGES':'SHARED CURRICULUM';
-  [0,1,2].forEach(col=>{const term=(view.year-1)*3+col+1;html+=`<div class="term-label" style="left:${65+col*315}px;top:32px">TERM ${String(term).padStart(2,'0')}</div>`;courses.filter(c=>c.term===term).forEach((c,row)=>{positions[c.id]={x:65+col*315,y:67+row*78};});});
-  html+=Object.entries(SPECIALIZATIONS).map(([id,b],i)=>`<button class="region-node ${selected(progress)===id?'active-region':''}" style="left:${38+i*196}px;top:657px;--branch-color:${b.color}" data-branch="${id}"><span class="region-icon">${icon(b.icon)}</span><strong>${esc(b.region)}</strong><small>${id} ${selected(progress)===id?'· ACTIVE':'· EXPLORE'}</small></button>`).join('');
+ const map=createSkyMap(view.branch),{courses,positions}=map;shownMap=map;
+ $('#map-viewport').classList.toggle('revealing-branch',!!view.branch&&view.branch!==lastRenderedBranch);lastRenderedBranch=view.branch;
+ let html=terrain;
+ $('#map-title').textContent='Civil Engineering · Shared sky';
+ $('#map-mode').textContent=view.preview?'EXPLORE MODE · NO PROGRESS CHANGES':view.branch?(selected(progress)===view.branch?'ACTIVE PATH · ':'PREVIEW BRANCH · ')+view.branch:'YEARS I–IV · SHARED CURRICULUM';
+ map.charts.forEach(({chart,term,label})=>{
+  html+=drawConstellation(chart);
+  html+=`<div class="term-label" data-term="${term}" style="left:${label.x}px;top:${label.y}px;${skyAccent(chart.id)}"><div class="cluster-meta"><span class="cluster-year">Year ${['I','II','III','IV'][Math.ceil(term/3)-1]}</span><span class="cluster-term">Term ${String(term).padStart(2,'0')}</span></div><strong>${chart.name}</strong></div>`;
+ });
+ if(map.branchChart){
+  const chart=map.branchChart;
+  html+=`<div class="specialization-constellation">${drawConstellation(chart)}</div><div class="specialization-heading" style="left:${map.branchLabel.x}px;top:${map.branchLabel.y}px;${skyAccent(chart.id)}"><span>${view.branch} · ${selected(progress)===view.branch?'ACTIVE PATH':'PREVIEW'}</span><strong>${chart.name}</strong><button data-action="shared">Hide constellation</button></div>`;
  }
- let lines='';courses.forEach(c=>{const end=positions[c.id];[...c.hardPrerequisites,...c.softPrerequisites,...c.corequisites].forEach(id=>{const start=positions[id];if(!start)return;const sx=start.x+220,sy=start.y+36,ex=end.x,ey=end.y+36;lines+=`<path class="${c.corequisites.includes(id)?'coreq':''}" d="M ${sx} ${sy} C ${sx+50} ${sy}, ${ex-50} ${ey}, ${ex} ${ey}"/>`;});});
- html+=`<svg class="graph-lines" viewBox="0 0 1040 790" aria-hidden="true">${lines}</svg>`;
- html+=courses.map(c=>courseButton(c,positions[c.id].x,positions[c.id].y)).join('');
- $('#world').innerHTML=html;$('#world').style.width='1040px';$('#world').style.height='790px';
+ const trace=traceConnection(courses,view.connection);
+ if(!trace)view.connection=null;
+ let lines='',hits='',shadows='';
+ courseConnections(courses).forEach(edge=>{
+  const start=positions[edge.from],end=positions[edge.to],sx=start.x+NODE_GROUND_X,sy=start.y+NODE_GROUND_Y,ex=end.x+NODE_GROUND_X,ey=end.y+NODE_GROUND_Y,bend=Math.min(180,Math.abs(ex-sx)*.4);
+  const d=`M ${sx} ${sy} C ${sx+bend} ${sy}, ${ex-bend} ${ey}, ${ex} ${ey}`;
+  const state=trace?(edge.key===view.connection?'path-selected':trace.edges.has(edge.key)?'path-traced':'path-muted'):'';
+  const specialist=COURSE_BY_ID[edge.to].specialization || COURSE_BY_ID[edge.from].specialization;
+  shadows+=`<path d="${d}"/>`;
+  lines+=`<path class="connection-line ${edge.type==='C'?'coreq':''} ${specialist?'specialization-thread':''} ${state}" style="${specialist?skyAccent(BRANCH_CONSTELLATIONS[specialist]):''}" d="${d}"/>`;
+  hits+=`<path class="connection-hit" d="${d}" data-connection="${edge.key}" role="button" tabindex="0" aria-pressed="${edge.key===view.connection}" aria-label="${esc(COURSE_BY_ID[edge.from].title+' to '+COURSE_BY_ID[edge.to].title+', '+CONNECTION_TYPES[edge.type])}"/>`;
+ });
+ html+=`<svg class="graph-lines" viewBox="0 0 ${WORLD_WIDTH} ${WORLD_HEIGHT}" aria-label="Course prerequisite connections"><g class="thread-shadows" transform="translate(10 24)">${shadows}</g>${lines}${hits}</svg>`;
+ html+=courses.map(c=>courseButton(c,positions[c.id],trace)).join('');
+ $('#map-viewport').classList.toggle('tracing-path',!!trace);
+ renderConnectionCard(trace);
+ $('#world').innerHTML=html;$('#world').style.width=WORLD_WIDTH+'px';$('#world').style.height=WORLD_HEIGHT+'px';
  if(reset)fitMap();else applyTransform();
  $('.explore-button').setAttribute('aria-pressed',String(view.preview));
- document.querySelectorAll('[data-year]').forEach(b=>{b.classList.toggle('active',!view.branch&&+b.dataset.year===view.year);b.setAttribute('aria-pressed',String(!view.branch&&+b.dataset.year===view.year));});
+ document.querySelectorAll('[data-year]').forEach(b=>{b.classList.toggle('active',+b.dataset.year===view.year);b.setAttribute('aria-pressed',String(+b.dataset.year===view.year));});
 }
-function applyTransform(){$('#world').style.transform=`translate(${view.x}px,${view.y}px) scale(${view.scale})`;$('#zoom-label').textContent=Math.round(view.scale*100)+'%';}
-function fitMap(){const r=$('#map-viewport').getBoundingClientRect();if(!r.width)return;view.scale=Math.min((r.width-24)/1040,(r.height-27)/790);view.x=(r.width-1040*view.scale)/2;view.y=3;applyTransform();}
-function zoom(factor,cx,cy){const r=$('#map-viewport').getBoundingClientRect();cx??=r.width/2;cy??=r.height/2;const next=Math.max(.28,Math.min(1.8,view.scale*factor)),ratio=next/view.scale;view.x=cx-(cx-view.x)*ratio;view.y=cy-(cy-view.y)*ratio;view.scale=next;applyTransform();}
-function milestone(){const visible=progress.academicYear>=3&&!selected(progress);$('#commitment-banner').innerHTML=visible?'<div class="commitment-banner"><div><strong>Year III · Choose your calling</strong><p>Confirm your accepted specialization when you’re ready. Shared subjects stay open while you wait.</p></div><button class="primary" data-action="confirm">Confirm specialization →</button></div>':'';}
+
+function renderConnectionCard(trace){
+ const panel=$('#connection-card');panel.hidden=!trace;
+ if(!trace){panel.innerHTML='';return;}
+ const item=c=>`<button data-course="${c.id}" class="connection-course"><small>${c.id} · Year ${c.year}</small><strong>${esc(c.title)}</strong></button>`;
+ panel.innerHTML=`<header><div><span class="connection-eyebrow">CONNECTED PATH</span><h2>Follow the thread</h2></div><button data-action="clear-connection" aria-label="Close connected path">×</button></header><p class="connection-type">${CONNECTION_TYPES[trace.link.type]}</p><div class="connection-pair">${item(COURSE_BY_ID[trace.link.from])}<span aria-hidden="true">↓</span>${item(COURSE_BY_ID[trace.link.to])}</div><div class="connection-chain">${trace.before.length?'<h3>Leads into this link</h3>'+trace.before.map(item).join(''):''}${trace.after.length?'<h3>Builds from this link</h3>'+trace.after.map(item).join(''):''}</div><p class="connection-caption" role="status">${trace.ids.size} connected courses on this map · Click a course to inspect</p>`;
+}
+function selectConnection(key){view.connection=key;renderMap();document.querySelector('[data-connection="'+key+'"]')?.focus({preventScroll:true});}
+function clearConnection(){view.connection=null;renderMap();}
+function applyTransform(){
+ $('#world').style.transform=`translate(${view.x}px,${view.y}px) scale(${view.scale})`;
+ const sky=$('#map-viewport');
+ sky.style.setProperty('--far-x',Math.tanh(view.x/1100)*45+'px');
+ sky.style.setProperty('--far-y',Math.tanh(view.y/1800)*45+'px');
+ sky.style.setProperty('--near-x',Math.tanh(view.x/1100)*85+'px');
+ sky.style.setProperty('--near-y',Math.tanh(view.y/1800)*85+'px');
+ sky.style.setProperty('--sky-scale',1+(view.scale-1)*.07);
+ sky.classList.toggle('camera-travel',$('#world').classList.contains('navigation-motion'));
+ $('#zoom-label').textContent=Math.round(view.scale*100)+'%';
+}
+function fitMap({overview=false}={}){
+ const r=$('#map-viewport').getBoundingClientRect();if(!r.width)return;
+ const width=view.branch?WORLD_WIDTH:SHARED_WIDTH;
+ view.scale=overview?Math.min((r.width-60)/width,(r.height-60)/WORLD_HEIGHT):1;
+ view.x=overview?(r.width-width*view.scale)/2:12;
+ view.y=overview?20:32-shownMap.charts.find(c=>c.term===(view.year-1)*3+1).label.y;
+ applyTransform();
+}
+function focusBranch(){
+ const label=shownMap.branchLabel;if(!label)return;
+ const r=$('#map-viewport').getBoundingClientRect();
+ view.scale=Math.max(.7,Math.min(1,view.scale));
+ view.x=r.width/2-(label.x+100)*view.scale;
+ view.y=32-label.y*view.scale;
+ applyTransform();
+}
+function revealBranch(branch){
+ stopMapTravel();view.connection=null;view.course=null;
+ if(view.branch===branch){
+  view.branch=null;if(sharedCamera)view.year=sharedCamera.year;renderAll();
+  animateMapTravel(()=>{if(sharedCamera){Object.assign(view,sharedCamera);applyTransform();}else fitMap();});
+ }else{
+  if(!view.branch)sharedCamera={x:view.x,y:view.y,scale:view.scale,year:view.year};
+  view.branch=branch;view.year=3;renderAll();animateMapTravel(focusBranch);
+ }
+}
+
+let travelTimer;
+function stopMapTravel(){
+ const world=$('#world');
+ if(!world.classList.contains('navigation-motion'))return;
+ const match=window.getComputedStyle(world).transform.match(/^matrix\(([^)]+)\)$/);
+ if(match){const values=match[1].split(',').map(Number);view.scale=values[0];view.x=values[4];view.y=values[5];}
+ clearTimeout(travelTimer);world.classList.remove('navigation-motion');applyTransform();
+}
+function animateMapTravel(move){
+ void $('#world').offsetWidth;
+ $('#world').classList.add('navigation-motion');move();
+ travelTimer=setTimeout(()=>{$('#world').classList.remove('navigation-motion');$('#map-viewport').classList.remove('camera-travel');},700);
+}
+function travelToYear(year){
+ stopMapTravel();view.connection=null;view.year=year;view.course=null;renderAll();
+ animateMapTravel(fitMap);
+}
+
+
+function zoom(factor,cx,cy){stopMapTravel();const r=$('#map-viewport').getBoundingClientRect();cx??=r.width/2;cy??=r.height/2;const next=Math.max(.28,Math.min(1.8,view.scale*factor)),ratio=next/view.scale;view.x=cx-(cx-view.x)*ratio;view.y=cy-(cy-view.y)*ratio;view.scale=next;applyTransform();}
+function milestone(){const visible=progress.academicYear>=3&&!selected(progress);$('#commitment-banner').innerHTML=visible?'<div class="commitment-banner"><div><strong>Year III · Choose your calling</strong><p>Shared subjects stay available while you await acceptance.</p></div><button class="primary" data-action="confirm">Confirm specialization →</button></div>':'';}
 function journal(){
  const s=progressSummary(progress),branch=selected(progress),r=progress.specializationProgression;
  const records=Object.entries(progress.academicRecords);
- $('#journal-page').innerHTML=`<div class="eyebrow">EVERY STEP LEAVES A TRACE</div><h1>Your field <em>journal.</em></h1><p>A record of your foundations, your chosen path, and every chapter before it.</p><div class="journal-layout"><div class="paper-card"><div class="card-eyebrow">ACADEMIC STANDING</div><h2>Where are you today?</h2><p>Your academic year is self-reported. Browsing another year on the map does not change this setting.</p><label class="field-label" for="academic-year">My academic year</label><select class="year-select" id="academic-year">${[1,2,3,4].map(y=>`<option value="${y}" ${progress.academicYear===y?'selected':''}>Year ${y}</option>`).join('')}</select><p class="card-note">Year 3 introduces specialization commitment. Prerequisites still apply to course activation.</p></div><div class="paper-card"><div class="card-eyebrow">SPECIALIZATION PROGRESSION · V3</div><h2>${branch?esc(SPECIALIZATIONS[branch].region):'Still discovering'}</h2><p>${branch?esc(SPECIALIZATIONS[branch].name):'Explore every specialization. There is no selection required during your first two years.'}</p><div class="path-state">${r.specializationStatus} ${branch?'· SELF_REPORTED':''}</div>${branch?`<p class="card-note">Confirmed ${esc(new Date(r.confirmedAt).toLocaleDateString())}. Selection is self-reported, not university-verified.</p><button class="secondary full" data-action="change">Change specialization</button>`:progress.academicYear>=3?'<button class="primary full" data-action="confirm">Confirm my accepted specialization →</button>':''}</div><div class="paper-card"><div class="card-eyebrow">ACTIVE PATH PROGRESS</div><h2>${s.academic.percent}% of the academic journey</h2><p>${s.academic.complete} / ${s.academic.total} required technical courses complete${s.provisional?' · provisional shared scope':''}.</p><div class="progress-track"><div style="width:${s.academic.percent}%"></div></div><p>${s.mastery.complete} / ${s.mastery.total} required mastery nodes. Quizzes are reserved for a later phase.</p><p class="card-note">Shared technical courses plus your confirmed specialization. Labs remain academic requirements and are excluded from the configured mastery scope. General education, PE, NSTP and OJT are outside this app’s technical scope.</p></div><div class="paper-card"><div class="card-eyebrow">YOUR RECORDS BELONG TO YOU</div><h2>Keep a trail.</h2><p>Progress is stored in this browser. Export a copy to keep your course records, specialization history and future quiz attempts safe.</p><button class="secondary full" data-action="export">Export progress backup ↓</button><p class="card-note">${storageOK?'Browser storage is available.':'Browser storage is unavailable. Export before leaving this session.'} Changing specialization never removes historical records.</p></div></div><div class="journal-records"><h2>Academic records <em>(${records.length})</em></h2>${records.length?`<table class="records-table"><thead><tr><th>COURSE</th><th>SUBJECT</th><th>RECORD</th><th>PATH</th></tr></thead><tbody>${records.map(([id,r])=>{const c=COURSE_BY_ID[id];return `<tr><td>${esc(id)}</td><td>${esc(c?.title || id)}</td><td>${r.status==='COMPLETED'?'Completed':'Active'}</td><td>${c?.specialization?c.specialization+(c.specialization!==branch?' · historical':' · current'):'Shared'}</td></tr>`;}).join('')}</tbody></table>`:'<div class="journal-empty">Your first field note is waiting. Activate an available shared course on the World map.</div>'}</div><div class="journal-records"><h2>Previous specialization history</h2>${r.previousSpecializationHistory.length?r.previousSpecializationHistory.map(h=>`<div class="history-row"><strong>${esc(h.selectedSpecialization)} → ${esc(h.changedTo)}</strong> · ${esc(new Date(h.changedAt).toLocaleDateString())}<br>${esc(h.reason)}<br><span class="muted">Academic records and quiz attempts retained.</span></div>`).join(''):'<p>No transfers or corrections recorded.</p>'}</div><div class="journal-records"><h2>Assessment history</h2><p>${progress.quizAttempts.length} quiz attempts · ${progress.integrationAssessments.length} integration assessment attempts. Assessments are reserved for a later chapter.</p></div>`;
+ $('#journal-page').innerHTML=`<div class="eyebrow">EVERY STEP LEAVES A TRACE</div><h1>Your field <em>journal.</em></h1><p>A record of your foundations, your chosen path, and every chapter before it.</p><div class="journal-layout"><div class="paper-card"><div class="card-eyebrow">ACADEMIC STANDING</div><h2>Where are you today?</h2><p>Your academic year is self-reported. Browsing another year on the map does not change this setting.</p><label class="field-label" for="academic-year">My academic year</label><select class="year-select" id="academic-year">${[1,2,3,4].map(y=>`<option value="${y}" ${progress.academicYear===y?'selected':''}>Year ${y}</option>`).join('')}</select><p class="card-note">Year 3 introduces specialization commitment. Prerequisites still apply to course activation.</p></div><div class="paper-card"><div class="card-eyebrow">YOUR CHOSEN SPECIALIZATION</div><h2>${branch?esc(SPECIALIZATIONS[branch].region):'Still discovering'}</h2><p>${branch?esc(SPECIALIZATIONS[branch].name):'Explore every specialization. There is no selection required during your first two years.'}</p><div class="path-state">${r.specializationStatus} ${branch?'· SELF_REPORTED':''}</div>${branch?`<p class="card-note">Confirmed ${esc(new Date(r.confirmedAt).toLocaleDateString())}. Selection is self-reported, not university-verified.</p><button class="secondary full" data-action="change">Change specialization</button>`:progress.academicYear>=3?'<button class="primary full" data-action="confirm">Confirm my accepted specialization →</button>':''}</div><div class="paper-card"><div class="card-eyebrow">ACTIVE PATH PROGRESS</div><h2>${s.academic.percent}% of the academic journey</h2><p>${s.academic.complete} / ${s.academic.total} required technical courses complete${s.provisional?' · provisional shared scope':''}.</p><div class="progress-track"><div style="width:${s.academic.percent}%"></div></div><p>${s.mastery.complete} / ${s.mastery.total} required mastery nodes. Quizzes are reserved for a later phase.</p><p class="card-note">Shared technical courses plus your confirmed specialization. Labs remain academic requirements and are excluded from the configured mastery scope. General education, PE, NSTP and OJT are outside this app’s technical scope.</p></div><div class="paper-card"><div class="card-eyebrow">YOUR RECORDS BELONG TO YOU</div><h2>Keep a trail.</h2><p>Progress is stored in this browser. Export a copy to keep your course records, specialization history and future quiz attempts safe.</p><button class="secondary full" data-action="export">Export progress backup ↓</button><button class="reset-progress-button journal-reset" data-action="reset-progress">Reset progress</button><p class="card-note">${storageOK?'Browser storage is available.':'Browser storage is unavailable. Export before leaving this session.'} Changing specialization never removes historical records.</p></div></div><div class="journal-records"><h2>Academic records <em>(${records.length})</em></h2>${records.length?`<table class="records-table"><thead><tr><th>COURSE</th><th>SUBJECT</th><th>RECORD</th><th>PATH</th></tr></thead><tbody>${records.map(([id,r])=>{const c=COURSE_BY_ID[id];return `<tr><td>${esc(id)}</td><td>${esc(c?.title || id)}</td><td>${r.status==='COMPLETED'?'Completed':'Active'}</td><td>${c?.specialization?c.specialization+(c.specialization!==branch?' · historical':' · current'):'Shared'}</td></tr>`;}).join('')}</tbody></table>`:'<div class="journal-empty">Your first field note is waiting. Activate an available shared course on the World map.</div>'}</div><div class="journal-records"><h2>Previous specialization history</h2>${r.previousSpecializationHistory.length?r.previousSpecializationHistory.map(h=>`<div class="history-row"><strong>${esc(h.selectedSpecialization)} → ${esc(h.changedTo)}</strong> · ${esc(new Date(h.changedAt).toLocaleDateString())}<br>${esc(h.reason)}<br><span class="muted">Academic records and quiz attempts retained.</span></div>`).join(''):'<p>No transfers or corrections recorded.</p>'}</div><div class="journal-records"><h2>Assessment history</h2><p>${progress.quizAttempts.length} quiz attempts · ${progress.integrationAssessments.length} integration assessment attempts. Assessments are reserved for a later chapter.</p></div>`;
 }
-function gate(){const g=gateStatus(progress);$('#gate-page').innerHTML=`<div class="eyebrow">THE SHARED SUMMIT</div><h1>One final <em>integration.</em></h1><p>Five specializations lead to the same Civil Engineering integration assessment.</p><div class="gate-layout"><div class="gate-illustration"><svg viewBox="0 0 240 190" aria-hidden="true"><path d="M20 166H221M39 164V57H83V164M157 164V57H201V164M49 57V37H60V49H69V37H79V57M162 57V37H173V49H182V37H193V57M83 78Q120 21 157 78M82 105Q121 49 157 105M94 165V113Q120 78 146 113V165M104 162V117Q120 92 136 117V162M55 76H67V92H55ZM173 76H185V92H173ZM60 121V134M179 121V134M31 170L14 177M215 170L230 178M114 140H127M120 103V165"/><path d="M114 25L120 12L126 25L120 39Z"/></svg><h2>The CIVINCO Gate</h2><div class="path-state">${g.cleared?'CLEARED':g.eligible?'READY FOR ASSESSMENT':'THE JOURNEY CONTINUES'}</div><p>Complete your required academic path and Normal Mode mastery, then clear the common integration assessment.</p><button class="primary full" disabled>Integration assessment · coming later</button><p class="card-note">Quizzes are paused for this skeleton phase.</p></div><div class="paper-card"><div class="card-eyebrow">GATE REQUIREMENTS</div>${[[!!selected(progress),'Confirmed academic path',selected(progress)?selected(progress)+' · self-reported':'Confirm your accepted specialization from Year 3'],[g.summary.academic.complete===g.summary.academic.total,'Required academic completion',g.summary.academic.complete+' / '+g.summary.academic.total+' shared + selected-path courses'],[g.summary.mastery.complete===g.summary.mastery.total,'Required Normal Mode mastery',g.summary.mastery.complete+' / '+g.summary.mastery.total+' configured mastery nodes'],[g.cleared,'Common integration assessment',g.cleared?'Passed · CELE Hardmode unlocked':'A common CIVINCO assessment for all students']].map(([ok,title,note])=>`<div class="gate-check"><span>${ok?'✓':'◇'}</span><div><strong>${title}</strong><small>${esc(note)}</small></div></div>`).join('')}<p class="card-note">Unselected specialization branches never block this gate. A passed CIVINCO assessment is retained through a specialization transfer.</p></div></div><div class="section-heading"><h2>Beyond the gate: <em>CELE Hardmode.</em></h2><span>${g.hardmodeUnlocked?'UNLOCKED':'LOCKED UNTIL CIVINCO IS CLEARED'}</span></div><div class="domains">${CELE_DOMAINS.map((d,i)=>`<div class="domain"><small>EXAMINATION DOMAIN ${String(i+1).padStart(2,'0')}</small><h3>${esc(d)}</h3><p>${g.hardmodeUnlocked?'Unlocked for shared review. Assessment content is coming in a later phase.':'Unlocks after the common integration assessment. Shared by all specializations.'}</p></div>`).join('')}</div><p class="card-note">Specialist knowledge remains accessible as optional review through the atlas. Examination domain labels are configurable app groupings.</p>`;}
+function gate(){const g=gateStatus(progress);$('#gate-page').innerHTML=`<div class="eyebrow">THE SHARED SUMMIT</div><h1>One final <em>integration.</em></h1><p>Five specializations lead to the same Civil Engineering integration assessment.</p><div class="gate-layout"><div class="gate-illustration"><svg viewBox="0 0 240 190" aria-hidden="true"><path d="M20 166H221M39 164V57H83V164M157 164V57H201V164M49 57V37H60V49H69V37H79V57M162 57V37H173V49H182V37H193V57M83 78Q120 21 157 78M82 105Q121 49 157 105M94 165V113Q120 78 146 113V165M104 162V117Q120 92 136 117V162M55 76H67V92H55ZM173 76H185V92H173ZM60 121V134M179 121V134M31 170L14 177M215 170L230 178M114 140H127M120 103V165"/><path d="M114 25L120 12L126 25L120 39Z"/></svg><h2>The CIVINCO Gate</h2><div class="path-state">${g.cleared?'CLEARED':g.eligible?'READY FOR ASSESSMENT':'THE JOURNEY CONTINUES'}</div><p>Complete your required academic path and Normal Mode mastery, then clear the common integration assessment.</p><button class="primary full" disabled>Integration assessment · coming later</button><p class="card-note">Quizzes are paused for this skeleton phase.</p></div><div class="paper-card"><div class="card-eyebrow">GATE REQUIREMENTS</div>${[[!!selected(progress),'Confirmed academic path',selected(progress)?selected(progress)+' · self-reported':'Confirm your accepted specialization from Year 3'],[g.summary.academic.complete===g.summary.academic.total,'Required academic completion',g.summary.academic.complete+' / '+g.summary.academic.total+' shared + selected-path courses'],[g.summary.mastery.complete===g.summary.mastery.total,'Required Normal Mode mastery',g.summary.mastery.complete+' / '+g.summary.mastery.total+' configured mastery nodes'],[g.cleared,'Common integration assessment',g.cleared?'Passed · CELE Hardmode unlocked':'A common CIVINCO assessment for all students']].map(([ok,title,note])=>`<div class="gate-check"><span>${ok?'✓':'◇'}</span><div><strong>${title}</strong><small>${esc(note)}</small></div></div>`).join('')}<p class="card-note">Unselected specialization branches never block this gate. A passed CIVINCO assessment is retained through a specialization transfer.</p></div></div><div class="section-heading"><h2>Beyond the gate: <em>CELE Hardmode.</em></h2><span>${g.hardmodeUnlocked?'UNLOCKED':'LOCKED UNTIL CIVINCO IS CLEARED'}</span></div><div class="domains">${CELE_DOMAINS.map((d,i)=>`<div class="domain"><small>EXAMINATION DOMAIN ${String(i+1).padStart(2,'0')}</small><h3>${esc(d)}</h3><p>${g.hardmodeUnlocked?'Unlocked for shared review. Assessment content is coming in a later phase.':'Unlocks after the common integration assessment. Shared by all specializations.'}</p></div>`).join('')}</div><p class="card-note">Specialist knowledge remains accessible as optional review through the world map. Examination domain labels are configurable app groupings.</p>`;}
 function renderAll(reset=false){pathCard();courseCard();branchCards();milestone();renderMap(reset);journal();gate();$('#traveler-year').textContent='Year '+progress.academicYear+' · '+(selected(progress)||'Explorer');$('.local-label').innerHTML=`<i></i>${storageOK?'Saved on this browser':'Session only · export backup'}`;}
 function openPathDialog(change=false){
  transferMode=change;$('#path-form').reset();$('#dialog-error').textContent='';$('#dialog-eyebrow').textContent=change?'A TRANSFER. A CORRECTION. A NEW CHAPTER.':'YEAR III · A NEW CHAPTER';$('#dialog-title').innerHTML=change?'Change your <em>path.</em>':'Choose your <em>calling.</em>';
@@ -77,31 +173,76 @@ function openPathDialog(change=false){
  $('#dialog-branches').innerHTML=Object.entries(SPECIALIZATIONS).filter(([id])=>!change||id!==selected(progress)).map(([id,b])=>`<label class="branch-option" style="--branch-color:${b.color}"><input type="radio" name="specialization" value="${id}" required>${icon(b.icon)}<div><strong>${id} · ${esc(b.name)}</strong><span>${esc(b.region)}</span></div></label>`).join('');
  $('#confirm-path').textContent=change?'Confirm change of specialization →':'Confirm my specialization →';$('#path-dialog').showModal();
 }
-function showPage(page){view.page=page;document.querySelectorAll('main>.page').forEach(s=>s.classList.toggle('hidden',s.id!==page+'-page'));document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===page));$('#page-breadcrumb').textContent={map:'WORLD MAP',journal:'FIELD JOURNAL',gate:'CIVINCO GATE'}[page];if(page==='map')requestAnimationFrame(fitMap);window.scrollTo({top:0});}
+function openResetDialog(origin){
+ resetOrigin=origin;$('#reset-error').textContent='';$('#reset-dialog').showModal();$('#cancel-reset').focus();
+}
+function cancelReset(){
+ $('#reset-dialog').close();resetOrigin?.focus({preventScroll:true});
+}
+function resetTestingProgress(){
+ if(!$('#reset-dialog').open)return;
+ try{
+  const clean=resetProgress(localStorage);
+  stopMapTravel();progress=clean;storageOK=true;transferMode=false;
+  Object.assign(view,{year:1,branch:null,preview:false,course:null,connection:null,reward:null,section:0,scale:1,x:0,y:0});
+  sharedCamera=null;lastRenderedBranch=null;previousAcademicFill=0;
+  document.querySelectorAll('dialog[open]').forEach(dialog=>dialog.close());
+  renderAll();showPage('map');fitMap();$('#reset-progress').focus({preventScroll:true});
+  toast('Progress reset. Your journey starts again in Year 1.');
+ }catch{
+  $('#reset-error').textContent='The reset could not be saved in this browser. Your current progress is unchanged. Try again after enabling browser storage.';
+ }
+}
+function showPage(page){view.course=null;courseCard();view.page=page;document.querySelectorAll('main>.page').forEach(s=>s.classList.toggle('hidden',s.id!==page+'-page'));document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===page));$('#page-breadcrumb').textContent={map:'WORLD MAP',journal:'FIELD JOURNAL',gate:'CIVINCO GATE'}[page];if(page==='map')requestAnimationFrame(applyTransform);window.scrollTo({top:0});}
 document.addEventListener('click',e=>{
+ const edge=e.target.closest('[data-connection]');if(edge){selectConnection(edge.dataset.connection);return;}
  const b=e.target.closest('button');if(!b)return;
  if(b.dataset.page){showPage(b.dataset.page);return;}
- if(b.dataset.year){view.year=+b.dataset.year;view.branch=null;view.course=null;renderAll(true);return;}
- if(b.dataset.branch){view.branch=b.dataset.branch;view.course=null;renderAll(true);return;}
- if(b.dataset.course){view.course=b.dataset.course;renderAll();return;}
- if(b.dataset.courseLink){const c=COURSE_BY_ID[b.dataset.courseLink];view.branch=c.specialization;view.year=c.year;view.course=c.id;renderAll(true);return;}
- if(b.dataset.academic){try{commit(recordAcademicProgress(progress,view.course,b.dataset.academic,{preview:isPreview(COURSE_BY_ID[view.course])}),b.dataset.academic==='COMPLETED'?'Academic completion recorded.':'Course activated on your academic path.');}catch(err){toast(err.message);}return;}
+ if(b.dataset.year){travelToYear(+b.dataset.year);return;}
+ if(b.dataset.branch){revealBranch(b.dataset.branch);return;}
+ if(b.dataset.course){view.reward=null;view.section=0;view.course=b.dataset.course;renderAll();return;}
+ if(b.dataset.courseLink){view.connection=null;view.reward=null;const c=COURSE_BY_ID[b.dataset.courseLink];if(c.specialization)view.branch=c.specialization;view.year=c.year;view.section=0;view.course=c.id;renderAll();return;}
+ if(b.dataset.courseSection!==undefined){view.section=+b.dataset.courseSection;courseCard();$('#course-tab-'+view.section).focus({preventScroll:true});return;}
+ if(b.dataset.academic){try{
+  const next=recordAcademicProgress(progress,view.course,b.dataset.academic,{preview:isPreview(COURSE_BY_ID[view.course])});
+  view.reward=completionMoment(progress,next,view.course);
+  commit(next,b.dataset.academic==='COMPLETED'?null:'Course activated on your academic path.');
+  $('#course-card .reward-return, #course-card [data-academic]')?.focus({preventScroll:true});
+ }catch(err){toast(err.message);}return;}
+ if(b.dataset.action==='reset-progress'){openResetDialog(b);return;}
+ if(b.dataset.action==='cancel-reset'){cancelReset();return;}
+ if(b.dataset.action==='confirm-reset'){resetTestingProgress();return;}
+ if(b.dataset.action==='clear-connection'){clearConnection();return;}
  if(b.dataset.action==='confirm'){openPathDialog();return;}
  if(b.dataset.action==='change'){openPathDialog(true);return;}
- if(b.dataset.action==='shared'){view.branch=null;view.course=null;renderAll(true);return;}
+ if(b.dataset.action==='close-inspector'){closeCourse();return;}
+ if(b.dataset.action==='shared'){if(view.branch)revealBranch(view.branch);return;}
  if(b.dataset.action==='exit-preview'){view.preview=false;renderAll();return;}
- if(b.dataset.action==='export'){const blob=new Blob([JSON.stringify(progress,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='cele-atlas-progress.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);toast('Your progress backup has been exported.');return;}
+ if(b.dataset.action==='export'){const blob=new Blob([JSON.stringify(progress,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='road-to-cele-progress.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);toast('Your progress backup has been exported.');return;}
  if(b.classList.contains('dialog-close'))b.closest('dialog').close();
 });
 $('#explore-toggle').addEventListener('click',()=>{view.preview=!view.preview;renderAll();toast(view.preview?'Exploration mode is on. Academic records stay unchanged.':'Returned to your active academic path.');});
 $('#help-button').addEventListener('click',()=>$('#help-dialog').showModal());
-$('#path-form').addEventListener('submit',e=>{e.preventDefault();const branch=new FormData(e.currentTarget).get('specialization');try{const options={confirmed:$('#acceptance-check').checked,reason:$('#transfer-reason').value};const next=transferMode?changeSpecialization(progress,branch,options):confirmSpecialization(progress,branch,options);$('#path-dialog').close();view.branch=branch;view.course=null;view.preview=false;commit(next,'Your '+branch+' path is confirmed. All previous records are retained.');fitMap();}catch(err){$('#dialog-error').textContent=err.message;}});
+$('#path-form').addEventListener('submit',e=>{e.preventDefault();const branch=new FormData(e.currentTarget).get('specialization');try{const options={confirmed:$('#acceptance-check').checked,reason:$('#transfer-reason').value};const next=transferMode?changeSpecialization(progress,branch,options):confirmSpecialization(progress,branch,options);$('#path-dialog').close();view.branch=branch;view.course=null;view.preview=false;commit(next,'Your '+branch+' path is confirmed. All previous records are retained.');animateMapTravel(focusBranch);}catch(err){$('#dialog-error').textContent=err.message;}});
 document.addEventListener('change',e=>{if(e.target.id==='academic-year')commit(setAcademicYear(progress,+e.target.value),'Academic standing updated. Your records are retained.');});
-$('#zoom-in').addEventListener('click',()=>zoom(1.2));$('#zoom-out').addEventListener('click',()=>zoom(1/1.2));$('#fit-map').addEventListener('click',fitMap);
-const viewport=$('#map-viewport');let drag=null;
-viewport.addEventListener('pointerdown',e=>{if(e.target.closest('button'))return;drag={id:e.pointerId,x:e.clientX,y:e.clientY,ox:view.x,oy:view.y};viewport.setPointerCapture(e.pointerId);viewport.classList.add('dragging');});
-viewport.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;view.x=drag.ox+e.clientX-drag.x;view.y=drag.oy+e.clientY-drag.y;applyTransform();});
-const endDrag=()=>{drag=null;viewport.classList.remove('dragging');};viewport.addEventListener('pointerup',endDrag);viewport.addEventListener('pointercancel',endDrag);
+$('#zoom-in').addEventListener('click',()=>zoom(1.2));$('#zoom-out').addEventListener('click',()=>zoom(1/1.2));$('#fit-map').addEventListener('click',()=>fitMap({overview:true}));
+attachBackdropDismiss($('#course-card'),closeCourse);
+$('#reset-dialog').addEventListener('cancel',e=>{e.preventDefault();cancelReset();});
+document.addEventListener('keydown',e=>{
+ const edge=e.target.closest?.('[data-connection]');
+ if(edge&&(e.key==='Enter'||e.key===' ')){e.preventDefault();selectConnection(edge.dataset.connection);}
+ if(e.key==='Escape'&&view.connection&&!document.querySelector('dialog[open]')){e.preventDefault();clearConnection();}
+});
+$('#course-card').addEventListener('cancel',e=>{e.preventDefault();closeCourse();});
+$('#course-card').addEventListener('keydown',e=>{
+ const tab=e.target.closest('[data-course-section]');if(!tab)return;
+ const offsets={ArrowDown:1,ArrowRight:1,ArrowUp:-1,ArrowLeft:-1};
+ if(!(e.key in offsets)&&e.key!=='Home'&&e.key!=='End')return;
+ e.preventDefault();view.section=e.key==='Home'?0:e.key==='End'?COURSE_SECTIONS.length-1:(view.section+offsets[e.key]+COURSE_SECTIONS.length)%COURSE_SECTIONS.length;
+ courseCard();$('#course-tab-'+view.section).focus({preventScroll:true});
+});
+const viewport=$('#map-viewport');
+attachMapPan(viewport,{getPosition:()=>{stopMapTravel();return {x:view.x,y:view.y};},onPan:position=>{Object.assign(view,position);applyTransform();}});
 viewport.addEventListener('wheel',e=>{e.preventDefault();const r=viewport.getBoundingClientRect();zoom(e.deltaY<0?1.09:1/1.09,e.clientX-r.left,e.clientY-r.top);},{passive:false});
-new ResizeObserver(()=>{if(view.page==='map')fitMap();}).observe(viewport);
-renderAll();requestAnimationFrame(fitMap);
+new ResizeObserver(()=>{if(view.page==='map')applyTransform();}).observe(viewport);
+renderAll();requestAnimationFrame(()=>view.branch?focusBranch():fitMap());

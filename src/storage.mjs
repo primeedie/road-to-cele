@@ -15,3 +15,5 @@ export function hydrateProgress(raw) {
 }
 export function loadProgress(storage) {const raw=storage.getItem(STORAGE_KEY);return raw?hydrateProgress(JSON.parse(raw)):newProgress();}
 export function saveProgress(storage,p) {storage.setItem(STORAGE_KEY,JSON.stringify(p));}
+// Replace only this app's progression record. A failed write leaves the old record intact.
+export function resetProgress(storage) {const clean=newProgress();saveProgress(storage,clean);return clean;}

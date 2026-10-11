@@ -1,0 +1,8 @@
+/* Local names cover English and Chinese releases of Hanyi WenHei 85W. */
+@font-face {
+  font-family: 'CELE WenHei';
+  src: local('HYWenHei-HEW'), local('HYWenHei-85W'), local('HYWenHei 85W'), local('Hanyi WenHei 85W'), local('汉仪文黑-85W'), local('汉仪文黑 85W') , url('assets/fonts/HYWenHei-85W.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+}

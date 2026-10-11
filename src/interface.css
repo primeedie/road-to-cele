@@ -1,0 +1,212 @@
+/* Shared measurements keep the sky, its instruments, and its chapters consistent. */
+:root {
+  --sans: 'CELE WenHei', 'Manrope', Arial, sans-serif;
+  --serif: var(--sans);
+  --surface: #0c0c18;
+  --edge: #393044;
+  --accent: #d6c49d;
+  --text: #e2dced;
+  --quiet: #9a8da9;
+}
+body { font-synthesis: none; -webkit-font-smoothing: antialiased; }
+button { transition: color 160ms, border-color 160ms, background-color 160ms; }
+h1, h2, h3, h4, .brand, .node-copy strong, .branch-card strong { font-weight: 800; }
+button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+
+/* Navigation behaves like instruments around a map, with one clear active mark. */
+.rail { height: 74px; padding: 0 30px; border-bottom: 1px solid #302739; background: #0c0c16; }
+.brand { gap: 13px; font-size: 25px; letter-spacing: -.5px; }
+.brand-mark { width: 32px; height: 38px; transform: none; color: var(--accent); }
+.brand-sub { font: 800 11px var(--sans); margin-left: 9px; color: #b6a3c8; letter-spacing: 2px; }
+.rail nav { height: 100%; gap: 18px; }
+.nav-item { position: relative; border: 0; border-radius: 0; padding: 0 10px; font: 800 14px var(--sans); color: var(--quiet); background: transparent; }
+.nav-item.active, .nav-item:hover { background: transparent; box-shadow: none; }
+.nav-item.active { color: #f0e8fa; }
+.nav-item.active:after { content: ''; position: absolute; left: 10px; right: 10px; bottom: 0; height: 2px; background: var(--accent); }
+.nav-symbol { display: flex; align-items: center; }
+.nav-symbol svg, .explore-button svg { width: 19px; height: 19px; stroke: currentColor; flex-shrink: 0; }
+.nav-item.active .nav-symbol { color: var(--accent); }
+.player strong { font-size: 10px; font-weight: 600; letter-spacing: .3px; }
+.player span { font-size: 12px; margin-top: 5px; }
+main { padding: 0; }
+.map-panel { border: 0; border-radius: 0; box-shadow: none; }
+.map-toolbar { padding: 17px 30px 14px; border-bottom: 1px solid #302739; background: var(--surface); }
+.year-tabs { gap: 8px; }
+.year-tabs button { padding: 9px 17px; font: 800 14px var(--sans); border: 0; border-radius: 2px; background: transparent; box-shadow: none; }
+.year-tabs button.active { color: var(--accent); background: #292034; box-shadow: inset 0 -2px 0 #b9a27e; }
+.year-tabs button:hover { background: #211a2a; }
+.explore-button { font-size: 13px; font-weight: 800; padding: 10px 14px; border: 1px solid #61506f; border-radius: 3px; background: transparent; box-shadow: none; }
+.explore-button[aria-pressed=true] { background: #33233f; border-color: #ac86bc; }
+.map-caption { padding: 18px 30px 11px; background: var(--surface); }
+.map-caption #map-title { color: var(--text); font: 800 20px var(--sans); letter-spacing: -.35px; }
+.map-caption #map-mode { font-size: 9px; font-weight: 600; letter-spacing: .8px; color: #9984ad; }
+.text-button { border-width: 1px; color: #baa8cc; }
+.branch-cards { padding: 0 30px 17px; gap: 18px; background: var(--surface); }
+.branch-card { border: 0; border-bottom: 1px solid #423347; padding: 12px 0 10px; border-radius: 0; background: transparent; box-shadow: none; gap: 10px; }
+.branch-card:hover { background: transparent; border-color: #a68ab9; }
+.branch-card.viewing { background: transparent; border-color: #d1b4e2; }
+.branch-card.current { background: transparent; border-color: #9fb386; }
+.branch-card.current.viewing { border-color: #c1d4a5; }
+.branch-symbol { width: 24px; height: 24px; color: #967aaa; }
+.branch-card strong { font: 800 17px var(--sans); letter-spacing: .4px; }
+.branch-card small { color: #a18aaf; font: 600 8px var(--sans); letter-spacing: .6px; }
+.branch-name { font: 600 12px var(--sans); color: #9b89aa; }
+.path-summary { padding: 12px 30px; border-top: 1px solid #302739; border-bottom: 1px solid #393047; background: #0a0a14; }
+.path-identity strong { font-size: 12px; color: #c5b8d0; }
+.path-metrics { gap: 24px; font-weight: 500; }
+.path-metrics b { font-weight: 800; color: #dac7e4; }
+.path-link { font-size: 12px; }
+.map-viewport { height: calc(100dvh - 339px); min-height: 600px; }
+.map-controls { right: 26px; bottom: 25px; border: 1px solid #65506f; border-radius: 3px; box-shadow: 0 8px 24px #0005; }
+.map-controls button { width: 42px; height: 42px; font-family: var(--sans); }
+.map-controls svg { width: 18px; height: 18px; stroke: currentColor; }
+.pan-hint { bottom: 27px; left: 30px; background: #090915b3; border-radius: 2px; font-size: 10px; font-weight: 500; }
+.map-legend { padding: 13px 30px; justify-content: flex-start; gap: 23px; border-top: 1px solid #302739; font-size: 10px; font-weight: 600; }
+
+/* Course labels are chart annotations; corner ticks connect them to the sky. */
+.node-copy { border-width: 1px; border-radius: 3px; padding: 13px 12px 11px; box-shadow: 0 6px 18px #02030870; backdrop-filter: blur(6px); }
+.node-copy:before, .node-copy:after { content: ''; position: absolute; width: 7px; height: 7px; border-color: #b8a2ce; border-style: solid; pointer-events: none; opacity: .6; }
+.node-copy:before { top: -1px; left: -1px; border-width: 1px 0 0 1px; }
+.node-copy:after { bottom: -1px; right: -1px; border-width: 0 1px 1px 0; }
+.node-copy strong { font: 800 22px/1.2 var(--sans); letter-spacing: -.4px; }
+.node-copy small { font: 600 11px var(--sans); letter-spacing: 1.2px; margin-top: 9px; }
+.available .node-copy { background: #111923e0; border-color: #73879a; }
+.locked .node-copy { background: #10111de0; border-color: #404351; }
+.active-course .node-copy { background: #251c16e0; border-color: #ae8c5f; }
+.completed .node-copy { background: #132018e0; border-color: #83946d; }
+.preview .node-copy { background: #1c142ae0; border-color: #8d709f; }
+.course-node:hover .node-copy, .course-node.selected-node .node-copy { border-color: #dcc8ee; box-shadow: 0 0 18px #c8a3df22; }
+.skill-star { filter: drop-shadow(0 0 5px #77a4c433); }
+.star-aura { opacity: .055; }
+.sky-trails { opacity: .5; filter: none; }
+.term-label { font-size: 11px; font-weight: 600; letter-spacing: 1.5px; }
+.term-label strong { font: 800 29px var(--sans); letter-spacing: -.4px; }
+.year-heading strong { font: 800 38px var(--sans); letter-spacing: -.8px; }
+.year-heading span { font-size: 10px; font-weight: 600; letter-spacing: 1.5px; }
+.back-foundations { border-width: 1px; border-radius: 3px; background: #151021dd; box-shadow: none; font-weight: 800; }
+
+/* Chapters use an open reading area with ornament reserved for navigation. */
+.course-dossier { border-radius: 10px; box-shadow: 0 24px 100px #0009; }
+.dossier-identity { padding-left: 42px; }
+.dossier-identity:after { display: none; }
+.dossier-heading h2 { font-family: var(--sans); font-weight: 800; font-size: clamp(30px,3.1vw,45px); line-height: 1.12; letter-spacing: -.7px; }
+.dossier-path { font-size: 11px; font-weight: 800; letter-spacing: 1.6px; }
+.dossier-heading .course-code { font-weight: 800; }
+.dossier-heading .course-meta { font-size: 14px; font-weight: 600; }
+.course-status { border-width: 1px; border-radius: 3px; font-weight: 800; }
+.dossier-section-heading h3 { font: 800 27px/1.2 var(--sans); letter-spacing: -.35px; }
+.dossier-small-star { display: none; }
+.dossier-placeholder { min-height: 155px; padding: 24px 0 26px; border-width: 0 0 1px; border-radius: 0; border-color: #70528155; background: transparent; box-shadow: none; }
+.dossier-placeholder h4 { font: 800 22px var(--sans); margin-bottom: 15px; }
+.dossier-placeholder p { font-size: 15px; font-weight: 500; line-height: 1.75; color: #b4a6c5; }
+.dossier-connections h4 { font: 800 20px var(--sans); }
+.dossier-prereq { padding: 14px 0; margin: 0; border: 0; border-bottom: 1px solid #66507544; border-radius: 0; background: transparent; }
+.dossier-prereq.is-met { background: transparent; border-color: #76856044; }
+.dossier-prereq button { font-weight: 800; }
+.dossier-prereq button small { font-weight: 600; color: #9885a6; }
+.dossier-close { width: 38px; height: 38px; border-color: #8a6b9c70; background: transparent; font-family: Arial,sans-serif; }
+.dossier-tab[aria-selected=true] .dossier-diamond { box-shadow: 0 0 0 4px #c5a4f322,0 0 16px #b597f333; }
+.primary, .secondary { border-width: 1px; border-radius: 4px; box-shadow: none; font-weight: 800; }
+.primary { background: #5e4674; border-color: #a187af; }
+.primary:hover { background: #775b8d; }
+.dossier-academic { font-size: 16px; padding: 16px; }
+.dossier-reason { font-size: 12px; font-weight: 500; }
+.dossier-readonly { border-width: 0 0 0 2px; border-radius: 0; background: #37224133; }
+.dossier-mastery-scope { font-size: 11px; color: #9784a5; font-weight: 500; }
+.completion-reward { border-radius: 3px; background: #68502e20; }
+.completion-reward h4 { font-weight: 800; }
+.connection-inspector { border-radius: 8px; top: 253px; right: 25px; }
+.connection-inspector h2, .connection-course strong { font-weight: 800; }
+.connection-pair { border-radius: 3px; }
+.connection-course { border-radius: 3px; }
+.connection-course small, .connection-caption { font-weight: 500; }
+.paper-card, .gate-illustration, .domains .domain, dialog:not(.course-dossier) { border-width: 1px; border-radius: 8px; box-shadow: none; }
+.journal-layout { gap: 24px; }
+.branch-option, .confirmation-note, .journal-empty { border-width: 1px; border-radius: 4px; }
+.year-select, textarea { border-width: 1px; border-radius: 3px; }
+.paper-card h2, .journal-records h2, .domain h3, dialog h2 { font-weight: 800; }
+.paper-card p, dialog p { font-size: 14px; font-weight: 500; line-height: 1.75; }
+#toast { border-width: 1px; border-radius: 4px; background: #1d122b; box-shadow: 0 8px 30px #0007; }
+
+/* Codes lead the labels. Faceted stars sit on shallow isometric plinths. */
+.node-copy { padding: 12px 13px; border-top-color: #a395b9; box-shadow: 0 1px 0 #c7b7db22 inset,4px 6px 0 #060711,7px 12px 20px #01020588; }
+.node-copy .node-code { display: block; -webkit-line-clamp: unset; min-height: 0; font: 800 25px/1.1 var(--sans); letter-spacing: .7px; }
+.node-title { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; margin-top: 8px; font: 800 15px/1.35 var(--sans); letter-spacing: -.15px; color: #b7bacd; }
+.available .node-title { color: #becdd6; }
+.active-course .node-title { color: #c7b697; }
+.completed .node-title { color: #b8cba7; }
+.preview .node-title { color: #bda8cd; }
+.locked .node-title { color: #8994aa; }
+.course-node:hover .node-title, .course-node.selected-node .node-title { color: #e8dcf2; }
+.course-node:hover .node-copy, .course-node.selected-node .node-copy { box-shadow: 0 1px 0 #e6cbfa44 inset,4px 6px 0 #130d20,7px 12px 20px #01020588; }
+.star-floor-shadow { fill: #01030b; opacity: .7; filter: blur(3px); }
+.star-plinth { fill: currentColor; }
+.plinth-top { fill-opacity: .12; stroke: currentColor; stroke-opacity: .26; stroke-width: .8; }
+.plinth-left { fill-opacity: .13; }
+.plinth-right { fill: #030611; fill-opacity: .9; stroke: currentColor; stroke-opacity: .1; stroke-width: .5; }
+.plinth-edge { fill: none; stroke: currentColor; stroke-width: .9; stroke-opacity: .38; }
+.star-extrusion { fill: #070b18; stroke: currentColor; stroke-opacity: .26; stroke-width: .6; }
+.star-rays { opacity: .85; }
+.star-facet-light { fill: #f1f4ff; fill-opacity: .36; }
+.star-facet-dark { fill: #081022; fill-opacity: .36; }
+.star-center { opacity: .65; }
+.course-node.locked .star-rays { opacity: .55; }
+.course-node.locked .star-facet-light { fill-opacity: .16; }
+.dossier-heading .course-meta { gap: 0; align-items: center; }
+.dossier-heading .course-meta span + span { margin-left: 17px; padding-left: 17px; border-left: 1px solid #8f769e88; }
+.dossier-connections .dossier-key { display: flex; flex-wrap: wrap; gap: 9px 18px; margin: 17px 0 0; color: #a592b5; font-size: 11px; line-height: 1.6; }
+.dossier-key > div { display: flex; align-items: baseline; gap: 6px; }
+.dossier-key dt { color: #d7bea0; font-weight: 800; }
+.dossier-key dt:after { content: ':'; }
+.dossier-key dd { margin: 0; }
+
+@media(max-width:1200px) {
+  .rail { padding: 0 22px; }
+  .rail nav { gap: 7px; }
+  .map-toolbar, .path-summary { padding-left: 22px; padding-right: 22px; }
+  .map-caption, .branch-cards { padding-left: 22px; padding-right: 22px; }
+  .branch-cards { gap: 12px; }
+  .branch-card small { display: none; }
+}
+@media(max-width:760px) {
+  .rail { height: 62px; padding: 0 14px; gap: 9px; }
+  .brand { font-size: 21px; gap: 8px; }
+  .brand-mark { width: 23px; height: 30px; }
+  .brand-sub { display: none; }
+  .rail nav { gap: 2px; }
+  .nav-item { font-size: 10px; padding: 0 8px; gap: 5px; }
+  .nav-item.active:after { left: 8px; right: 8px; }
+  .nav-symbol svg { width: 14px; height: 14px; }
+  .map-toolbar { padding: 13px 14px; gap: 13px; }
+  .year-tabs { gap: 5px; }
+  .year-tabs button { padding: 9px 12px; font-size: 11px; }
+  .explore-button { font-size: 11px; padding: 9px 11px; }
+  .map-caption { padding: 15px 14px 9px; }
+  .map-caption #map-title { font-size: 17px; }
+  .map-caption #map-mode { font-size: 6px; }
+  .branch-cards { padding: 0 14px 13px; gap: 12px; }
+  .branch-card { padding: 9px 0; gap: 5px; }
+  .branch-card strong { font-size: 14px; }
+  .branch-name { font-size: 9px; }
+  .path-summary { padding: 11px 14px; }
+  .path-identity strong { font-size: 11px; }
+  .path-metrics { gap: 15px; }
+  .map-viewport { height: calc(100dvh - 338px); min-height: 490px; }
+  .map-legend { padding: 13px 14px; gap: 9px 15px; font-size: 8px; }
+  .pan-hint { left: 14px; bottom: 22px; font-size: 8px; }
+  .map-controls { right: 14px; bottom: 19px; }
+  .map-controls button { width: 33px; height: 35px; }
+  .course-dossier { border-radius: 8px; }
+  .dossier-identity { padding-left: 24px; }
+  .dossier-heading h2 { font-size: 27px; }
+  .dossier-heading .course-meta { font-size: 11px; }
+  .dossier-heading .course-meta span + span { margin-left: 12px; padding-left: 12px; }
+  .dossier-section-heading h3 { font-size: 22px; }
+  .dossier-placeholder { min-height: 128px; padding: 14px 0 20px; }
+  .dossier-placeholder h4 { font-size: 20px; }
+  .dossier-placeholder p { font-size: 14px; }
+  .dossier-close { width: 32px; height: 32px; top: 16px; right: 15px; }
+  .dossier-academic { font-size: 14px; padding: 13px; }
+  .connection-inspector { top: auto; right: 14px; }
+}
+@media(prefers-reduced-motion:reduce) { button { transition: none; } }

@@ -1,0 +1,49 @@
+/* A distant galaxy, a suspended chart, and a faint foreground veil. */
+.map-viewport { background: #030611; isolation: isolate; --far-x: 0px; --far-y: 0px; --near-x: 0px; --near-y: 0px; --sky-scale: 1; }
+.sky-backdrop { position: absolute; inset: -18%; z-index: 0; pointer-events: none; background: linear-gradient(180deg,#090519a3,#030713a8),url('assets/galaxy-v1.png') center/cover; transform: translate3d(var(--far-x),var(--far-y),0) scale(var(--sky-scale)); filter: blur(.6px); }
+.map-viewport:before { content: ''; position: absolute; inset: -18%; z-index: 1; pointer-events: none; background-image: radial-gradient(circle at 24px 67px,#a7adce 0.6px,transparent 1.1px),radial-gradient(circle at 150px 100px,#79659e .6px,transparent 1.2px); background-size: 317px 237px,493px 361px; opacity: .3; transform: translate3d(calc(var(--far-x) * 1.4),calc(var(--far-y) * 1.4),0); }
+.map-viewport:after { content: ''; position: absolute; inset: -24%; z-index: 3; pointer-events: none; background: radial-gradient(ellipse at 17% 75%,#48557828 0,transparent 28%),radial-gradient(ellipse at 84% 21%,#45325224 0,transparent 32%),radial-gradient(ellipse at center,transparent 46%,#02040c80 84%); transform: translate3d(var(--near-x),var(--near-y),0); }
+.world { z-index: 2; }
+.camera-travel .sky-backdrop,.camera-travel.map-viewport:before,.camera-travel.map-viewport:after { transition: transform 650ms cubic-bezier(.22,.68,.25,1); }
+.sky-plane-shadow { stroke: #01020a; stroke-width: 2; fill: none; opacity: .38; filter: blur(3px); }
+.sky-plane-shadow circle { fill: #01020a; stroke-width: 7; }
+.sky-trails { stroke: #7793a3; stroke-width: 2.4; opacity: .4; filter: drop-shadow(0 0 2px #6e9bb329); }
+.catalog-stars { fill: #d0ddeb; opacity: .7; filter: drop-shadow(0 0 5px #88a7c7aa); }
+.graph-lines .thread-shadows path { fill: none; stroke: #01020a; stroke-width: 3; stroke-dasharray: none; opacity: .3; filter: blur(3px); pointer-events: none; }
+.graph-lines .connection-line { stroke: #847d8d; stroke-width: 1.6; opacity: .24; filter: none; }
+.graph-lines .connection-line.coreq { stroke: #776783; opacity: .2; }
+.graph-lines .connection-line.path-muted { opacity: .045; }
+.graph-lines .connection-line.path-traced { stroke: #c4a9dd; stroke-width: 2; opacity: .85; filter: drop-shadow(0 0 4px #ac7bd744); }
+.graph-lines .connection-line.path-selected { stroke: #edd097; stroke-width: 3; opacity: 1; filter: drop-shadow(0 0 6px #e0b67388); }
+.course-node { min-height: 280px; pointer-events: none; }
+.course-node .skill-star { width: 192px; height: 219px; margin: 0 auto; transform-origin: 50% 176px; transform: scale(var(--node-perspective,1)); filter: drop-shadow(0 0 10px #8cabca44); transition: filter 180ms ease-out; pointer-events: none; }
+.skill-star path,.skill-star ellipse,.skill-star circle,.course-node .node-copy { pointer-events: auto; }
+.star-plinth { display: none; }
+.star-floor-shadow { fill: #01030a; opacity: .75; filter: blur(5px); }
+.elevation-base-side { fill: #090d1b; stroke: currentColor; stroke-opacity: .18; stroke-width: .6; }
+.elevation-base { fill: #132135; fill-opacity: .72; stroke: currentColor; stroke-opacity: .44; stroke-width: 1; }
+.elevation-base-light { fill: none; stroke: currentColor; stroke-opacity: .62; stroke-width: .8; }
+.elevation-contact { fill: currentColor; opacity: .12; filter: blur(2px); }
+.elevation-stem { stroke: currentColor; stroke-width: 1.1; stroke-opacity: .38; }
+.star-hover-glyph { filter: drop-shadow(5px 15px 7px #01040abd); transition: transform 180ms ease-out; }
+.course-node:hover .skill-star,.course-node:focus-visible .skill-star { transform: scale(var(--node-perspective,1)); filter: drop-shadow(0 0 16px #bdd2e766); }
+.course-node:hover .star-hover-glyph,.course-node:focus-visible .star-hover-glyph { transform: translateY(-5px); }
+.course-node.path-member .skill-star { filter: drop-shadow(0 10px 6px #010309dd) drop-shadow(0 0 14px #c5a2e699); }
+
+/* Course codes stay on the map; titles are revealed on inspection. */
+.course-node .node-copy,.course-node:hover .node-copy,.course-node.selected-node .node-copy,.course-node.path-member .node-copy { left: 50%; top: var(--label-y,216px); transform: translateX(-50%); width: max-content; min-width: 116px; max-width: 210px; padding: 7px 13px 6px; border: 1px solid #9685a938; border-radius: 4px; background: #10102155; backdrop-filter: blur(3px); box-shadow: 0 2px 6px #01040a40; }
+.course-node:hover .node-copy,.course-node:focus-visible .node-copy,.course-node.selected-node .node-copy { border-color: #bfa5d377; background: #17112766; }
+.course-node.path-member .node-copy { border-color: #b99bdd66; }
+.node-copy:before,.node-copy:after { display: none; }
+.node-copy .node-code { font-size: 26px; letter-spacing: .6px; text-shadow: 0 2px 3px #010308,0 0 12px #010208,0 0 24px #010208; }
+.node-title { display: block; position: absolute; left: 50%; top: calc(100% + 12px); width: 280px; margin: 0; padding: 14px 17px; border: 1px solid #8c709c8c; border-radius: 4px; background: #100e20f2; backdrop-filter: blur(9px); box-shadow: 0 12px 28px #0009; color: #e0d5ed; font: 800 15px/1.45 var(--sans); letter-spacing: 0; -webkit-line-clamp: unset; overflow: visible; opacity: 0; visibility: hidden; transform: translate(-50%,-4px); transition: opacity 120ms ease-out,transform 120ms ease-out,visibility 120ms; pointer-events: none; }
+.course-node:hover,.course-node:focus-visible { z-index: 6; }
+.course-node:hover .node-title,.course-node:focus-visible .node-title { opacity: 1; visibility: visible; transform: translate(-50%,0); color: #e6ddf0; }
+.course-node:hover .node-code,.course-node.selected-node .node-code { text-shadow: 0 2px 3px #010308,0 0 12px #a784bf66; }
+@media(hover:none) { .course-node:hover:not(:focus-visible) .node-title { opacity: 0; visibility: hidden; } }
+@media(prefers-reduced-motion:reduce) {
+  .sky-backdrop,.map-viewport:before,.map-viewport:after { transform: none; }
+  .camera-travel .sky-backdrop,.camera-travel.map-viewport:before,.camera-travel.map-viewport:after,.course-node .skill-star,.node-title { transition: none; }
+  .star-hover-glyph { transition: none; }
+  .course-node:hover .star-hover-glyph,.course-node:focus-visible .star-hover-glyph { transform: none; }
+}

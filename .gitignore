@@ -3,3 +3,6 @@ tmp/
 node_modules/
 output/
 .sites-local/
+.openai/
+.env
+.env.*

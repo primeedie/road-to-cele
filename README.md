@@ -1,8 +1,8 @@
-# CELE · The Engineer’s Atlas
+# Road to CELE
 
-A static, browser-local Civil Engineering skill-tree skeleton. One curriculum graph contains shared technical courses and all five specialization branches. Quizzes and course descriptions are intentionally deferred.
+A static, browser-local Civil Engineering skill-tree skeleton with a subdued galaxy UI. Courses appear as constellation stars connected by prerequisite links. One curriculum graph contains shared technical courses and all five specialization branches. Quizzes and course descriptions are intentionally deferred.
 
-Run `npm test`, `npm run build`, then `npm start`. Open http://127.0.0.1:4173.
+Run `npm ci`, `npm test`, `npm run build`, then `npm start`. On Windows PowerShell use `npm.cmd` if execution policy blocks `npm.ps1`. Open http://localhost:4173.
 
 ## Architecture
 
@@ -10,6 +10,15 @@ Run `npm test`, `npm run build`, then `npm start`. Open http://127.0.0.1:4173.
 - `src/progression.mjs`: immutable progression transitions. Preview is read-only; specialist progression requires confirmed self-reported acceptance; a separate confirmed transfer transition retains all records. Academic and mastery completion are separate. CIVINCO requires the active technical path, configured mastery, then a common assessment pass.
 - `src/storage.mjs`: versioned local persistence and record hydration. Export a JSON backup from the journal. No university enrollment integration or server accounts.
 - `src/app.js`: independent map state for browsing years, branches, pan and zoom. Actual academic year is self-reported separately in the journal. Unselected branches and explicit Explore All mode disable ordinary progression actions.
+- `src/sky-layout.mjs`: real constellation outline projections, course star placement, and canvas dimensions. The shared sky contains Years I–IV together; year controls animate travel through the same map. One specialization constellation can be revealed alongside the shared map at a time. Its prerequisite paths connect to the original shared nodes, without duplicating them. Year, term, and constellation labels sit above the corresponding course clusters. The default zoom keeps stars large, while Fit map shows the full overview. Reduced motion disables navigation animation.
+- `src/course-panel.mjs` and `src/course-panel.css`: modal course chapters with Roman numeral tabs for description, topic rundown, future skills and mastery quiz. Content stays as explicit placeholders pending course files. The course constellation, metadata, prerequisites and academic action remain available across tabs. Escape closes the modal; arrow keys navigate tabs.
+- `src/map-pan.mjs`: pointer capture, drag threshold, native selection/drag suppression, and prevention of course activation after a pan gesture.
+- `src/connections.mjs`: selecting a prerequisite line traces its upstream prerequisites and downstream dependents on the current map. Unrelated sibling paths stay dimmed. The path panel opens course details without altering progression; line dragging remains a pan gesture.
+- `src/dialog-dismiss.mjs`: dismisses course details only when a primary pointer press and click both land outside the dialog.
+- `src/completion.mjs`: cosmetic completion moments derived from academic records, including newly available courses and completed terms. No extra progress currency, mastery, or gate credit is granted. Animations respect reduced motion.
+- `src/midnight.css`: midnight-purple surfaces, translucent course details, path highlighting and completion effects.
+- `src/scene-camera.mjs`, `src/sky-layout.mjs` and `src/depth.css`: perspective projection of a constellation plane viewed from a 30-degree elevation, with larger raised stars, visible elliptical bases, and base-aligned constellation/prerequisite lines. Larger constellation footprints and collision-aware anchor selection separate dense clusters. Course codes stay beneath the bases in translucent containers; titles appear on hover or keyboard focus. Galaxy and foreground layers use restrained parallax. Reduced motion disables parallax and hover movement. Catalog detail charts keep their original projection and course anchor identity.
+- `tests/ui.test.mjs` and `tests/map-pan.test.mjs`: website interactions, read-only preview and chapter navigation, unified year navigation, and pointer gesture regressions.
 - `tests/progression.test.mjs`: required V3 regression cases plus dependency enforcement, storage round trips and mastery/gate separation.
 
 ## Curriculum scope
@@ -18,4 +27,10 @@ Transcribed from the five supplied DLSU AY2022–2023 ID122 checklists. Only tec
 
 H prerequisites require academic completion, S prerequisites require an activated or completed record, and C co-requisites require activation or completion. This skeleton uses self-reported app records; it does not assert enrollment or university verification. Quizzes have service boundaries and historical record storage but no user-facing assessment content yet. Hardmode uses configurable common domain groupings, with review content deferred. A recorded CIVINCO pass remains valid through a transfer; active-path eligibility is recalculated separately.
 
-All progress resides in the current browser. Export preserves the full progression record. Backup import and account synchronization are future work. Assets are original inline SVG drawings; the serif and sans typography use Google Fonts with local fallbacks.
+The academic journey meter uses shared requirements plus the confirmed specialization; inspecting another branch never changes its scope. Reset progress is available on the map and in My journal, with explicit confirmation before clearing this app’s saved records and returning to Year 1.
+
+All progress resides in the current browser. Export preserves the full progression record. Backup import and account synchronization are future work. The galaxy is a local generated bitmap; constellation geometry uses attributed d3-celestial data (see `src/data/README.md`). Hanyi WenHei 85W is the bundled primary UI typeface, supplied by the project owner in `hywenhei.zip`. `font-face.css` and the build load `src/assets/fonts/HYWenHei-85W.ttf` (see its README). Manrope/Arial is the loading fallback. Cinzel supplies Roman numerals. `interface.css` defines the final chart annotation and instrument styling.
+
+## Authorship
+
+Application author: milch pogiman. The source and embedded page metadata carry the project author notice. `author-mark.mjs` preserves browser metadata, the build validates the required notices, and `dist/provenance.json` records SHA-256 fingerprints of the built assets. These mechanisms discourage casual removal; they do not prevent someone with full source control from changing the application. Third-party fonts and constellation data retain their own credits.

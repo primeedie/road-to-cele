@@ -1,0 +1,71 @@
+/* A course opens as a chapter in the same night sky. */
+.course-dossier{--ink:#eee7fc;--lavender:#ad98e8;--gold:#e3ca92;width:min(1320px,94vw);max-width:1320px;height:min(850px,91dvh);max-height:91dvh;padding:0;overflow:hidden;border:1px solid #9682c577;border-radius:22px;background:linear-gradient(110deg,#131224aa,#141328f5 58%),url('assets/galaxy-v1.png') center/cover;color:var(--ink);box-shadow:0 0 0 5px #8270bc12,0 35px 120px #000b}
+.course-dossier::backdrop{background:#02040ac9;backdrop-filter:blur(6px)}
+.course-dossier:not([open]){display:none}
+.dossier-layout{height:100%;display:grid;grid-template-columns:minmax(260px,.85fr) 104px minmax(360px,1fr);position:relative}
+.dossier-close{position:absolute;z-index:3;right:21px;top:18px;width:44px;height:44px;display:grid;place-items:center;padding:0;border:1px solid #bda5ee88;border-radius:50%;background:#30254499;color:#eee4ff;font:32px/1 var(--sans);cursor:pointer}
+.dossier-close:hover{background:#564276}
+.dossier-identity{position:relative;display:flex;flex-direction:column;justify-content:space-between;padding:36px 20px 39px 38px;overflow:hidden;background:radial-gradient(ellipse at 50% 40%,#7764b544,transparent 65%)}
+.dossier-identity:after{content:'';position:absolute;inset:18px;pointer-events:none;border:1px solid #b798de22;clip-path:polygon(0 0,25% 0,25% 1%,1% 1%,1% 25%,0 25%,0 75%,1% 75%,1% 99%,25% 99%,25% 100%,0 100%,75% 100%,75% 99%,99% 99%,99% 75%,100% 75%,100% 100%,100% 0,75% 0,75% 1%,99% 1%,99% 25%,100% 25%,100% 0)}
+.dossier-path{color:#b8a7d1;letter-spacing:2px;font-size:12px;font-weight:900}
+.dossier-sky{position:relative;min-height:180px;flex:1;display:flex;align-items:center;justify-content:center;margin:0 -10px;color:#c6b5ed}
+.dossier-sky svg{width:100%;max-height:100%;overflow:visible;filter:drop-shadow(0 0 12px #a898db55)}
+.dossier-trails{fill:none;stroke:#ac9fcf;stroke-width:1.2;opacity:.55}
+.dossier-stars{fill:#dedaf5}
+.dossier-focus path{fill:#ead59c;filter:drop-shadow(0 0 11px #edca87)}
+.dossier-focus circle{fill:#fff7d8}
+.dossier-sky>span{position:absolute;bottom:18px;right:15px;font:600 20px var(--serif);color:#b7a8c8}
+.dossier-heading{position:relative;padding-top:16px;border-top:1px solid #b69dd34d}
+.dossier-heading .course-code{font-size:14px;color:var(--gold);letter-spacing:2px}
+.dossier-heading h2{font:600 clamp(30px,3vw,44px)/1.1 var(--serif);margin:13px 0 23px;color:#f0e9fa;text-shadow:0 3px 20px #060611}
+.dossier-heading .course-meta{font-size:15px;color:#b5a7c8;gap:22px;padding-bottom:16px;border-color:#ae97c32b}
+.dossier-heading .course-status{font-size:13px;padding:8px 13px;margin-top:18px}
+.dossier-tabs{position:relative;align-self:center;display:flex;flex-direction:column;align-items:center;gap:36px;padding:40px 0}
+.dossier-thread{position:absolute;top:10px;bottom:10px;left:50%;width:1px;background:linear-gradient(transparent,#b199e7 20%,#b199e7 80%,transparent);box-shadow:0 0 16px 2px #a07ada44}
+.dossier-tab{isolation:isolate;position:relative;display:grid;place-items:center;width:70px;height:70px;border:0;background:none;padding:0;color:#b6a5d5;cursor:pointer;user-select:none}
+.dossier-diamond{position:absolute;inset:13px;transform:rotate(45deg);border:1px solid #b8a0e377;background:#241b37e6;box-shadow:0 0 0 4px #7d69ad22;z-index:-1;transition:background .2s,box-shadow .2s}
+.dossier-diamond:before{content:'';position:absolute;inset:5px;border:1px solid #b8a0e344}
+.dossier-numeral{font:500 40px/1 var(--numeral);text-shadow:0 2px 3px #171225}
+.dossier-tab[aria-selected=true]{color:#fff0c9}
+.dossier-tab[aria-selected=true]:before{content:'';position:absolute;inset:-8px;border:1px solid #eed2a9bb;border-radius:50%;box-shadow:0 0 21px #dfbd7944}
+.dossier-tab[aria-selected=true] .dossier-diamond{background:#655081;box-shadow:0 0 0 4px #c5a4f333,0 0 25px #b597f366}
+.dossier-tab[aria-selected=true]:after{content:'›';position:absolute;right:-13px;font:30px var(--numeral);color:var(--gold)}
+.dossier-tab:hover .dossier-diamond{background:#594275}
+.dossier-tab-name{display:none}
+.dossier-reading{display:flex;flex-direction:column;min-width:0;min-height:0;padding:76px 38px 28px 16px}
+.dossier-section-heading{position:relative;display:flex;align-items:center;gap:18px;padding:0 0 20px;border-bottom:2px solid #8b72ba99;flex-shrink:0}
+.dossier-section-heading:after{content:'✦';position:absolute;left:-5px;bottom:-12px;color:#bda9eb;font-size:20px}
+.dossier-section-heading>span{font:500 42px var(--numeral);color:#d3bbfa;text-shadow:0 0 16px #9e82cd66}
+.dossier-section-heading h3{font:600 28px/1.15 var(--serif);color:#f0e5ff;margin:0}
+.dossier-scroll{overflow:auto;overscroll-behavior:contain;min-height:0;flex:1;padding:26px 5px 10px 0;scrollbar-width:thin;scrollbar-color:#776098 transparent}
+.dossier-placeholder{position:relative;min-height:180px;padding:27px 25px;border:1px solid #a18ad977;border-radius:3px 18px 3px 18px;background:linear-gradient(135deg,#51437866,#29233e66);box-shadow:inset 0 0 30px #8a70c00d}
+.dossier-small-star{position:absolute;right:18px;top:15px;font-size:23px;color:#baa2e8}
+.dossier-placeholder h4,.dossier-connections h4{font:600 23px var(--serif);color:#e4d7f9;margin:0 0 13px}
+.dossier-placeholder p{font-size:16px;line-height:1.7;color:#b7a9cf;margin:0;max-width:34ch}
+.dossier-placeholder .secondary{margin-top:22px;font-size:14px}
+.dossier-connections{margin-top:27px}
+.dossier-connections h4{font-size:21px}
+.dossier-connections>p{font-size:15px;color:#b3a3c7;line-height:1.6}
+.dossier-prereq{display:flex;align-items:center;gap:14px;padding:15px 14px;margin-bottom:9px;border:1px solid #77609966;border-radius:2px 13px 2px 13px;background:#3d305355}
+.dossier-prereq>span:first-child{font:18px var(--numeral);color:#c9b4e7}
+.dossier-prereq button{flex:1;background:none;border:0;padding:0;text-align:left;font:700 16px/1.4 var(--sans);color:#dcd0ed;cursor:pointer}
+.dossier-prereq button small{display:block;font-size:11px;letter-spacing:1px;color:#a391b6;margin-top:4px}
+.dossier-prereq>span:last-child{color:#c0abdb;font-size:22px}
+.dossier-prereq.is-met{border-color:#91a57277;background:#4b573233}
+.dossier-prereq.is-met>span:last-child{color:#c5daa4}
+.dossier-prereq button:hover{color:#fff0c8}
+.dossier-connections .dossier-key{font-size:12px;color:#9383a9;margin:13px 0}
+.dossier-footer{flex-shrink:0;border-top:1px solid #ae95d13d;padding-top:17px}
+.dossier-academic{width:100%;font-size:16px;padding:16px;margin:0}
+.dossier-readonly{font-size:15px;line-height:1.5;color:#c4b0dc;margin:0;padding:15px 18px;border:1px solid #8465aa66;border-radius:9px;background:#4b355a66}
+.dossier-reason{font-size:13px;line-height:1.5;color:#b4a2c8;margin:12px 0 0}
+.dossier-mastery-scope{font-size:12px;line-height:1.5;color:#9584a9;margin:12px 0 0}
+.course-dossier button:disabled{opacity:.55;cursor:not-allowed}
+.course-dossier :focus-visible{outline:2px solid #e4cc98;outline-offset:5px}
+.world.navigation-motion{transition:transform 650ms cubic-bezier(.22,.68,.25,1)}
+.year-heading{position:absolute;left:105px;display:flex;align-items:baseline;gap:19px;color:#d2c0e5;pointer-events:none;text-shadow:0 2px 14px #000}
+.year-heading strong{font:600 37px var(--serif)}
+.year-heading span{font-size:12px;font-weight:900;letter-spacing:2px;color:#9a8bab}
+@media(max-width:980px){.dossier-layout{grid-template-columns:minmax(210px,.75fr) 86px minmax(320px,1fr)}.dossier-identity{padding:30px 10px 30px 25px}.dossier-reading{padding:74px 25px 23px 12px}.dossier-heading h2{font-size:33px}.dossier-tabs{gap:30px}.dossier-tab{width:60px;height:60px}.dossier-numeral{font-size:34px}.dossier-section-heading h3{font-size:25px}}
+@media(max-width:720px){.course-dossier{width:96vw;height:94dvh;max-height:94dvh;border-radius:17px}.dossier-layout{grid-template-columns:1fr;grid-template-rows:auto auto minmax(0,1fr)}.dossier-close{right:15px;top:14px;width:38px;height:38px}.dossier-identity{padding:25px 65px 13px 24px;display:block;overflow:visible;background:none}.dossier-path{font-size:10px;letter-spacing:1px}.dossier-sky{display:none}.dossier-heading{padding-top:5px;border:0}.dossier-heading .course-code{font-size:11px;margin:7px 0 0}.dossier-heading h2{font-size:27px;margin:7px 0 13px}.dossier-heading .course-meta{font-size:12px;padding-bottom:0;border:0;gap:16px}.dossier-heading .course-status{position:absolute;right:-45px;bottom:0;font-size:10px;padding:5px 7px;max-width:95px}.dossier-tabs{flex-direction:row;align-self:stretch;justify-content:space-evenly;gap:9px;padding:16px 18px 11px}.dossier-thread{left:25px;right:25px;top:46px;bottom:auto;width:auto;height:1px;background:linear-gradient(90deg,transparent,#b199e7 20%,#b199e7 80%,transparent)}.dossier-tab{width:57px;height:60px}.dossier-diamond{inset:13px}.dossier-tab[aria-selected=true]:before{inset:0px -1px}.dossier-tab[aria-selected=true]:after{display:none}.dossier-reading{padding:12px 24px 20px}.dossier-section-heading{padding-bottom:11px;gap:12px}.dossier-section-heading>span{font-size:30px}.dossier-section-heading h3{font-size:23px}.dossier-scroll{padding-top:21px}.dossier-placeholder{min-height:145px;padding:22px 19px}.dossier-placeholder h4{font-size:21px}.dossier-placeholder p{font-size:14px}.dossier-prereq{padding:11px}.dossier-prereq button{font-size:14px}.dossier-footer{padding-top:12px}.dossier-readonly{padding:11px 13px;font-size:13px}.dossier-academic{padding:12px;font-size:14px}.dossier-reason{font-size:12px}.dossier-mastery-scope{font-size:10px;margin-top:8px}.year-heading strong{font-size:34px}}
+@media(prefers-reduced-motion:reduce){.world.navigation-motion{transition:none}.dossier-diamond{transition:none}}
