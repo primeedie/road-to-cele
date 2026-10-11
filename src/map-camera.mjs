@@ -1,5 +1,11 @@
 import {NODE_GROUND_X,NODE_GROUND_Y} from './sky-layout.mjs';
 
+// Retain the same point in the sky when the available screen space changes.
+export function resizeCamera(camera,previous,next){
+ if(!previous?.width||!previous.height||!next.width||!next.height)return {...camera};
+ return {...camera,x:camera.x+(next.width-previous.width)/2,y:camera.y+(next.height-previous.height)/2};
+}
+
 const union=rectangles=>({minX:Math.min(...rectangles.map(r=>r.minX)),minY:Math.min(...rectangles.map(r=>r.minY)),maxX:Math.max(...rectangles.map(r=>r.maxX)),maxY:Math.max(...rectangles.map(r=>r.maxY))});
 function territory(courses,positions,label){
  const rectangles=courses.map(c=>{

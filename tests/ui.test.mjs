@@ -18,6 +18,20 @@ test('actual website interactions keep exploration separate from academic progre
  const $=s=>document.querySelector(s),click=s=>$(s).click();
  await import('../src/app.js');
  const saved=()=>JSON.parse(localStorage.getItem(STORAGE_KEY));
+ await t.test('expanded tree retains browsing state, protects modal Escape, and returns without changing progress',()=>{
+  const pose=$('#world').style.transform,total=document.querySelectorAll('.course-node').length;
+  click('#expand-map');assert.ok($('.map-panel').classList.contains('map-expanded'));
+  assert.equal($('#expand-map').getAttribute('aria-pressed'),'true');assert.equal($('.rail').inert,true);
+  assert.equal($('#world').style.transform,pose);assert.equal(document.querySelectorAll('.course-node').length,total);
+  click('[data-course="FNDMATH"]');assert.equal($('#course-card').open,true);
+  document.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
+  assert.ok($('.map-panel').classList.contains('map-expanded'));
+  $('#course-card').dispatchEvent(new w.Event('cancel',{cancelable:true}));
+  document.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
+  assert.equal($('.map-panel').classList.contains('map-expanded'),false);assert.equal($('.rail').inert,false);
+  assert.equal($('#expand-map').getAttribute('aria-pressed'),'false');assert.equal(document.activeElement,$('#expand-map'));
+  assert.equal(localStorage.getItem(STORAGE_KEY),null);
+ });
  await t.test('specializations begin collapsed and browsing the dropdown never saves progress',()=>{
   assert.equal($('#specialization-menu').open,false);
   $('#specialization-menu summary').click();assert.equal($('#specialization-menu').open,true);

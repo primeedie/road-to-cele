@@ -6,7 +6,7 @@ import { attachBackdropDismiss } from './dialog-dismiss.mjs';
 import { BRANCH_CONSTELLATIONS, SKY_NAMES, WORLD_WIDTH, WORLD_HEIGHT, NODE_GROUND_X, NODE_GROUND_Y, drawConstellation, starBadge } from './sky-layout.mjs';
 import { createSkyMap } from './map-curriculum.mjs';
 import { skyAccent } from './sky-palette.mjs';
-import { sceneBounds, constrainCamera, overviewCamera } from './map-camera.mjs';
+import { sceneBounds, constrainCamera, overviewCamera, resizeCamera } from './map-camera.mjs';
 import { COURSE_SECTIONS, renderCoursePanel } from './course-panel.mjs';
 import { attachMapPan } from './map-pan.mjs';
 import { COURSES, COURSE_BY_ID, SPECIALIZATIONS, CELE_DOMAINS } from './curriculum.mjs';
@@ -220,7 +220,7 @@ document.addEventListener('click',e=>{
  if(b.dataset.action==='wardrobe'){$('#wardrobe-dialog').showModal();renderCompanion();return;}
  if(b.dataset.action==='close-wardrobe'){$('#wardrobe-dialog').close();$('#companion-button').focus();return;}
  if(b.dataset.avatar||b.dataset.frame){try{commit(equipCosmetic(progress,b.dataset.avatar?'avatar':'frame',b.dataset.avatar||b.dataset.frame),'Companion updated.');$('#wardrobe-dialog [data-'+(b.dataset.avatar?'avatar':'frame')+'="'+(b.dataset.avatar||b.dataset.frame)+'"]')?.focus();}catch(error){toast(error.message);}return;}
- if(b.dataset.page){showPage(b.dataset.page);return;}
+ if(b.dataset.page){setMapExpanded(false);showPage(b.dataset.page);return;}
  if(b.dataset.year){travelToYear(+b.dataset.year);return;}
  if(b.dataset.branch){revealBranch(b.dataset.branch);return;}
  if(b.dataset.course){view.reward=null;view.section=0;view.course=b.dataset.course;renderAll();return;}
@@ -251,13 +251,31 @@ $('#help-button').addEventListener('click',()=>$('#help-dialog').showModal());
 $('#path-form').addEventListener('submit',e=>{e.preventDefault();if(!account.model.state().ready){$('#dialog-error').textContent='Finish choosing your account journey first.';return;}const branch=new FormData(e.currentTarget).get('specialization');try{const options={confirmed:$('#acceptance-check').checked,reason:$('#transfer-reason').value};const next=transferMode?changeSpecialization(progress,branch,options):confirmSpecialization(progress,branch,options);$('#path-dialog').close();view.branch=branch;view.course=null;view.preview=false;commit(next,'Your '+branch+' path is confirmed. All previous records are retained.');animateMapTravel(focusBranch);}catch(err){$('#dialog-error').textContent=err.message;}});
 document.addEventListener('change',e=>{if(e.target.id==='academic-year'){if(!account.model.state().ready){toast('Finish loading or choosing your account journey first.');journal();return;}commit(setAcademicYear(progress,+e.target.value),'Academic standing updated. Your records are retained.');}});
 $('#zoom-in').addEventListener('click',()=>zoom(1.2));$('#zoom-out').addEventListener('click',()=>zoom(1/1.2));$('#fit-map').addEventListener('click',()=>fitMap({overview:true}));
+function setMapExpanded(expanded){
+ const panel=$('.map-panel'),button=$('#expand-map');
+ if(panel.classList.contains('map-expanded')===expanded)return;
+ stopMapTravel();panel.classList.toggle('map-expanded',expanded);
+ document.body.classList.toggle('tree-expanded',expanded);
+ $('.rail').inert=expanded;$('#commitment-banner').inert=expanded;
+ button.setAttribute('aria-pressed',String(expanded));
+ button.setAttribute('aria-label',expanded?'Return to page':'Expand tree');
+ button.title=expanded?'Return to page (Esc)':'Expand tree';
+ button.querySelector('span').textContent=expanded?'Return':'Expand';
+ button.querySelector('svg path').setAttribute('d',expanded?'M3 9H9V3M21 9H15V3M15 21V15H21M9 21V15H3M3 3L9 9M21 3L15 9M21 21L15 15M3 21L9 15':'M9 3H3V9M15 3H21V9M21 15V21H15M9 21H3V15M3 3L9 9M21 3L15 9M21 21L15 15M3 21L9 15');
+ requestAnimationFrame(resizeMap);
+ button.focus({preventScroll:true});
+}
+$('#expand-map').addEventListener('click',()=>setMapExpanded(!$('.map-panel').classList.contains('map-expanded')));
 attachBackdropDismiss($('#course-card'),closeCourse);
 attachBackdropDismiss($('#wardrobe-dialog'),()=>$('#wardrobe-dialog').close());
 $('#reset-dialog').addEventListener('cancel',e=>{e.preventDefault();cancelReset();});
 document.addEventListener('keydown',e=>{
  const edge=e.target.closest?.('[data-connection]');
  if(edge&&(e.key==='Enter'||e.key===' ')){e.preventDefault();selectConnection(edge.dataset.connection);}
- if(e.key==='Escape'&&view.connection&&!document.querySelector('dialog[open]')){e.preventDefault();clearConnection();}
+ if(e.key==='Escape'&&!document.querySelector('dialog[open]')){
+  if(view.connection){e.preventDefault();clearConnection();}
+  else if($('.map-panel').classList.contains('map-expanded')){e.preventDefault();setMapExpanded(false);}
+ }
 });
 $('#course-card').addEventListener('cancel',e=>{e.preventDefault();closeCourse();});
 $('#course-card').addEventListener('keydown',e=>{
@@ -270,6 +288,12 @@ $('#course-card').addEventListener('keydown',e=>{
 const viewport=$('#map-viewport');
 attachMapPan(viewport,{onZoom:zoom,getPosition:()=>{stopMapTravel();return {x:view.x,y:view.y};},onPan:position=>{Object.assign(view,position);applyTransform();return {x:view.x,y:view.y};}});
 viewport.addEventListener('wheel',e=>{e.preventDefault();const r=viewport.getBoundingClientRect();zoom(e.deltaY<0?1.09:1/1.09,e.clientX-r.left,e.clientY-r.top);},{passive:false});
-new ResizeObserver(()=>{if(view.page==='map')applyTransform();}).observe(viewport);
+let lastViewport=viewport.getBoundingClientRect();
+function resizeMap(){
+ if(view.page!=='map')return;
+ const next=viewport.getBoundingClientRect();if(!next.width||!next.height)return;
+ Object.assign(view,resizeCamera(view,lastViewport,next));lastViewport=next;applyTransform();
+}
+new ResizeObserver(resizeMap).observe(viewport);
 renderAll();requestAnimationFrame(()=>view.branch?focusBranch():fitMap());
 account.start();
