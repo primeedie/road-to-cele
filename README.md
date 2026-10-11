@@ -1,6 +1,6 @@
 # Road to CELE
 
-A static, browser-local Civil Engineering skill-tree skeleton with a near-black galaxy UI. Courses appear as constellation stars connected by prerequisite links. One curriculum graph contains shared technical courses and all five specialization branches. Quizzes and course descriptions are intentionally deferred.
+A static Civil Engineering skill-tree skeleton with guest saving and optional Supabase accounts with a near-black galaxy UI. Courses appear as constellation stars connected by prerequisite links. One curriculum graph contains shared technical courses and all five specialization branches. Quizzes and course descriptions are intentionally deferred.
 
 Run `npm ci`, `npm test`, `npm run build`, then `npm start`. On Windows PowerShell use `npm.cmd` if execution policy blocks `npm.ps1`. Open http://localhost:4173.
 
@@ -8,7 +8,7 @@ Run `npm ci`, `npm test`, `npm run build`, then `npm start`. On Windows PowerShe
 
 - `src/curriculum.mjs`: shared course identities, ID122 term placement and H/S/C prerequisites, specialization metadata, configurable required mastery scope, and common CELE review groupings.
 - `src/progression.mjs`: immutable progression transitions. Preview is read-only; specialist progression requires confirmed self-reported acceptance; a separate confirmed transfer transition retains all records. Academic and mastery completion are separate. CIVINCO requires the active technical path, configured mastery, then a common assessment pass.
-- `src/storage.mjs`: versioned local persistence and record hydration. Export a JSON backup from the journal. No university enrollment integration or server accounts.
+- `src/storage.mjs`: versioned local persistence and record hydration. Export a JSON backup from the journal. University acceptance remains self-reported. Google sign-in identifies app accounts only.
 - `src/app.js`: independent map state for browsing years, branches, pan and zoom. Actual academic year is self-reported separately in the journal. Unselected branches and explicit Explore All mode disable ordinary progression actions.
 - `src/sky-layout.mjs`: real constellation outline projections, course star placement, and canvas dimensions. The shared sky contains Years I–IV together; year controls animate travel through the same map. One specialization constellation can be revealed alongside the shared map at a time. Its prerequisite paths connect to the original shared nodes, without duplicating them. Year, term, and constellation labels sit immediately above the corresponding course clusters, with compact spacing between years. The default zoom keeps stars large, while Fit map shows the full overview. Reduced motion disables navigation animation.
 - `src/course-panel.mjs` and `src/course-panel.css`: modal course chapters with Roman numeral tabs for description, topic rundown, future skills and mastery quiz. Content stays as explicit placeholders pending course files. The course constellation, metadata, prerequisites and academic action remain available across tabs. Escape closes the modal; arrow keys navigate tabs.
@@ -22,6 +22,11 @@ Run `npm ci`, `npm test`, `npm run build`, then `npm start`. On Windows PowerShe
 - `tests/ui.test.mjs` and `tests/map-pan.test.mjs`: website interactions, read-only preview and chapter navigation, unified year navigation, and pointer gesture regressions.
 - `tests/progression.test.mjs`: required V3 regression cases plus dependency enforcement, storage round trips and mastery/gate separation.
 
+- `src/account-progress.mjs`: account-scoped caches, explicit guest import, revision-checked cloud persistence, offline retry and conflict resolution.
+- `src/account-browser.mjs`: Google PKCE sign-in, honest save status and sign-out to guest mode.
+- `supabase/migrations/202610110001_student_progress.sql`: private progress rows, row-level security, ownership checks and optimistic save revisions.
+- `tests/account-progress.test.mjs`, `tests/account-browser.test.mjs` and `tests/database.test.mjs`: account isolation, offline saving, guest import, Google flow and actual PostgreSQL permission tests.
+
 ## Curriculum scope
 
 Transcribed from the five supplied DLSU AY2022–2023 ID122 checklists. Only technical courses are modeled; GE, PE, NSTP and OJT are excluded from the app’s technical progress denominator. CIVINCO is a common integration gate outside the course denominator. Shared Urban Engineering (CESPECS) remains shared because it appears in all five checklists. Specialist lecture courses are required mastery nodes when selected; laboratories are academic requirements only. This scope can be changed in `MASTERY_SCOPE` and course `requiredMastery` fields.
@@ -30,7 +35,7 @@ H prerequisites require academic completion, S prerequisites require an activate
 
 The academic journey meter uses shared requirements plus the confirmed specialization; inspecting another branch never changes its scope. Reset progress is available on the map and in My journal, with explicit confirmation before clearing this app’s saved records and returning to Year 1.
 
-All progress resides in the current browser. Export preserves the full progression record. Backup import and account synchronization are future work. The galaxy is a local generated bitmap; constellation geometry uses attributed d3-celestial data (see `src/data/README.md`). Hanyi WenHei 85W is the bundled primary UI typeface, supplied by the project owner in `hywenhei.zip`. `font-face.css` and the build load `src/assets/fonts/HYWenHei-85W.ttf` (see its README). Manrope/Arial is the loading fallback. Cinzel supplies Roman numerals. `interface.css` defines the final chart annotation and instrument styling.
+Guest progress resides in the current browser. With Supabase configured, Google sign-in loads a private account journey and saves changes across devices. Account caches are separated from guest saves, first-time guest import requires a choice, and revision checks detect conflicting device saves. Export preserves the full progression record. See [DEPLOYMENT.md](DEPLOYMENT.md) for Cloudflare Pages, database migration, public configuration, and Google OAuth setup. The galaxy is a local generated bitmap; constellation geometry uses attributed d3-celestial data (see `src/data/README.md`). Hanyi WenHei 85W is the bundled primary UI typeface, supplied by the project owner in `hywenhei.zip`. `font-face.css` and the build load `src/assets/fonts/HYWenHei-85W.ttf` (see its README). Manrope/Arial is the loading fallback. Cinzel supplies Roman numerals. `interface.css` defines the final chart annotation and instrument styling.
 
 ## Authorship
 

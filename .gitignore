@@ -6,3 +6,5 @@ output/
 .openai/
 .env
 .env.*
+!.env.example
+.wrangler/
