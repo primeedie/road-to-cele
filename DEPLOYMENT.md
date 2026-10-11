@@ -45,6 +45,22 @@ Official references: [Cloudflare Git deployments](https://developers.cloudflare.
 
 Copy `.env.example` to `.env.local` and replace the two example values with the public project settings. `.env.local` is ignored by Git. Run `npm run build`, then `npm start`, and open http://localhost:4173. Google login must have the localhost redirect allowed.
 
+## Username and password signup (no student email)
+
+The account window offers Google and username/password sign-in. Username accounts use lowercase, case-insensitive identifiers (3–24 letters, numbers, or underscores); Supabase manages password hashing, sessions, rate limits, and the existing private progress rows. The internal reserved `.invalid` address is an adapter for Supabase's email-shaped identifier, not a student's mailbox. It never appears in the UI or receives mail. Google accounts continue using Google OAuth.
+
+To enable username signup:
+
+1. Run `supabase/migrations/202610110002_username_signup.sql` in Supabase SQL Editor.
+2. In **Authentication > Hooks**, add a **Before User Created** Postgres hook targeting `public.road_to_cele_before_signup`. This allows Google and valid username identifiers and rejects real-email password signups.
+3. In **Authentication > Sign In / Providers > Email**, leave Email enabled and turn **Confirm email** off. Save. The Email provider powers the internal identifier adapter; students never enter email. Configure a minimum password length of 8 in the password settings.
+
+Apply the hook before disabling confirmation. The browser checks the public confirmation setting and refuses to submit username signup while confirmation is still enabled, avoiding mail delivery attempts. Registration requires an actual authenticated session before loading account progress. Google stays available while this setup is pending.
+
+Username-only accounts have no email password recovery. Keep passwords safe; users can choose Google if they prefer Google's recovery options. The two login methods do not automatically merge accounts or progress. No admin/service-role credential is needed in the browser or Cloudflare build.
+
+Official reference: [Supabase Before User Created hook](https://supabase.com/docs/guides/auth/auth-hooks/before-user-created-hook).
+
 ## Saving behavior
 
 - Guest progress stays in the existing `cele-atlas.progress.v3` browser key.

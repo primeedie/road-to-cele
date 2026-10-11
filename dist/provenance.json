@@ -11,10 +11,10 @@
   },
   "files": {
     "_headers": "dc30ef0caf9f428b5f721c8aefd6dd43ce562910d1b226da07f9e7aaf1ab6730",
-    "account-browser.mjs": "698e2a043c5fafc2dd35cebf8445d0c8adbb2264bdbca4d681d1304ad9bb72b3",
+    "account-browser.mjs": "76917d5f82bd82a46ce5fc022342d1c5a00e86e1c0912faef0d0bf6118edae2e",
     "account-progress.mjs": "56293f46f2b763d06bf65e2671293f6b75f5fc86a2a7aa0daad256cafe165265",
-    "account-ui.mjs": "1a44aa1362d1e5c5f1736eb34740eafb346d7801f23f5e2e09b2225e27fda393",
-    "account.css": "f4d4cfec11bd026eaf1037a5e1bac78bcfd079963a009c43ac9ec7e07905e0b6",
+    "account-ui.mjs": "aac1005e27342164fbb27ccd651b89c5f3a1df535caae645716ee321d87e050e",
+    "account.css": "6ff37ab0782d799e8d4434a346c58017e78efda0e2e0576ac05d53e50017df5c",
     "app.js": "374a9a16af2f9c614e367940e355c0de6d270f30f7e4b5046522624c9d0dac5f",
     "assets/fonts/HYWenHei-85W.ttf": "fcc8454a5ea27e2cd5a0e435ca83e0b5a87af31c95a2e57e74975c3e9df96d23",
     "assets/fonts/README.md": "997ae39eb950463ac1b829bf26610b6f846b281aca751fe566dcdb33c566845c",
@@ -55,6 +55,7 @@
     "storage.mjs": "8de9001158395a57f8d9355c7f4e467a8cbefab94f34a1d1eceeae8fde541595",
     "styles.css": "a3c2d92edb790fc1deceaa62f1aaf7b89266a7681f672983f664be6477715ac8",
     "supabase-client.mjs": "50ff31c051b43bc4cb24b5ca17921494f57bfb0bd6e418a2ed827e009f9342a8",
+    "username-account.mjs": "2988813d49ed6c1f54aa3408a8e2f4839d05eb1a3c750810f9c580ba961d15ee",
     "visuals.mjs": "8202952a380fdec8910ce44746bb5f7f7996ee656e6357c105bed33d94e5900b",
     "wardrobe.css": "06481608fcb45dc49afcad149d5c8875e24bfc86a6dd5937e3d2af81ffecef62"
   }

@@ -6,3 +6,29 @@
 #account-dialog{width:min(620px,calc(100vw - 32px));padding:42px;color:#e2e9f3;background:#09111aeb;border:1px solid #879aaf40;border-radius:10px;box-shadow:0 24px 90px #000b}#account-dialog::backdrop{background:#02060bbb;backdrop-filter:blur(5px)}#account-dialog h2{font-size:30px;margin-top:0}#account-dialog p{line-height:1.65;color:#b8c6d4}.account-choice{display:flex;flex-direction:column;gap:14px;margin-top:26px}.account-choice button{font-size:17px;padding:16px}.account-dialog-close{position:absolute;top:12px;right:15px;border:0;background:transparent;color:#c0cfdd;font-size:24px;cursor:pointer}.account-dialog-error{color:#eeb9ae!important}
 @media(max-width:1100px){.rail{flex-wrap:wrap;height:auto;min-height:74px;padding-top:12px;padding-bottom:12px}.account-panel{margin-left:auto}.account-panel .account-status{margin:5px 0}.account-panel .account-message{max-width:320px}}
 @media(max-width:760px){.account-panel{width:100%;max-width:none;border-left:0;border-top:1px solid #ffffff14;padding:10px 0 0;margin:4px 0 0;display:flex;gap:12px;align-items:center;flex-wrap:wrap}.account-panel .account-status{font-size:11px}.account-panel .account-identity{max-width:200px}.account-panel .account-message{width:100%}}
+
+.account-or {
+ display:flex;align-items:center;gap:14px;margin:22px 0;color:#888;font-size:12px
+}
+.account-or::before,.account-or::after {
+ content:'';flex:1;height:1px;background:#282828
+}
+.username-form {
+ display:grid;gap:16px;margin-top:18px
+}
+.username-form label {
+ display:grid;gap:8px;color:#ddd;font-size:13px
+}
+.username-form input {
+ width:100%;min-height:48px;padding:12px 14px;border:1px solid #333;
+ border-radius:5px;background:#080808;color:#f1f1f1;font:inherit;
+ font-size:16px;box-sizing:border-box
+}
+.username-form input:focus-visible {
+ outline:2px solid #aaa;outline-offset:2px
+}
+.username-form button { min-height:48px }
+.username-switch {
+ padding:10px 0;min-height:44px;background:none;border:0;color:#bbb;
+ font-size:12px;text-decoration:underline;text-underline-offset:4px
+}
