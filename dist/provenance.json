@@ -7,7 +7,7 @@
   "deployment": {
     "builder": "local",
     "commit": null,
-    "cloudLoginConfigured": false
+    "cloudLoginConfigured": true
   },
   "files": {
     "_headers": "dc30ef0caf9f428b5f721c8aefd6dd43ce562910d1b226da07f9e7aaf1ab6730",
@@ -15,12 +15,12 @@
     "account-progress.mjs": "56293f46f2b763d06bf65e2671293f6b75f5fc86a2a7aa0daad256cafe165265",
     "account-ui.mjs": "1a44aa1362d1e5c5f1736eb34740eafb346d7801f23f5e2e09b2225e27fda393",
     "account.css": "f4d4cfec11bd026eaf1037a5e1bac78bcfd079963a009c43ac9ec7e07905e0b6",
-    "app.js": "8f079aa6779337ef5379b47b940862259499440f1d7b9842803bf4fbda6dc8c7",
+    "app.js": "374a9a16af2f9c614e367940e355c0de6d270f30f7e4b5046522624c9d0dac5f",
     "assets/fonts/HYWenHei-85W.ttf": "fcc8454a5ea27e2cd5a0e435ca83e0b5a87af31c95a2e57e74975c3e9df96d23",
     "assets/fonts/README.md": "997ae39eb950463ac1b829bf26610b6f846b281aca751fe566dcdb33c566845c",
     "assets/galaxy-v1.png": "8b7115411f6e02a546e084b21dfb0b940d8207ab9bdfa36700b7d3aff9bc5bca",
     "assets/README.md": "e1b6c056c6b21cc42d498ff945ba3aa29bb7d326b342bc09683accf481f8bae1",
-    "atlas-theme.css": "ffb344d57bf90bb0343904c179d07d2050c2214400e9bbc0c65de0e778012b18",
+    "atlas-theme.css": "f7c266fbd3198bd811d946b2fbd7f33d3366b2e5ba075b3df59a330429afd3de",
     "author-mark.mjs": "f91a67563becc9f0bf5ba0be3d495d0a109fd998efac8a6279aff1cfb10ee519",
     "AUTHORSHIP.txt": "b661f3d644fe66d8c93d2660b21101cd28f5d1b84d4b1a0ca611e37364ee5de8",
     "cloud-service.mjs": "acb0ed8775a5b7af7e719c2e75a6345fcd67462cf0eacba592442d6e44815353",
@@ -38,7 +38,7 @@
     "depth.css": "3c70a8a144a48053a3a3ea0d5f51882eda22fe655e4a84c857d67ad33120ffe0",
     "dialog-dismiss.mjs": "dc58fd07c188ce9223b35ea13b46f782b9c46ef5cfdaf6f8a2de8b2c2c015ff0",
     "font-face.css": "85e44891861437472fffa73051b30a1f427be88912045610f148c1951c43cb81",
-    "index.html": "3ca561b5169befeded7ac62d2259fcd895a23187b9602f1e6be4e377031b1ebd",
+    "index.html": "267dac1069d964c4c2e6306941502f4918245033117add9e58f99e9f4eec26ee",
     "interface.css": "9ed54b0106816841e00e0f4ac87c366d07dea3e8d9286929bd34424c4091aa49",
     "journey.css": "022d50d3e1322bf446280b3d6a33fe494ede8d61fcc27a828f6048e36983bd59",
     "map-camera.mjs": "79bfe6f9a09b85ae39eb71909f7bda0df0adf60bc6476492d1c61205c5df1b1f",
@@ -48,14 +48,14 @@
     "progression.mjs": "3c3819d31323210a4920f90db24ef69e31b1266d46a04de71387c6fb427b0244",
     "quest-theme.css": "081aea02872aefc6c38f49130c74d62d3ecef884b93341d476d3785c33097542",
     "refinements.css": "ebafca3f2eba8c4ea4aa0b23c5031064fe9f0e8e3abc9e86bc4a8eda5dd69b20",
-    "runtime-config.mjs": "0f3d9ef87b4c240c00c08a36409396e6b09280ef2fd642a7f78aa18cac9a25e8",
+    "runtime-config.mjs": "772e0d9e02128fa5280a59b890294303317ea8dc74cc310aede7ecdaa76d7575",
     "scene-camera.mjs": "b673a7fc6b5c28d6427e0737efafb5d67c8d3fb6e104ca66efe2ba15c5a792dd",
-    "sky-layout.mjs": "07c4933596cccce880656fa381ec82cab6a7e8103e7caa10049c71490b0493e3",
+    "sky-layout.mjs": "0b49d9fa90b82595398eacf088f148d611afc95ed1bdaa3dbe3449097dc137a4",
     "sky-palette.mjs": "e05f4afca899edfb15fdc758d88988b263d92cfd3c42793eddd4bb4388e00cea",
     "storage.mjs": "8de9001158395a57f8d9355c7f4e467a8cbefab94f34a1d1eceeae8fde541595",
     "styles.css": "a3c2d92edb790fc1deceaa62f1aaf7b89266a7681f672983f664be6477715ac8",
     "supabase-client.mjs": "50ff31c051b43bc4cb24b5ca17921494f57bfb0bd6e418a2ed827e009f9342a8",
     "visuals.mjs": "8202952a380fdec8910ce44746bb5f7f7996ee656e6357c105bed33d94e5900b",
-    "wardrobe.css": "76bc19fe0f137fe5d814750ea184e7af3f697bcde71e9811d47b832e63a31011"
+    "wardrobe.css": "06481608fcb45dc49afcad149d5c8875e24bfc86a6dd5937e3d2af81ffecef62"
   }
 }

@@ -1,3 +1,11 @@
+// Explicit environment settings win. The checked-in browser configuration is
+// used only by the production main branch on Cloudflare Pages, never previews.
+export function deploymentCloudConfig(env,productionDefaults){
+ const explicit=!!(env.PUBLIC_SUPABASE_URL?.trim()||env.PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim());
+ const production=env.CF_PAGES==='1'&&env.CF_PAGES_BRANCH==='main';
+ return publicCloudConfig(!explicit&&production?productionDefaults:env);
+}
+
 export function publicCloudConfig(env) {
  const url=(env.PUBLIC_SUPABASE_URL||'').trim();
  const publishableKey=(env.PUBLIC_SUPABASE_PUBLISHABLE_KEY||'').trim();

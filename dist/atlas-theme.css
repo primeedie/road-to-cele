@@ -1,16 +1,16 @@
 /* The atlas lives in the dark;
    warm ink is reserved for controls and milestones. */
 :root {
-  --surface:#080908;
-  --paper:#080908;
-  --edge:#35362e;
-  --line:#33362e;
-  --text:#e5e0d3;
-  --ink:#e5e0d3;
-  --muted:#97988d;
+  --surface:#000000;
+  --paper:#000000;
+  --edge:#333333;
+  --line:#333333;
+  --text:#e7e7e7;
+  --ink:#e7e7e7;
+  --muted:#969696;
   --quiet:#8c8d82;
-  --accent:#c7b784;
-  --atlas-border:#ccc5ac22;
+  --accent:#c8c8c8;
+  --atlas-border:#ffffff22;
   --atlas-serif:'CELE WenHei',Georgia,serif
 }
 
@@ -20,10 +20,10 @@
   align-items:center;
   justify-content:space-between;
   position:relative;
-  background:#080908;
+  background:#000000;
   gap:18px;
   padding:6px 34px 10px;
-  border-bottom:1px solid #bcb59c1b
+  border-bottom:1px solid #ffffff18
 }
 .map-context .map-caption {
   padding:0;
@@ -49,9 +49,9 @@
   right:34px;
   top:calc(100% - 1px);
   padding:16px;
-  border:1px solid #c3b79430;
+  border:1px solid #ffffff30;
   border-radius:0 0 8px 8px;
-  background:#0c0f0cf5;
+  background:#080808f5;
   box-shadow:0 15px 35px #0009;
   max-height:60dvh;
   overflow:auto;
@@ -61,7 +61,7 @@
   display:grid;
   grid-template-columns:minmax(0,1fr) minmax(280px,45%);
   align-items:center;
-  background:#080908;
+  background:#000000;
   padding:9px 34px 12px;
   gap:20px
 }
@@ -114,8 +114,8 @@ body.tree-expanded {
   display:none
 }
 .map-expanded #expand-map[aria-pressed=true] {
-  color:#e0d2a5;
-  background:#292c1b
+  color:#c8c8c8;
+  background:#252525
 }
 body.tree-expanded .connection-inspector {
   position:fixed;
@@ -152,36 +152,36 @@ body.tree-expanded .connection-inspector {
 }
 
 body {
-  background:#040504;
-  color:#e5e0d3
+  background:#000000;
+  color:#e7e7e7
 }
 button {
   border-radius:5px
 }
 button:focus-visible,a:focus-visible,summary:focus-visible {
-  outline:2px solid #c7b784;
+  outline:2px solid #c8c8c8;
   outline-offset:4px
 }
 
 .rail {
   height:88px;
   padding:0 34px;
-  border-color:#c9c4ad1a;
-  background:#080908;
+  border-color:#bebebe1a;
+  background:#000000;
   gap:25px
 }
 .brand-title {
-  color:#ddd2b4;
+  color:#f0f0f0;
   font-size:30px;
   letter-spacing:1px
 }
 .brand-prefix {
-  color:#aaa38f;
+  color:#a0a0a0;
   font-size:12px;
   letter-spacing:1.5px
 }
 .brand-mark {
-  color:#c6b986;
+  color:#acacac;
   width:28px
 }
 .rail nav {
@@ -189,11 +189,11 @@ button:focus-visible,a:focus-visible,summary:focus-visible {
   margin-left:30px
 }
 .nav-item {
-  color:#989a8e;
+  color:#959595;
   font-size:13px
 }
 .nav-item.active {
-  color:#e0d7bb
+  color:#eeeeee
 }
 .nav-item.active:after {
   height:1px;
@@ -203,33 +203,33 @@ button:focus-visible,a:focus-visible,summary:focus-visible {
   bottom:19px
 }
 .nav-item.active .nav-symbol {
-  color:#b8b38e
+  color:#a8a8a8
 }
 .player {
   margin-left:auto
 }
 .player strong {
-  color:#949181
+  color:#8d8d8d
 }
 .player span {
-  color:#c1b8a4
+  color:#c1c1c1
 }
 
 .account-panel {
   margin:0;
   padding-left:22px;
-  border-color:#d4c7a924;
+  border-color:#c1c1c124;
   max-width:220px;
   position:relative
 }
 .account-identity strong {
   font-size:11px;
-  color:#b7af9f;
+  color:#acacac;
   max-width:170px
 }
 .account-status {
   font-size:10px;
-  color:#8a8e80;
+  color:#888;
   margin:5px 0
 }
 .account-identity {
@@ -241,14 +241,14 @@ button:focus-visible,a:focus-visible,summary:focus-visible {
 .account-panel button {
   padding:8px 13px;
   min-height:34px;
-  background:#141711;
-  border-color:#afa87e40;
-  color:#d3c6a8;
+  background:#111111;
+  border-color:#9c9c9c40;
+  color:#d5d5d5;
   border-radius:4px;
   font-size:11px
 }
 .account-panel button:hover {
-  background:#27271c
+  background:#222222
 }
 .account-message {
   position:absolute;
@@ -256,7 +256,7 @@ button:focus-visible,a:focus-visible,summary:focus-visible {
   top:100%;
   width:260px;
   padding:14px;
-  background:#131611;
+  background:#111111;
   border:1px solid #807e5a44;
   z-index:4
 }
@@ -266,7 +266,7 @@ button:focus-visible,a:focus-visible,summary:focus-visible {
 }
 
 .map-toolbar {
-  background:#080908;
+  background:#000000;
   border:0;
   padding:17px 34px 4px;
   gap:20px
@@ -280,49 +280,49 @@ button:focus-visible,a:focus-visible,summary:focus-visible {
   border:0;
   border-radius:4px;
   font-size:13px;
-  color:#858a7d;
+  color:#888;
   background:transparent
 }
 .year-tabs button.active {
-  color:#d5c89e;
-  background:#24251b66;
+  color:#e0e0e0;
+  background:#ffffff0d;
   box-shadow:none
 }
 .year-tabs button:hover {
-  background:#1a1d16
+  background:#161616
 }
 .map-tools {
   gap:10px
 }
 .explore-button {
   background:transparent;
-  border-color:#afa58544;
-  color:#b4b29d;
+  border-color:#ffffff30;
+  color:#b5b5b5;
   font-size:11px;
   min-height:42px;
   padding:10px 13px;
   border-radius:4px
 }
 .explore-button:hover,.explore-button[aria-pressed=true] {
-  background:#23251a;
-  color:#d0c5a2;
-  border-color:#a4a08066
+  background:#1a1a1a;
+  color:#bdbdbd;
+  border-color:#97979766
 }
 .explore-button svg {
-  color:#b3ab82;
+  color:#a0a0a0;
   width:17px
 }
 .reset-progress-button {
   background:transparent;
   border:0;
-  color:#97817a;
+  color:#868686;
   font-size:10px;
   min-height:42px;
   padding:8px 10px
 }
 .reset-progress-button:hover {
   background:#261c1766;
-  color:#cab3a3
+  color:#b5b5b5
 }
 .reset-progress-button svg {
   width:15px
@@ -330,31 +330,31 @@ button:focus-visible,a:focus-visible,summary:focus-visible {
 
 .map-caption {
   padding:20px 34px 15px;
-  background:#080908;
+  background:#000000;
   gap:12px
 }
 .map-caption #map-title {
   font:800 24px/1.25 var(--atlas-serif);
-  color:#dfd8c4;
+  color:#ededed;
   letter-spacing:0
 }
 .map-caption #map-mode {
   font-size:8px;
   font-weight:800;
-  color:#848e7b;
+  color:#848484;
   letter-spacing:1.1px
 }
 .text-button {
-  border-color:#b8ad8133;
-  color:#b1a58b;
+  border-color:#a2a2a233;
+  color:#a0a0a0;
   min-width:36px;
   min-height:36px
 }
 
 .specialization-menu {
   position:relative;
-  border-bottom:1px solid #bcb59c1b;
-  background:#080908;
+  border-bottom:1px solid #ffffff18;
+  background:#000000;
   padding:0 34px 16px
 }
 .specialization-menu summary {
@@ -364,12 +364,12 @@ button:focus-visible,a:focus-visible,summary:focus-visible {
   gap:12px;
   min-height:44px;
   cursor:pointer;
-  color:#a5ac96;
+  color:#aaa;
   font-size:12px;
   padding:8px 15px;
-  border:1px solid #c5b68e30;
+  border:1px solid #ffffff30;
   border-radius:5px;
-  background:#11140e
+  background:#111111
 }
 .specialization-menu summary::-webkit-details-marker {
   display:none
@@ -378,14 +378,14 @@ button:focus-visible,a:focus-visible,summary:focus-visible {
   content:'⌄';
   font:20px/1 Georgia;
   transition:transform .2s;
-  color:#a69a79
+  color:#939393
 }
 .specialization-menu[open] summary::after {
   transform:rotate(180deg)
 }
 #specialization-selection {
   font-size:10px;
-  color:#c9c29e
+  color:#aaa
 }
 .specialization-menu .branch-cards {
   display:grid;
@@ -402,38 +402,38 @@ button:focus-visible,a:focus-visible,summary:focus-visible {
   border-radius:7px;
   padding:15px 12px;
   gap:8px;
-  background:#10130e;
+  background:#0c0c0c;
   flex-wrap:wrap;
   min-height:68px;
   box-shadow:none
 }
 .branch-card:hover {
-  background:#1b2014;
+  background:#171717;
   border-color:color-mix(in srgb,var(--sky-accent) 45%,#a69a79)
 }
 .branch-card.viewing {
-  background:#21241b;
+  background:#1c1c1c;
   border-color:var(--sky-accent)
 }
 .branch-card strong,.branch-card.current strong {
-  color:#c4c7b1;
+  color:#d5d5d5;
   font-size:16px
 }
 .branch-card .branch-name {
-  color:#999e8c;
+  color:#969696;
   font-size:11px
 }
 .branch-card small {
   font-size:9px;
-  color:#818779;
+  color:#808080;
   margin-left:auto
 }
 .branch-card .branch-symbol {
   color:var(--sky-accent)
 }
 .branch-check {
-  color:#a6ad92;
-  border-color:#8b987449;
+  color:#a2a2a2;
+  border-color:#88888849;
   width:17px;
   height:17px
 }
@@ -443,7 +443,7 @@ button:focus-visible,a:focus-visible,summary:focus-visible {
 
 .path-summary {
   padding:13px 34px;
-  background:#080908;
+  background:#000000;
   border:0;
   gap:15px
 }
@@ -455,126 +455,126 @@ button:focus-visible,a:focus-visible,summary:focus-visible {
 }
 .path-identity strong {
   font-size:11px;
-  color:#bdbba6
+  color:#bcbcbc
 }
 .path-scope {
   font-size:10px;
-  color:#7f8777
+  color:#888
 }
 .path-metrics {
   font-size:10px;
-  color:#7f8777;
+  color:#888;
   gap:15px
 }
 .path-metrics b {
-  color:#b2b89d
+  color:#adadad
 }
 .path-link {
-  color:#aba78d;
+  color:#a0a0a0;
   font-size:11px
 }
 .journey-progress {
-  background:#080908;
+  background:#000000;
   padding:0 34px 16px;
   border:0
 }
 .journey-label {
   font-size:10px;
-  color:#929c83
+  color:#999
 }
 .journey-label strong {
-  color:#c1c5ac;
+  color:#cccccc;
   font-size:11px
 }
 .journey-label strong span {
-  color:#7c866e;
+  color:#7b7b7b;
   font-size:10px
 }
 .journey-label>b {
-  color:#c1b57f;
+  color:#a7a7a7;
   font-size:11px
 }
 .journey-track {
   height:7px;
   border:0;
   border-radius:2px;
-  background:#25271d
+  background:#222222
 }
 .journey-fill {
-  background:linear-gradient(90deg,#666b41,#a0a46c 75%,#d3c790);
+  background:linear-gradient(90deg,#555555,#aaaaaa 75%,#eeeeee);
   box-shadow:0 0 8px #b3b25d1f
 }
 .journey-track:after {
   display:none
 }
 .journey-fill>span {
-  color:#e1d49f;
+  color:#c7c7c7;
   font-size:11px
 }
 
 .map-viewport {
   height:max(72dvh,calc(100dvh - 250px));
   min-height:520px;
-  background:#020402;
-  border-top:1px solid #bcb59c1b;
+  background:#000000;
+  border-top:1px solid #ffffff18;
   touch-action:none;
   overscroll-behavior:contain
 }
 .sky-backdrop {
-  background:linear-gradient(180deg,#010301de,#010301d4),url('assets/galaxy-v1.png') center/cover;
+  background:linear-gradient(180deg,#000000de,#000000d4),url('assets/galaxy-v1.png') center/cover;
   filter:saturate(.55)
 }
 .map-viewport:before {
   opacity:.16
 }
 .map-viewport:after {
-  background:radial-gradient(ellipse at center,transparent 35%,#010301b3 100%)
+  background:radial-gradient(ellipse at center,transparent 35%,#000000b3 100%)
 }
 .map-controls {
-  background:#10140bee;
-  border:1px solid #b4aa8140;
+  background:#080808ee;
+  border:1px solid #ffffff33;
   border-radius:7px;
   right:24px;
   bottom:24px;
   box-shadow:0 5px 20px #0009
 }
 .map-controls button {
-  color:#bdb89e;
+  color:#bbb;
   min-width:44px;
   min-height:44px;
   touch-action:manipulation
 }
 .map-controls button:hover {
-  background:#29301d
+  background:#252525
 }
 .map-controls button:last-child {
-  border-color:#92976c40
+  border-color:#87878740
 }
 .map-controls span {
-  color:#979e82;
+  color:#999;
   font-size:10px
 }
 .pan-hint {
-  background:#091007aa;
-  color:#858f77;
+  background:#000000aa;
+  color:#888;
   font-size:10px;
   border:0;
   bottom:28px
 }
 .map-legend {
-  background:#080908;
-  color:#858f77;
-  border-color:#b0b29222;
+  background:#000000;
+  color:#888;
+  border-color:#ffffff22;
   font-size:9px;
   gap:21px;
   padding:13px 34px
 }
 .cluster-year {
-  color:#d3cebb
+  color:#c9c9c9
 }
 .cluster-term {
-  color:#87927d;
-  border-color:#b3bd8b30
+  color:#878787;
+  border-color:#a9a9a930
 }
 .term-label strong {
   font-size:29px
@@ -583,17 +583,60 @@ button:focus-visible,a:focus-visible,summary:focus-visible {
   opacity:.5
 }
 .course-node .node-copy {
-  background:#070c086b;
+  background:#0000006b;
   border-color:color-mix(in srgb,var(--sky-accent) 35%,transparent);
   border-radius:4px
 }
+/* Light comes from progress, while the course codes stay legible. */
+.course-node .skill-star {
+  opacity:.38;
+  filter:none;
+  transition:opacity .35s ease,filter .35s ease
+}
+.course-node.locked .skill-star { opacity:.24;filter:none }
+.course-node.preview .skill-star { opacity:.32;filter:none }
+.course-node.active-course .skill-star,.course-node.completed .skill-star {
+  opacity:1;
+  filter:drop-shadow(0 0 10px color-mix(in srgb,var(--sky-accent) 70%,transparent))
+    drop-shadow(0 0 25px color-mix(in srgb,var(--sky-accent) 42%,transparent))
+}
+.course-node.active-course .star-aura,.course-node.completed .star-aura { opacity:.65 }
+.course-node.active-course .star-center,.course-node.completed .star-center { opacity:1 }
+.course-node.active-course .node-code,.course-node.completed .node-code {
+  text-shadow:0 0 9px color-mix(in srgb,var(--sky-accent) 45%,transparent)
+}
+.course-node:hover .skill-star,.course-node:focus-visible .skill-star {
+  opacity:.85;
+  filter:drop-shadow(0 0 12px color-mix(in srgb,var(--sky-accent) 45%,transparent))
+}
+.course-node.active-course:hover .skill-star,.course-node.completed:hover .skill-star {
+  opacity:1;
+  filter:drop-shadow(0 0 14px color-mix(in srgb,var(--sky-accent) 80%,transparent))
+    drop-shadow(0 0 30px color-mix(in srgb,var(--sky-accent) 50%,transparent))
+}
+.sky-outline .sky-trails,.sky-outline .catalog-stars {
+  opacity:.2;
+  filter:none;
+  transition:opacity .4s ease,filter .4s ease
+}
+.sky-outline.constellation-lit .sky-trails {
+  opacity:var(--constellation-brightness,.65);
+  filter:drop-shadow(0 0 5px color-mix(in srgb,var(--sky-accent) 55%,transparent))
+}
+.sky-outline.constellation-lit .catalog-stars {
+  opacity:var(--constellation-brightness,.65);
+  filter:drop-shadow(0 0 7px color-mix(in srgb,var(--sky-accent) 65%,transparent))
+}
+@media(prefers-reduced-motion:reduce) {
+  .course-node .skill-star,.sky-outline .sky-trails,.sky-outline .catalog-stars { transition:none }
+}
 .node-title {
-  background:#10170df5;
-  border-color:#969f7680;
-  color:#dedcc5
+  background:#080808f5;
+  border-color:#8e8e8e80;
+  color:#d5d5d5
 }
 .course-node:hover .node-title,.course-node:focus-visible .node-title {
-  color:#ece8cd
+  color:#e0e0e0
 }
 .graph-lines .connection-line {
   opacity:.26
@@ -606,187 +649,187 @@ button:focus-visible,a:focus-visible,summary:focus-visible {
 }
 
 .primary,.dossier-academic {
-  background:#393c24;
-  border-color:#a49e6799;
-  color:#e4dfbd;
+  background:#d6d6d6;
+  border-color:#8e8e8e99;
+  color:#080808;
   border-radius:5px
 }
 .primary:hover,.dossier-academic:hover {
-  background:#555837
+  background:#ffffff
 }
 .secondary {
   background:transparent;
-  border-color:#8e93764d;
-  color:#b5bba2;
+  border-color:#8888884d;
+  color:#b1b1b1;
   border-radius:5px
 }
 .secondary:hover {
-  background:#262c1c
+  background:#222222
 }
 .paper-card,.domain,.gate-illustration,.connection-inspector {
-  background:#0d110ae6;
-  border-color:#93996d30;
+  background:#000000e6;
+  border-color:#88888830;
   border-radius:9px;
   box-shadow:none
 }
 .paper-card h2,.paper-card h3,.domain h3,.gate-illustration h2 {
-  color:#d3d4b7
+  color:#cacaca
 }
 .paper-card p,.domain p {
-  color:#a2ac90
+  color:#9f9f9f
 }
 .paper-card .card-note,.card-note {
-  color:#848e73
+  color:#828282
 }
 .eyebrow,.card-eyebrow,.section-heading>span {
-  color:#909b7b
+  color:#8d8d8d
 }
 #journal-page h1,#gate-page h1 {
-  color:#e0ddc8
+  color:#d7d7d7
 }
 #journal-page h1 em,#gate-page h1 em {
-  color:#b9b38d
+  color:#a8a8a8
 }
 .path-state {
-  background:#262e1866;
-  color:#b5bf93;
-  border-color:#79865444
+  background:#18181866;
+  color:#adadad;
+  border-color:#71717144
 }
 .year-select,textarea {
-  color:#cbd2b6;
-  background:#161e10;
-  border-color:#8b98764d
+  color:#c6c6c6;
+  background:#121212;
+  border-color:#8888884d
 }
 .progress-track {
-  background:#262e1c
+  background:#222222
 }
 .progress-track>div {
-  background:#9ba472
+  background:#cccccc
 }
 .journal-records,.section-heading,.records-table td,.records-table th {
-  border-color:#8b987633
+  border-color:#88888833
 }
 .records-table {
-  color:#b8c3a2
+  color:#b4b4b4
 }
 .records-table th {
-  color:#879774
+  color:#868686
 }
 .journal-empty {
-  background:#11170c;
-  color:#9fac8b;
-  border-color:#8a967c33
+  background:#101010;
+  color:#9d9d9d;
+  border-color:#89898933
 }
 .domains .domain small {
-  color:#8d9b75
+  color:#8a8a8a
 }
 
 .course-dossier {
-  background:linear-gradient(110deg,#070c06cf,#080d06ee 65%),url('assets/galaxy-v1.png') center/cover;
-  border-color:#a6b18440;
+  background:linear-gradient(110deg,#000000cf,#000000ee 65%),url('assets/galaxy-v1.png') center/cover;
+  border-color:#9e9e9e40;
   border-radius:13px;
   box-shadow:0 0 0 3px #c3c39308,0 35px 100px #000c;
   --lavender:#a8b88b;
   --gold:#cdbd87
 }
 .dossier-identity {
-  background:radial-gradient(ellipse at 50% 40%,#788e4e12,transparent 65%)
+  background:radial-gradient(ellipse at 50% 40%,#ffffff08,transparent 65%)
 }
 .dossier-heading h2,.dossier-section-heading h3 {
-  color:#e4e7cf
+  color:#dedede
 }
 .dossier-path,.dossier-sky>span,.dossier-heading .course-meta {
-  color:#a7b18f
+  color:#a2a2a2
 }
 .dossier-close {
-  background:#1b2213bb;
-  border-color:#b3bb924d;
-  color:#d4dcbb
+  background:#111111bb;
+  border-color:#ababab4d;
+  color:#cecece
 }
 .dossier-tab {
-  color:#9bab83
+  color:#989898
 }
 .dossier-diamond {
-  background:#17220ddd;
-  border-color:#b5c59266;
+  background:#141414dd;
+  border-color:#afafaf66;
   box-shadow:none
 }
 .dossier-tab[aria-selected=true] .dossier-diamond {
-  background:#394c22;
+  background:#333333;
   box-shadow:0 0 0 3px #bbcd9a12,0 0 18px #b7ce711a
 }
 .dossier-thread {
-  background:linear-gradient(transparent,#859b5f 20%,#859b5f 80%,transparent);
+  background:linear-gradient(transparent,#888888 20%,#888888 80%,transparent);
   box-shadow:none
 }
 .dossier-tab:hover .dossier-diamond {
-  background:#334923
+  background:#252525
 }
 .dossier-placeholder {
-  background:#19230e4d;
-  border-color:#a1b17540;
+  background:#11111188;
+  border-color:#98989840;
   border-radius:9px
 }
 .dossier-placeholder h4,.dossier-connections h4 {
-  color:#d0dbba
+  color:#ddd
 }
 .dossier-placeholder p,.dossier-reason,.dossier-connections>p {
-  color:#a5b58c
+  color:#aaa
 }
 .dossier-prereq {
-  background:#1a25134d;
-  border-color:#7889573d;
+  background:#11111188;
+  border-color:#7373733d;
   border-radius:5px
 }
 .dossier-prereq button,.dossier-relation button strong {
-  color:#cbd8ad
+  color:#ddd
 }
 .dossier-key,.dossier-mastery-scope {
-  color:#91a273
+  color:#999999
 }
 .dossier-readonly {
-  color:#b7c995;
-  background:#23361744;
-  border-color:#889e6966
+  color:#bbb;
+  background:#16161688;
+  border-color:#85858566
 }
 .dossier-footer,.dossier-heading,.dossier-section-heading {
-  border-color:#98ad7133
+  border-color:#ffffff22
 }
 .dossier-scroll {
-  scrollbar-color:#526238 transparent
+  scrollbar-color:#4f4f4f transparent
 }
 
 #account-dialog,#path-dialog,#reset-dialog,#help-dialog {
-  background:#0b1008f2;
-  border-color:#9fad784d;
-  color:#d4dfbe;
+  background:#000000f2;
+  border-color:#ffffff33;
+  color:#e3e3e3;
   border-radius:12px;
   box-shadow:0 25px 90px #000b
 }
 #account-dialog p {
-  color:#a3b18d
+  color:#aaa
 }
 .account-dialog-close {
-  color:#bcc7a4
+  color:#ccc
 }
 .account-dialog-error {
-  color:#d5ab92!important
+  color:#b1b1b1!important
 }
 .connection-eyebrow,.connection-type {
-  color:#a8b888
+  color:#a3a3a3
 }
 .connection-inspector h2 {
-  color:#d1dec0
+  color:#ddd
 }
 .connection-course {
-  background:#15200d;
-  border-color:#7a8a5940;
-  color:#c0d2a6
+  background:#111111;
+  border-color:#74747440;
+  color:#ccc
 }
 #toast {
-  background:#1a2712;
-  border-color:#81965e66;
-  color:#c7d8ad;
+  background:#151515;
+  border-color:#7c7c7c66;
+  color:#ccc;
   border-radius:6px;
   font-size:12px;
   max-width:calc(100vw - 32px)

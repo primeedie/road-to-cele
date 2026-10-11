@@ -1,6 +1,6 @@
 # Cloudflare Pages + Supabase
 
-The website and Google sign-in/cloud saving implementation are prepared. A real deployment requires your Cloudflare account, Supabase project, database migration, and Google OAuth provider configuration. Guest mode remains usable without credentials.
+The website uses Cloudflare Pages and Supabase for Google sign-in and private account progress. The owner's public project URL and publishable key are configured in `config/public-production.json`. Cloudflare production builds from `main` include these browser settings without requiring dashboard variables. Explicit environment settings override them. No privileged credentials are stored in this file.
 
 ## 1. Supabase
 
@@ -29,7 +29,7 @@ Create your account at https://dash.cloudflare.com/sign-up. In **Workers & Pages
 
 Cloudflare installs dependencies from the lockfile before running the build. Save and deploy. Use the actual `*.pages.dev` URL returned by Cloudflare; the requested name may already be taken. These two Supabase values are intentionally public browser configuration. Privileged credentials are unnecessary for hosting the app.
 
-Production automatically redeploys from `main`. Keep production Supabase variables out of preview builds unless you deliberately want previews to use the same database. Without variables, builds safely run guest-only mode.
+Production automatically redeploys from `main` and uses `config/public-production.json` when neither Supabase environment variable is supplied. Keep production Supabase variables out of preview builds unless you deliberately want previews to use the same database. Preview and local builds without explicit variables safely run guest-only mode. Change the public configuration file when moving production to another Supabase project; clear both values to disable production login. A partial environment override fails the build instead of mixing settings from different projects.
 
 ## 3. Google sign-in
 

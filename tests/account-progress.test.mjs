@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { createAccountProgress, accountStorageKey } from '../src/account-progress.mjs';
 import { newProgress, confirmSpecialization, changeSpecialization, setAcademicYear } from '../src/progression.mjs';
 import { STORAGE_KEY, saveProgress, loadProgress } from '../src/storage.mjs';
-import { publicCloudConfig } from '../scripts/cloud-config.mjs';
+import { publicCloudConfig, deploymentCloudConfig } from '../scripts/cloud-config.mjs';
 import { accountMarkup, accountDialogMarkup } from '../src/account-ui.mjs';
 
 const storage=()=>{const rows=new Map();return {getItem:k=>rows.get(k)||null,setItem:(k,v)=>rows.set(k,v),rows};};
@@ -89,6 +89,17 @@ test('public build config rejects privileged secrets and incomplete or unsafe UR
  assert.equal(publicCloudConfig({...env,PUBLIC_SUPABASE_PUBLISHABLE_KEY:jwt('anon')}).publishableKey,jwt('anon'));
  assert.throws(()=>publicCloudConfig({PUBLIC_SUPABASE_URL:env.PUBLIC_SUPABASE_URL}),/both/);
  assert.throws(()=>publicCloudConfig({...env,PUBLIC_SUPABASE_URL:'https://password@example.supabase.co'}),/credentials/);
+});
+test('public project defaults activate only on production Pages builds and cannot mask partial overrides',()=>{
+ const defaults={PUBLIC_SUPABASE_URL:'https://production.supabase.co',PUBLIC_SUPABASE_PUBLISHABLE_KEY:'sb_publishable_production'};
+ const production={CF_PAGES:'1',CF_PAGES_BRANCH:'main'},empty={url:'',publishableKey:''};
+ assert.equal(deploymentCloudConfig(production,defaults).url,defaults.PUBLIC_SUPABASE_URL);
+ assert.deepEqual(deploymentCloudConfig({...production,CF_PAGES_BRANCH:'feature'},defaults),empty);
+ assert.deepEqual(deploymentCloudConfig({},defaults),empty);
+ const override={PUBLIC_SUPABASE_URL:'https://override.supabase.co',PUBLIC_SUPABASE_PUBLISHABLE_KEY:'sb_publishable_override'};
+ assert.equal(deploymentCloudConfig({...production,...override},defaults).url,override.PUBLIC_SUPABASE_URL);
+ assert.throws(()=>deploymentCloudConfig({...production,PUBLIC_SUPABASE_URL:override.PUBLIC_SUPABASE_URL},defaults),/both/);
+ assert.throws(()=>deploymentCloudConfig(production,{...defaults,PUBLIC_SUPABASE_PUBLISHABLE_KEY:'sb_secret_never_public'}),/never a secret/);
 });
 test('account UI uses honest save states and escapes account identity',()=>{
  assert.match(accountMarkup({phase:'guest',configured:false}),/awaiting setup/);

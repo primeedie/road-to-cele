@@ -180,7 +180,11 @@ test('actual website interactions keep exploration separate from academic progre
  });
  await t.test('map year controls browse only and explicit exploration prevents shared progress',()=>{
   click('[data-year="3"]');assert.equal(localStorage.getItem(STORAGE_KEY),null);assert.match($('#traveler-year').textContent,/Year 1/);
-  click('[data-year="1"]');click('[data-course="FNDMATH"]');click('[data-academic="ACTIVE"]');assert.equal(saved().academicRecords.FNDMATH.status,'ACTIVE');
+  click('[data-year="1"]');click('[data-course="FNDMATH"]');
+  const chart='.sky-outline[data-constellation="Ori"]';assert.equal($(chart).classList.contains('constellation-lit'),false);
+  click('[data-academic="ACTIVE"]');assert.equal(saved().academicRecords.FNDMATH.status,'ACTIVE');
+  assert.ok($('[data-course="FNDMATH"]').classList.contains('active-course'));
+  assert.equal($(chart).classList.contains('constellation-lit'),true);assert.equal($(chart).dataset.litCourses,'1');
   const before=localStorage.getItem(STORAGE_KEY);click('#explore-toggle');assert.equal($('#course-card [data-academic]'),null);assert.match($('#course-card').textContent,/Preview only/);
   click('.branch-card[data-branch="STE"]');click('.course-node');assert.equal(localStorage.getItem(STORAGE_KEY),before);
   click('#explore-toggle');click('[data-year="1"]');click('[data-course="FNDMATH"]');click('[data-academic="COMPLETED"]');assert.equal(saved().academicRecords.FNDMATH.status,'COMPLETED');
@@ -253,6 +257,7 @@ test('actual website interactions keep exploration separate from academic progre
   assert.equal($('#course-card').open,false);
   assert.equal($('#connection-card').hidden,true);
   assert.equal($('#commitment-banner').textContent,'');
+  assert.equal(document.querySelectorAll('.constellation-lit').length,0);
   assert.match($('#traveler-year').textContent,/Year 1/);
   assert.match($('#gate-page').textContent,/LOCKED UNTIL CIVINCO/);
   assert.equal(document.activeElement,$('#reset-progress'));

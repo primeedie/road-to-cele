@@ -73,13 +73,14 @@ function renderMap(reset=false){
  let html=terrain;
  $('#map-title').textContent='Civil Engineering · Shared sky';
  $('#map-mode').textContent=view.preview?'EXPLORE MODE · NO PROGRESS CHANGES':view.branch?(selected(progress)===view.branch?'ACTIVE PATH · ':'PREVIEW BRANCH · ')+view.branch:'YEARS I–IV · SHARED CURRICULUM';
+ const outline=(chart,list)=>drawConstellation(chart,{total:list.length,activated:list.filter(c=>!isPreview(c)&&['ACTIVE','COMPLETED'].includes(progress.academicRecords[c.id]?.status)).length});
  map.charts.forEach(({chart,term,label})=>{
-  html+=drawConstellation(chart);
+  html+=outline(chart,courses.filter(c=>!c.specialization&&c.term===term));
   html+=`<div class="term-label" data-term="${term}" style="left:${label.x}px;top:${label.y}px;${skyAccent(chart.id)}"><div class="cluster-meta"><span class="cluster-year">Year ${['I','II','III','IV'][Math.ceil(term/3)-1]}</span><span class="cluster-term">Term ${String(term).padStart(2,'0')}</span></div><strong>${chart.name}</strong></div>`;
  });
  if(map.branchChart){
   const chart=map.branchChart;
-  html+=`<div class="specialization-constellation">${drawConstellation(chart)}</div><div class="specialization-heading" style="left:${map.branchLabel.x}px;top:${map.branchLabel.y}px;${skyAccent(chart.id)}"><span>${view.branch} · ${selected(progress)===view.branch?'ACTIVE PATH':'PREVIEW'}</span><strong>${chart.name}</strong><button data-action="shared">Hide constellation</button></div>`;
+  html+=`<div class="specialization-constellation">${outline(chart,courses.filter(c=>c.specialization===view.branch))}</div><div class="specialization-heading" style="left:${map.branchLabel.x}px;top:${map.branchLabel.y}px;${skyAccent(chart.id)}"><span>${view.branch} · ${selected(progress)===view.branch?'ACTIVE PATH':'PREVIEW'}</span><strong>${chart.name}</strong><button data-action="shared">Hide constellation</button></div>`;
  }
  const trace=traceConnection(courses,view.connection);
  if(!trace)view.connection=null;

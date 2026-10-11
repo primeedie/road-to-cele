@@ -28,11 +28,11 @@
 .companion-button>span:last-child {
   font-size:12px;
   text-align:left;
-  color:#b9b2a3
+  color:#afafaf
 }
 .companion-button small {
   display:block;
-  color:#817d72;
+  color:#7b7b7b;
   font-size:10px;
   margin-top:5px
 }
@@ -43,8 +43,8 @@
   padding:38px;
   border:1px solid #8177615c;
   border-radius:12px;
-  background:#0b0b09f5;
-  color:#e6dfcf;
+  background:#000000f5;
+  color:#dcdcdc;
   box-shadow:0 30px 100px #000c;
   overflow:auto
 }
@@ -56,14 +56,14 @@
 .wardrobe-kicker {
   font-size:10px;
   letter-spacing:2px;
-  color:#9b907a
+  color:#8c8c8c
 }
 .wardrobe-heading h2 {
   font-size:32px;
   margin:13px 0
 }
 .wardrobe-heading p {
-  color:#a6a08f;
+  color:#9c9c9c;
   font-size:14px;
   line-height:1.6;
   margin:0
@@ -82,12 +82,12 @@
 }
 .wardrobe-preview>span:last-child {
   font-size:22px;
-  color:#e9dfc5
+  color:#dadada
 }
 .wardrobe-preview small {
   display:block;
   font-size:12px;
-  color:#a79b82;
+  color:#979797;
   margin-top:7px
 }
 
@@ -102,7 +102,7 @@
   align-items:center
 }
 .wardrobe-section h3 span {
-  color:#8d887a;
+  color:#858585;
   font-size:11px
 }
 .cosmetic-grid {
@@ -115,13 +115,13 @@
   flex-direction:column;
   align-items:center;
   gap:10px;
-  background:#11120f;
+  background:#111111;
   border:1px solid #c5b99425;
   border-radius:8px;
   padding:18px 8px 15px;
   cursor:pointer;
   min-width:0;
-  color:#c3bcaa
+  color:#b8b8b8
 }
 .cosmetic-option>.avatar-badge {
   width:70px;
@@ -132,18 +132,18 @@
 }
 .cosmetic-option small {
   font-size:10px;
-  color:#8d8779
+  color:#848484
 }
 .cosmetic-option:hover {
-  background:#1b1b15;
-  border-color:#b0a28088
+  background:#202020;
+  border-color:#9b9b9b88
 }
 .cosmetic-option.equipped {
   background:#25231866;
-  border-color:#c2ad7399
+  border-color:#a1a1a199
 }
 .cosmetic-option.equipped small {
-  color:#c7b581
+  color:#aaaaaa
 }
 .cosmetic-option.cosmetic-locked {
   opacity:.48;
@@ -152,7 +152,7 @@
 .wardrobe-footnote {
   font-size:11px;
   line-height:1.6;
-  color:#8f897b;
+  color:#868686;
   margin:26px 0 0
 }
 

@@ -1,10 +1,11 @@
 import { mkdir, cp, access, readFile, writeFile } from 'node:fs/promises';
 import { verifyAttribution, writeProvenance } from './attribution.mjs';
 import { build } from 'esbuild';
-import { publicCloudConfig } from './cloud-config.mjs';
+import { deploymentCloudConfig } from './cloud-config.mjs';
 // .env.local is ignored. Cloudflare supplies the same variables at build time.
 try { process.loadEnvFile('.env.local'); } catch(error) { if(error.code!=='ENOENT')throw error; }
-const cloudConfig=publicCloudConfig(process.env);
+const productionDefaults=JSON.parse(await readFile('config/public-production.json','utf8'));
+const cloudConfig=deploymentCloudConfig(process.env,productionDefaults);
 await verifyAttribution('src');
 await mkdir('dist', { recursive: true });
 await cp('src', 'dist', { recursive: true });
