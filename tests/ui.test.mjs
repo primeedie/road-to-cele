@@ -31,6 +31,23 @@ test('actual website interactions keep exploration separate from academic progre
   assert.equal(localStorage.getItem(STORAGE_KEY),null);
   click('[data-year="1"]');
  });
+ await t.test('real map gestures stay bounded and overview zoom increases gradually without changing records',()=>{
+  const viewport=$('#map-viewport'),captures=new Map();
+  w.Element.prototype.setPointerCapture=function(id){captures.set(id,this);};
+  w.Element.prototype.hasPointerCapture=function(id){return captures.get(id)===this;};
+  w.Element.prototype.releasePointerCapture=function(id){captures.delete(id);};
+  const pointer=(type,x,y)=>{const event=new w.MouseEvent(type,{bubbles:true,cancelable:true,button:0,clientX:x,clientY:y});Object.defineProperties(event,{pointerId:{value:1},isPrimary:{value:true}});viewport.dispatchEvent(event);};
+  const pose=()=>{const match=$('#world').style.transform.match(/translate\(([-.\d]+)px,([-.\d]+)px\) scale\(([-.\d]+)\)/);return {x:+match[1],y:+match[2],scale:+match[3]};};
+  for(const x of [-100000,100000])for(const y of [-100000,100000]){
+   pointer('pointerdown',100,100);pointer('pointermove',x,y);pointer('pointerup',x,y);
+   const camera=pose();
+   assert.ok([...document.querySelectorAll('.course-node')].some(n=>{const sx=(parseFloat(n.style.left)+125)*camera.scale+camera.x,sy=(parseFloat(n.style.top)+176)*camera.scale+camera.y;return sx>-110&&sx<910&&sy>-80&&sy<650;}));
+  }
+  click('#fit-map');const fit=pose().scale;assert.ok(fit<.28);
+  click('#zoom-in');assert.ok(pose().scale>fit&&pose().scale<fit*1.3);
+  assert.equal(localStorage.getItem(STORAGE_KEY),null);assert.equal(captures.size,0);
+  click('[data-year="1"]');
+ });
  await t.test('Roman numeral course chapters are inspectable placeholders with keyboard navigation',()=>{
   click('[data-course="FNDMATH"]');
   assert.equal($('#course-card').open,true);
@@ -57,6 +74,21 @@ test('actual website interactions keep exploration separate from academic progre
   assert.equal(localStorage.getItem(STORAGE_KEY),null);
   for(const branch of ['STE','GTE','HWR','TRE','CTM']){click(`.branch-card[data-branch="${branch}"]`);assert.match($('#map-mode').textContent,/PREVIEW/);click(`[data-specialization="${branch}"]`);assert.match($('#course-card').textContent,/Preview only/);assert.equal($('#course-card [data-academic]'),null);}
   assert.equal(localStorage.getItem(STORAGE_KEY),null);
+ });
+ await t.test('course details expose downstream H/S requirements and co-requisites from both sides without saving',()=>{
+  click('[data-year="1"]');click('[data-course="FNDMATH"]');
+  const future='[aria-label="Courses that require this course"]';
+  assert.ok($(`${future} [data-related-course="CALENG1"][data-relation-type="H"]`));
+  assert.ok($(`${future} [data-related-course="CESURVE"][data-relation-type="S"]`));
+  click(`${future} [data-course-link="CALENG1"]`);
+  assert.match($('#dossier-title').textContent,/Differential Calculus/);
+  click('[data-action="close-inspector"]');click('[data-course="ENGCHEM"]');
+  assert.ok($('[aria-label="Co-requisite courses"] [data-course-link="LBYCH1A"]'));
+  click('[aria-label="Co-requisite courses"] [data-course-link="LBYCH1A"]');
+  assert.ok($('[aria-label="Co-requisite courses"] [data-course-link="ENGCHEM"]'));
+  click('[data-action="close-inspector"]');
+  assert.equal(localStorage.getItem(STORAGE_KEY),null);
+  assert.equal($('#reset-progress').closest('.map-tools')!==null,true);
  });
  await t.test('one revealed specialization adds its nodes and paths without replacing shared stars',()=>{
   const sharedIds=COURSES.filter(c=>!c.specialization).map(c=>c.id);

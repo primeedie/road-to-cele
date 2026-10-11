@@ -1,0 +1,136 @@
+/* Near-black instruments around the colored constellation map. */
+:root { --surface: #080c12; --edge: #303943; --text: #e1e7ec; --ink: #e1e7ec; --quiet: #8896a4; --muted: #8a9dab; --paper: #080c12; --line: #2b3945; --accent: #d2c7ac; }
+body { background: #05080d; color: var(--text); }
+.rail { background: #070a10; border-color: #27313a; }
+.brand-prefix { color: #b7c3ce; }
+.brand-title { color: #e0d7c0; }
+.nav-item { color: #8493a1; }
+.nav-item.active { color: #e7edf2; }
+.nav-item.active .nav-symbol { color: #becdd9; }
+.player strong { color: #8294a4; }
+.player span { color: #b4c6d3; }
+.primary,.dossier-academic { background: #263846; border-color: #6d8699; color: #e4eef5; }
+.primary:hover,.dossier-academic:hover { background: #3b5366; }
+.map-toolbar,.map-caption,.branch-cards { background: #080c12; border-color: #26313a; }
+.year-tabs button { color: #8999a8; }
+.year-tabs button:hover { background: #151d26; }
+.year-tabs button.active { color: #d1dde7; background: #19232d; box-shadow: inset 0 -2px 0 #9dadba; }
+.explore-button { border-color: #465362; color: #bac7d4; }
+.explore-button:hover { background: #151f29; }
+.explore-button[aria-pressed=true] { background: #1b2834; border-color: #8a9daa; color: #e1ebf2; }
+.map-caption #map-mode { color: #8799a8; }
+.text-button { color: #b5c4d0; border-color: #465462; }
+.branch-card { border-color: #33404b; }
+.branch-card:hover { border-color: #9babba; }
+.branch-card strong,.branch-card.current strong { color: #becbd6; }
+.branch-name,.branch-card small { color: #8093a4; }
+.branch-card.current:not(.viewing) { border-color: #33404b; }
+.branch-check { border-color: #63738466; color: #8fa1b1; }
+.path-summary,.journey-progress { background: #070b10; border-color: #2a3541; }
+.path-identity strong { color: #c5d1dc; }
+.path-scope,.path-metrics { color: #7c8e9e; }
+.path-metrics b { color: #cad9e5; }
+.path-link { color: #b8cad8; }
+.path-dot { background: #91a6b6; }
+.journey-label { color: #a1b0bd; }
+.journey-label strong { color: #c9d7df; }
+.journey-label strong span { color: #7e92a3; }
+.journey-label>b { color: #d1e0e9; }
+.journey-track { border-color: #45576580; background: #111922; }
+.journey-fill { background: linear-gradient(90deg,#405b6d,#80a3b8 65%,#c2d4de); box-shadow: 0 0 12px #9cc4de25; }
+.journey-track:after { background: repeating-linear-gradient(90deg,transparent 0,transparent calc(10% - 1px),#05080baa calc(10% - 1px),#05080baa 10%); }
+.map-viewport { background: #020509; }
+.sky-backdrop { background: linear-gradient(180deg,#02050bce,#02050bd4),url('assets/galaxy-v1.png') center/cover; }
+.map-viewport:before { opacity: .2; }
+.map-viewport:after { background: radial-gradient(ellipse at 17% 75%,#354b5c1c 0,transparent 28%),radial-gradient(ellipse at 84% 21%,#2a3c4b1a 0,transparent 32%),radial-gradient(ellipse at center,transparent 46%,#010306a3 84%); }
+.map-controls { background: #0b121be8; border-color: #43515e; }
+.map-controls button { color: #c8d8e4; }
+.map-controls button:hover { background: #23313f; }
+.map-controls button:last-child { border-color: #364653; }
+.map-controls span { color: #9eafbd; }
+.pan-hint { background: #05090fd9; color: #8d9eab; }
+.map-legend { background: #080e15; color: #8da0af; border-color: #263440; }
+.cluster-year { color: #d4dfe8; }
+.cluster-term { color: #8ea1b0; border-color: #768a9d54; }
+.term-label strong { margin-top: 6px; font-size: 29px; }
+.term-label:after { background: #8194a447; margin-top: 9px; }
+.term-label { text-shadow: 0 2px 9px #000; }
+.specialization-heading button { color: #9eafbd; border-color: #71839155; }
+.course-node .node-copy { background: #07101a66; }
+.course-node.path-member .skill-star { filter: drop-shadow(0 10px 6px #010309dd) drop-shadow(0 0 14px color-mix(in srgb,var(--sky-accent) 60%,transparent)); }
+.graph-lines .connection-line.path-traced { stroke: #acc9d8; filter: drop-shadow(0 0 4px #8eafb744); }
+.node-title { color: #d1dde7; border-color: #6378898c; background: #08121bf2; }
+.course-node:hover .node-title,.course-node:focus-visible .node-title { color: #e1edf5; }
+
+/* Reset stays alongside the main exploration control, rather than in a caption. */
+.map-tools { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.reset-progress-button { display: inline-flex; align-items: center; justify-content: center; gap: 9px; padding: 10px 14px; border-color: #86646e; background: #261a20; color: #e0c7cd; font-size: 12px; }
+.reset-progress-button svg { width: 17px; height: 17px; flex-shrink: 0; }
+.reset-progress-button:hover { background: #3b252c; border-color: #c48e9d; color: #f0dde2; }
+.journal-reset { display: flex; width: 100%; margin-top: 12px; }
+
+/* Course chapters keep the celestial geometry with neutral glass and steel colors. */
+.course-dossier { --ink: #e6edf4; --lavender: #93a8bc; --gold: #d6c9a9; background: linear-gradient(110deg,#08121bc9,#080d15f0 58%),url('assets/galaxy-v1.png') center/cover; border-color: #7a8b9a77; box-shadow: 0 0 0 5px #7e9aae0c,0 35px 120px #000b; }
+.dossier-identity { background: radial-gradient(ellipse at 50% 40%,#536f7d24,transparent 65%); }
+.dossier-identity:after { border-color: #8b9fb122; }
+.dossier-path,.dossier-sky>span { color: #a6b6c4; }
+.dossier-close { background: #1c283499; border-color: #90a8bc77; color: #dfeaf2; }
+.dossier-close:hover { background: #344758; }
+.dossier-heading { border-color: #859bac3d; }
+.dossier-heading h2,.dossier-section-heading h3 { color: #e9f0f5; }
+.dossier-heading .course-meta { color: #a6b8c8; border-color: #899aaa2b; }
+.dossier-heading .course-meta span+span { border-color: #8496a93a; }
+.dossier-tab { color: #9dafbf; }
+.dossier-thread { background: linear-gradient(transparent,#819bb0 20%,#819bb0 80%,transparent); box-shadow: 0 0 16px 2px #6b95b02a; }
+.dossier-diamond { background: #0e1924e6; border-color: #92a6ba77; box-shadow: 0 0 0 4px #7d9bad14; }
+.dossier-diamond:before { border-color: #92a8bc44; }
+.dossier-tab[aria-selected=true] .dossier-diamond { background: #334b60; box-shadow: 0 0 0 4px #a7c5dc22,0 0 25px #a4c5da33; }
+.dossier-tab:hover .dossier-diamond { background: #2d4357; }
+.dossier-section-heading { border-color: #7994ac70; }
+.dossier-section-heading>span,.dossier-section-heading:after { color: #bed3e3; text-shadow: 0 0 16px #82a7bd33; }
+.dossier-scroll { scrollbar-color: #536d82 transparent; }
+.dossier-placeholder { background: #18243166; border-color: #7792aa55; box-shadow: none; }
+.dossier-placeholder h4,.dossier-connections h4 { color: #d8e6f0; }
+.dossier-placeholder p,.dossier-connections>p,.dossier-reason { color: #a8bbcb; }
+.dossier-small-star { color: #98b4c9; }
+.dossier-prereq { background: #16253455; border-color: #536f8855; }
+.dossier-prereq button { color: #d4e2ed; }
+.dossier-prereq>span:first-child,.dossier-prereq>span:last-child { color: #aac4d8; }
+.dossier-footer { border-color: #7690a43d; }
+.dossier-readonly { color: #b8ccdb; background: #23354755; border-color: #66829966; }
+.dossier-mastery-scope,.dossier-key { color: #839eb4; }
+.dossier-relation button strong { display: block; font: 800 15px var(--sans); color: #cfdfeb; letter-spacing: .6px; }
+.dossier-relation button>span { display: block; margin-top: 5px; font: 800 13px/1.5 var(--sans); color: #9db3c4; }
+.dossier-relation button small { color: #7e98ad; font-size: 10px; }
+.dossier-relation .relation-type { display: grid; place-items: center; flex-shrink: 0; width: 25px; height: 25px; border: 1px solid #627d954d; font: 800 12px var(--sans); }
+.dossier-key { display: flex; flex-wrap: wrap; gap: 10px 18px; font-size: 10px; margin: 17px 0; }
+.dossier-key div { display: flex; align-items: baseline; gap: 6px; }
+.dossier-key dt,.dossier-key dd { margin: 0; }
+.dossier-key dt { color: #b9cbd9; }
+.dossier-key dd { color: #839bad; }
+.connection-inspector { background: #09111cec; border-color: #5c748777; }
+.connection-inspector h2,.connection-course strong { color: #dbe7f0; }
+.connection-eyebrow,.connection-type,.connection-course small,.connection-caption { color: #95aec0; }
+.connection-course { background: #14233480; border-color: #4c687e66; }
+.paper-card,dialog:not(.course-dossier) { background: #0c141e; border-color: #53677955; color: #d9e6ee; }
+.dialog-close { color: #c5d8e5; background: #172735; border-color: #6d879a66; }
+.course-status.preview-status,.path-state { color: #b9d0e0; border-color: #6e8aa166; background: #253a4b55; }
+.commitment-banner { background: #102130; border-color: #52708766; }
+.commitment-banner strong { color: #cfdfeb; }
+.paper-card h2,.paper-card h3,.journal-records h2,.section-heading h2,.domain h3 { color: #dbe7f0; }
+.paper-card p,.card-note,.muted,#journal-page>p,#gate-page>p { color: #8fa6b9; }
+.eyebrow,.card-eyebrow { color: #93aec3; }
+.secondary { color: #bdcfdd; border-color: #557086; background: #172534; }
+.secondary:hover { background: #233a4d; }
+.year-select,textarea { background: #111f2e; border-color: #48637a; color: #d4e3ee; }
+.branch-option,.confirmation-note { background: #142130; border-color: #4b657c66; }
+.branch-option span,.check-label,.confirmation-note { color: #a6bdce; }
+.history-row,.journal-empty,.records-table { color: #a1b9cb; border-color: #3f566c66; }
+.records-table th { color: #83a0b6; }
+.domain,.gate-illustration { background: #0d1823; border-color: #4c657a66; }
+.gate-check strong { color: #d0e0ec; }
+.gate-check small { color: #849fb5; }
+#toast { background: #172736; border-color: #5b7d96; color: #d8e7f1; }
+@media(max-width:980px) { .map-toolbar { flex-wrap: wrap; } .map-tools { margin-left: auto; } }
+@media(max-width:760px) { .map-tools { width: 100%; justify-content: space-between; margin-left: 0; gap: 10px; } .reset-progress-button { font-size: 11px; padding: 9px 11px; } .cluster-year { font-size: 20px; } }
+@media(max-width:420px) { .map-tools { flex-wrap: nowrap; } .map-tools .explore-button { width: auto; flex: 1; font-size: 9px; } .reset-progress-button { flex-shrink: 0; font-size: 10px; padding: 10px; } }

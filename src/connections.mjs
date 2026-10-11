@@ -4,6 +4,15 @@ export function courseConnections(courses){
  const ids=new Set(courses.map(c=>c.id));
  return courses.flatMap(c=>[['H',c.hardPrerequisites],['S',c.softPrerequisites],['C',c.corequisites]].flatMap(([type,list])=>list.filter(id=>ids.has(id)).map(from=>({from,to:c.id,type,key:`${from}:${c.id}:${type}`}))));
 }
+export function courseRelationships(courses,id){
+ const edges=courseConnections(courses),byId=new Map(courses.map(c=>[c.id,c]));
+ const sorted=rows=>rows.sort((a,b)=>a.course.term-b.course.term||a.course.id.localeCompare(b.course.id));
+ const prerequisites=sorted(edges.filter(e=>e.to===id&&e.type!=='C').map(e=>({course:byId.get(e.from),type:e.type})));
+ const leadsTo=sorted(edges.filter(e=>e.from===id&&e.type!=='C').map(e=>({course:byId.get(e.to),type:e.type})));
+ const partners=new Map();
+ for(const e of edges){if(e.type==='C'&&(e.from===id||e.to===id)){const partner=e.from===id?e.to:e.from;partners.set(partner,{course:byId.get(partner),type:'C'});}}
+ return {prerequisites,leadsTo,corequisites:sorted([...partners.values()])};
+}
 export function traceConnection(courses,key){
  const edges=courseConnections(courses),link=edges.find(e=>e.key===key);
  if(!link)return null;

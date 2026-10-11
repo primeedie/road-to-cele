@@ -19,7 +19,9 @@ export function attachMapPan(viewport,{getPosition,onPan,threshold=5}){
   if(!gesture.moved && Math.hypot(dx,dy)<threshold)return;
   gesture.moved=true;
   viewport.classList.add('dragging');
-  onPan({x:gesture.x+dx,y:gesture.y+dy});
+  const requested={x:gesture.x+dx,y:gesture.y+dy},applied=onPan(requested);
+  // Absorb blocked movement at an edge, so reversing a drag responds immediately.
+  if(applied){gesture.x+=applied.x-requested.x;gesture.y+=applied.y-requested.y;}
  };
  const end=e=>{
   if(!gesture || gesture.id!==e.pointerId)return;

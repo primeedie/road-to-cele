@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { JSDOM } from 'jsdom';
 import { attachMapPan } from '../src/map-pan.mjs';
-function setup(){
+function setup(constrain=p=>p){
  const dom=new JSDOM('<div id="viewport"><button class="course-node"><span class="node-copy">Foundation Statistics</span></button><button id="zoom">+</button><img id="image"><svg><path data-connection="A:B:H"></path></svg></div>');
  const w=dom.window,doc=w.document,viewport=doc.querySelector('#viewport'),node=doc.querySelector('.course-node'),label=doc.querySelector('.node-copy'),zoom=doc.querySelector('#zoom');
  const captures=new Map();
@@ -10,7 +10,7 @@ function setup(){
  w.Element.prototype.hasPointerCapture=function(id){return captures.get(id)===this;};
  w.Element.prototype.releasePointerCapture=function(id){captures.delete(id);};
  let position={x:20,y:-40},pans=0,inspections=0,zooms=0;
- const detach=attachMapPan(viewport,{getPosition:()=>position,onPan:p=>{position=p;pans++;}});
+ const detach=attachMapPan(viewport,{getPosition:()=>position,onPan:p=>{position=constrain(p);pans++;return position;}});
  doc.addEventListener('click',e=>{if(e.target.closest('.course-node'))inspections++;if(e.target.closest('#zoom'))zooms++;});
  const pointer=(target,type,x,y,{id=1,button=0,primary=true}={})=>{const event=new w.MouseEvent(type,{bubbles:true,cancelable:true,clientX:x,clientY:y,button});Object.defineProperties(event,{pointerId:{value:id},isPrimary:{value:primary}});target.dispatchEvent(event);return event;};
  const click=(target,detail=1)=>{const event=new w.MouseEvent('click',{bubbles:true,cancelable:true,detail});target.dispatchEvent(event);return event;};
@@ -67,5 +67,15 @@ test('a prerequisite line retains click targeting but dragging it only pans',()=
   f.pointer(line,'pointerup',100,100);f.click(line);assert.equal(traces,1);
   f.pointer(line,'pointerdown',100,100);f.pointer(line,'pointermove',170,120);f.pointer(line,'pointerup',170,120);
   assert.equal(f.click(line).defaultPrevented,true);assert.equal(traces,1);assert.equal(f.pans,1);
+ }finally{f.close();}
+});
+test('reversing a drag responds immediately after reaching a pan boundary',()=>{
+ const f=setup(p=>({...p,x:Math.max(-100,Math.min(100,p.x))}));try{
+  f.pointer(f.viewport,'pointerdown',100,100);
+  f.pointer(f.viewport,'pointermove',10000,100);assert.equal(f.position.x,100);
+  f.pointer(f.viewport,'pointermove',9990,100);assert.equal(f.position.x,90);
+  f.pointer(f.viewport,'pointerup',9990,100);
+  assert.equal(f.viewport.classList.contains('dragging'),false);
+  assert.equal(f.captures.size,0);
  }finally{f.close();}
 });

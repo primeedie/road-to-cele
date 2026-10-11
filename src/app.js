@@ -6,7 +6,7 @@ import { attachBackdropDismiss } from './dialog-dismiss.mjs';
 import { BRANCH_CONSTELLATIONS, SKY_NAMES, WORLD_WIDTH, WORLD_HEIGHT, NODE_GROUND_X, NODE_GROUND_Y, drawConstellation, starBadge } from './sky-layout.mjs';
 import { createSkyMap } from './map-curriculum.mjs';
 import { skyAccent } from './sky-palette.mjs';
-import { SHARED_WIDTH } from './sky-layout.mjs';
+import { sceneBounds, constrainCamera, overviewCamera } from './map-camera.mjs';
 import { COURSE_SECTIONS, renderCoursePanel } from './course-panel.mjs';
 import { attachMapPan } from './map-pan.mjs';
 import { COURSES, COURSE_BY_ID, SPECIALIZATIONS, CELE_DOMAINS } from './curriculum.mjs';
@@ -20,7 +20,7 @@ try{progress=loadProgress(localStorage);}catch{progress=newProgress();storageOK=
 const view={year:1,branch:selected(progress),preview:false,course:null,connection:null,reward:null,section:0,page:'map',scale:1,x:0,y:0};
 const initialAcademic=progressSummary(progress).academic;
 let resetOrigin;
-let transferMode=false,toastTimer,shownMap,previousAcademicFill=100*initialAcademic.complete/initialAcademic.total,sharedCamera=null,lastRenderedBranch=null;
+let transferMode=false,toastTimer,shownMap,mapBounds,previousAcademicFill=100*initialAcademic.complete/initialAcademic.total,sharedCamera=null,lastRenderedBranch=null;
 const icon=key=>`<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${{
  bridge:'<path d="M4 35H44M9 35V16M39 35V16M9 19Q24 41 39 19M15 35V27M21 35V30M27 35V30M33 35V27M6 16H12M36 16H42M4 38H44"/>',
  mountain:'<path d="M3 36L17 10L31 36M21 36L32 16L45 36M11 22L17 19L22 23M27 25L32 23L36 26M5 40H44M17 28L14 36M27 40L25 44M35 39L39 44"/>',
@@ -57,7 +57,7 @@ function courseButton(c,p,trace=null){
  return `<button class="course-node ${state} ${c.specialization?'specialization-node':''} ${view.course===c.id?'selected-node':''} ${trace?(trace.ids.has(c.id)?'path-member':'path-muted'):''} ${view.reward?.id===c.id?'just-completed':''}" style="left:${p.x}px;top:${p.y}px;--label-x:${p.labelX}px;--label-y:${p.labelY}px;--node-perspective:${p.perspective.toFixed(3)};${skyAccent(p.chart)}" data-course="${c.id}" data-specialization="${c.specialization||''}" data-constellation="${p.chart}" aria-label="${c.id}, ${esc(c.title)}, ${state}">${starBadge()}<span class="node-copy"><strong class="node-code">${c.id}</strong><span class="node-title" aria-hidden="true">${esc(c.title)}</span></span></button>`;
 }
 function renderMap(reset=false){
- const map=createSkyMap(view.branch),{courses,positions}=map;shownMap=map;
+ const map=createSkyMap(view.branch),{courses,positions}=map;shownMap=map;mapBounds=sceneBounds(map);
  $('#map-viewport').classList.toggle('revealing-branch',!!view.branch&&view.branch!==lastRenderedBranch);lastRenderedBranch=view.branch;
  let html=terrain;
  $('#map-title').textContent='Civil Engineering · Shared sky';
@@ -101,6 +101,7 @@ function renderConnectionCard(trace){
 function selectConnection(key){view.connection=key;renderMap();document.querySelector('[data-connection="'+key+'"]')?.focus({preventScroll:true});}
 function clearConnection(){view.connection=null;renderMap();}
 function applyTransform(){
+ if(mapBounds)Object.assign(view,constrainCamera(view,$('#map-viewport').getBoundingClientRect(),mapBounds));
  $('#world').style.transform=`translate(${view.x}px,${view.y}px) scale(${view.scale})`;
  const sky=$('#map-viewport');
  sky.style.setProperty('--far-x',Math.tanh(view.x/1100)*45+'px');
@@ -113,10 +114,8 @@ function applyTransform(){
 }
 function fitMap({overview=false}={}){
  const r=$('#map-viewport').getBoundingClientRect();if(!r.width)return;
- const width=view.branch?WORLD_WIDTH:SHARED_WIDTH;
- view.scale=overview?Math.min((r.width-60)/width,(r.height-60)/WORLD_HEIGHT):1;
- view.x=overview?(r.width-width*view.scale)/2:12;
- view.y=overview?20:32-shownMap.charts.find(c=>c.term===(view.year-1)*3+1).label.y;
+ if(overview)Object.assign(view,overviewCamera(r,mapBounds));
+ else {view.scale=1;view.x=12;view.y=32-shownMap.charts.find(c=>c.term===(view.year-1)*3+1).label.y;}
  applyTransform();
 }
 function focusBranch(){
@@ -157,7 +156,7 @@ function travelToYear(year){
 }
 
 
-function zoom(factor,cx,cy){stopMapTravel();const r=$('#map-viewport').getBoundingClientRect();cx??=r.width/2;cy??=r.height/2;const next=Math.max(.28,Math.min(1.8,view.scale*factor)),ratio=next/view.scale;view.x=cx-(cx-view.x)*ratio;view.y=cy-(cy-view.y)*ratio;view.scale=next;applyTransform();}
+function zoom(factor,cx,cy){stopMapTravel();const r=$('#map-viewport').getBoundingClientRect();cx??=r.width/2;cy??=r.height/2;const next=Math.max(Math.min(.28,overviewCamera(r,mapBounds).scale),Math.min(1.8,view.scale*factor)),ratio=next/view.scale;view.x=cx-(cx-view.x)*ratio;view.y=cy-(cy-view.y)*ratio;view.scale=next;applyTransform();}
 function milestone(){const visible=progress.academicYear>=3&&!selected(progress);$('#commitment-banner').innerHTML=visible?'<div class="commitment-banner"><div><strong>Year III · Choose your calling</strong><p>Shared subjects stay available while you await acceptance.</p></div><button class="primary" data-action="confirm">Confirm specialization →</button></div>':'';}
 function journal(){
  const s=progressSummary(progress),branch=selected(progress),r=progress.specializationProgression;
@@ -242,7 +241,7 @@ $('#course-card').addEventListener('keydown',e=>{
  courseCard();$('#course-tab-'+view.section).focus({preventScroll:true});
 });
 const viewport=$('#map-viewport');
-attachMapPan(viewport,{getPosition:()=>{stopMapTravel();return {x:view.x,y:view.y};},onPan:position=>{Object.assign(view,position);applyTransform();}});
+attachMapPan(viewport,{getPosition:()=>{stopMapTravel();return {x:view.x,y:view.y};},onPan:position=>{Object.assign(view,position);applyTransform();return {x:view.x,y:view.y};}});
 viewport.addEventListener('wheel',e=>{e.preventDefault();const r=viewport.getBoundingClientRect();zoom(e.deltaY<0?1.09:1/1.09,e.clientX-r.left,e.clientY-r.top);},{passive:false});
 new ResizeObserver(()=>{if(view.page==='map')applyTransform();}).observe(viewport);
 renderAll();requestAnimationFrame(()=>view.branch?focusBranch():fitMap());
