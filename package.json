@@ -1,0 +1,14 @@
+{
+  "name": "cele-engineers-atlas",
+  "version": "3.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test --test-isolation=none tests/*.test.mjs",
+    "start": "node scripts/serve.mjs",
+    "build": "node scripts/build.mjs"
+  },
+  "devDependencies": {
+    "jsdom": "^30.1.2"
+  }
+}

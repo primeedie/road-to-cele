@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+ <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+ <meta name="theme-color" content="#f3efdf"><meta name="description" content="Chart your Civil Engineering journey. Explore five specializations, build a shared foundation, and find your path to CELE.">
+ <title>CELE · The Engineer’s Atlas</title><link rel="stylesheet" href="styles.css">
+</head>
+<body>
+ <div class="app-shell">
+  <aside class="rail">
+   <a class="brand" href="#map" aria-label="CELE Atlas home"><span class="brand-mark">✧</span><span>CELE<span class="brand-sub">THE ENGINEER’S ATLAS</span></span></a>
+   <div class="rail-caption">YOUR EXPEDITION</div>
+   <nav aria-label="Main navigation">
+    <button class="nav-item active" data-page="map"><span>⌘</span> World map <small>01</small></button>
+    <button class="nav-item" data-page="journal"><span>▤</span> Field journal <small>02</small></button>
+    <button class="nav-item" data-page="gate"><span>♜</span> CIVINCO gate <small>03</small></button>
+   </nav>
+   <div class="rail-sketch" aria-hidden="true"><svg viewBox="0 0 180 170"><path d="M16 139H168M33 137V94L62 79V137M47 87V56L72 40L94 56V139M76 45V16L112 33V139M100 71L136 54V140M143 140V99L163 88V140M28 145L14 153M146 148L168 155"/><path d="M59 65H66M59 78H66M59 92H66M86 34H97M87 50H99M87 65H99M113 77H126M113 94H126M113 113H126M75 152H139"/></svg><span>Build your own horizon.</span></div>
+   <div class="traveler"><div class="avatar">CE</div><div><strong>Engineer in the making</strong><span id="traveler-year">Year 1 · Explorer</span></div></div>
+   <div class="local-label"><i></i> Saved on this browser</div>
+  </aside>
+  <main>
+   <header class="topbar"><div>CIVIL ENGINEERING <span>/</span> <span id="page-breadcrumb">WORLD MAP</span></div><button id="help-button" class="text-button">How to read the atlas <span>↗</span></button></header>
+   <section id="map-page" class="page">
+    <div class="heading-row"><div><div class="eyebrow">A LITTLE CURIOSITY. A WORLD OF POSSIBILITIES.</div><h1>Your journey, <em>charted.</em></h1><p>Build your foundations. Wander the branches. Find your calling.</p></div><div class="chapter-stamp"><span>VOLUME</span><strong>01—04</strong><span>THE CIVIL ENGINEER</span></div></div>
+    <div id="commitment-banner"></div>
+    <div class="workspace">
+     <section class="map-panel" aria-label="Interactive skill tree">
+      <div class="map-toolbar"><div class="year-tabs" role="group" aria-label="Explore curriculum year"><button data-year="1" class="active">Year I</button><button data-year="2">Year II</button><button data-year="3">Year III</button><button data-year="4">Year IV</button></div><button id="explore-toggle" class="explore-button" aria-pressed="false"><span>✧</span> Explore All Specializations</button></div>
+      <div class="map-caption"><span id="map-title">The Foundation Fields</span><span id="map-mode">SHARED CURRICULUM</span></div>
+      <div id="map-viewport" class="map-viewport" aria-label="Drag to pan the skill tree; use zoom controls to enlarge it"><div id="world" class="world"></div><div class="compass" aria-hidden="true"><span>N</span><svg viewBox="0 0 60 60"><path d="M30 3L36 25L57 30L36 36L30 57L25 36L3 30L25 25Z"/><path d="M30 3V57M3 30H57"/></svg></div><div class="map-controls"><button id="zoom-out" aria-label="Zoom out">−</button><span id="zoom-label">100%</span><button id="zoom-in" aria-label="Zoom in">+</button><button id="fit-map" aria-label="Fit map">⌖</button></div><div class="pan-hint">DRAG TO WANDER · SCROLL TO ZOOM</div></div>
+      <div class="map-legend"><span><i class="legend-node complete"></i>Completed</span><span><i class="legend-node available"></i>Available</span><span><i class="legend-node locked"></i>Future / prerequisite</span><span><i class="legend-node preview"></i>Preview</span></div>
+     </section>
+     <aside class="inspector"><div id="path-card"></div><div id="course-card"></div></aside>
+    </div>
+    <section class="branches-section"><div class="section-heading"><h2>Five paths. <em>One foundation.</em></h2><span>ALL BRANCHES ARE OPEN TO EXPLORATION</span></div><div id="branch-cards" class="branch-cards"></div></section>
+    <div class="footer-note"><span>✧</span> You don’t have to choose your horizon on the first day.<span>CURRICULUM · ID122</span></div>
+   </section>
+   <section id="journal-page" class="page hidden"></section>
+   <section id="gate-page" class="page hidden"></section>
+   <footer class="site-footer">THE ENGINEER’S ATLAS <span>A shared foundation. An individual journey.</span></footer>
+  </main>
+ </div>
+ <dialog id="path-dialog"><form id="path-form"><button type="button" class="dialog-close" aria-label="Close dialog">×</button><div class="eyebrow" id="dialog-eyebrow">YEAR III · A NEW CHAPTER</div><h2 id="dialog-title">Choose your <em>calling.</em></h2><p id="dialog-intro"></p><div id="dialog-branches" class="dialog-branches"></div><label id="reason-label" class="hidden">Reason for changing your path<textarea id="transfer-reason" placeholder="Academic transfer or correction of an incorrect selection" rows="2"></textarea></label><div class="confirmation-note">Your selected specialization becomes your active academic path. Shared Civil Engineering subjects remain active; the other branches stay explorable. All historical records are retained.</div><label class="check-label"><input id="acceptance-check" type="checkbox" required><span>I confirm that I was accepted into this specialization. This is my self-reported selection, not university-verified enrollment.</span></label><p id="dialog-error" class="error" role="alert"></p><div class="dialog-actions"><button type="button" class="secondary dialog-close">Keep exploring</button><button id="confirm-path" class="primary" type="submit">Confirm my specialization →</button></div></form></dialog>
+ <dialog id="help-dialog"><button class="dialog-close" aria-label="Close help">×</button><div class="eyebrow">A NOTE FROM YOUR FIELD GUIDE</div><h2>Make room for <em>discovery.</em></h2><p>Year tabs browse the curriculum; they don’t change your academic year. Set your actual year in the Field journal.</p><p>Inspect any course, follow its prerequisite links, and explore every region. Shared courses form everyone’s foundation. From Year 3, confirm your self-reported specialization before activating its courses.</p><p>Solid lines connect prerequisites in this view. Course details distinguish hard prerequisites, soft prerequisites, and co-requisites.</p><p>Academic completion is self-reported. Mastery quizzes and course descriptions are reserved for a later phase. The CIVINCO assessment and Hardmode review screens have their architecture in place, with assessments still to come.</p><p class="muted">Progress is saved in this browser. Export a backup from the Field journal to keep a copy.</p><button class="primary dialog-close">Let’s explore →</button></dialog>
+ <div id="toast" role="status" aria-live="polite"></div>
+ <script type="module" src="app.js"></script>
+</body></html>
