@@ -4,6 +4,11 @@
   "notice": "milch pogiman made this, so u cant steal this lol",
   "scope": "Application authorship; third-party assets retain their own attribution.",
   "algorithm": "SHA-256",
+  "deployment": {
+    "builder": "local",
+    "commit": null,
+    "cloudLoginConfigured": false
+  },
   "files": {
     "_headers": "dc30ef0caf9f428b5f721c8aefd6dd43ce562910d1b226da07f9e7aaf1ab6730",
     "account-browser.mjs": "698e2a043c5fafc2dd35cebf8445d0c8adbb2264bdbca4d681d1304ad9bb72b3",

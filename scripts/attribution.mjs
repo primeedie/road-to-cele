@@ -13,7 +13,7 @@ export async function verifyAttribution(root='src'){
  if(!mark.includes(`export const AUTHOR_NOTICE='${notice}';`))throw Error('Runtime author notice has changed.');
 }
 
-export async function writeProvenance(root='dist'){
+export async function writeProvenance(root='dist',deployment={}){
  const files={};
  async function collect(directory,prefix=''){
   for(const entry of (await readdir(directory,{withFileTypes:true})).sort((a,b)=>a.name.localeCompare(b.name))){
@@ -23,5 +23,5 @@ export async function writeProvenance(root='dist'){
   }
  }
  await collect(root);
- await writeFile(join(root,'provenance.json'),JSON.stringify({project:'Road to CELE',author:'milch pogiman',notice,scope:'Application authorship; third-party assets retain their own attribution.',algorithm:'SHA-256',files},null,2)+'\n');
+ await writeFile(join(root,'provenance.json'),JSON.stringify({project:'Road to CELE',author:'milch pogiman',notice,scope:'Application authorship; third-party assets retain their own attribution.',algorithm:'SHA-256',deployment,files},null,2)+'\n');
 }

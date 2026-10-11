@@ -19,5 +19,6 @@ await writeFile('dist/font-face.css',fontFace);
 await writeFile('dist/runtime-config.mjs','export const cloudConfig = Object.freeze('+JSON.stringify(cloudConfig)+');\n');
 await build({entryPoints:['node_modules/@supabase/supabase-js/dist/index.mjs'],outfile:'dist/supabase-client.mjs',bundle:true,format:'esm',platform:'browser',target:'es2022',minify:true,legalComments:'eof'});
 await verifyAttribution('dist');
-await writeProvenance('dist');
+await writeProvenance('dist',{builder:process.env.CF_PAGES==='1'?'cloudflare-pages':'local',commit:process.env.CF_PAGES_COMMIT_SHA||null,cloudLoginConfigured:!!cloudConfig.url});
 console.log('Built static site in dist/');
+console.log(cloudConfig.url?'Supabase public configuration included.':'Guest-only build: PUBLIC_SUPABASE_URL and PUBLIC_SUPABASE_PUBLISHABLE_KEY are not set.');
