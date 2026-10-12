@@ -6,10 +6,10 @@ export function rotateSkyPoint(point,center,angle){
  return {...point,x:center.x+x*c-y*s,y:center.y+x*s+y*c};
 }
 export function rotatedCluster(chart,positions,courses,label,angle){
- const center={x:chart.vertices.reduce((sum,p)=>sum+p.x,0)/chart.vertices.length,y:chart.vertices.reduce((sum,p)=>sum+p.y,0)/chart.vertices.length};
+ const center=chart.orbit?.center||{x:chart.vertices.reduce((sum,p)=>sum+p.x,0)/chart.vertices.length,y:chart.vertices.reduce((sum,p)=>sum+p.y,0)/chart.vertices.length};
  const vertices=chart.vertices.map(p=>rotateSkyPoint(p,center,angle)),moved={};
  for(const c of courses){const old=positions[c.id],anchor=vertices[old.anchorIndex];moved[c.id]={...old,x:anchor.x-NODE_GROUND_X,y:anchor.y-NODE_GROUND_Y};}
- return {vertices,positions:moved,label:rotateSkyPoint(label,center,angle)};
+ return {vertices,positions:moved,label:{...label}};
 }
 export function connectionCurve(start,end){
  const sx=start.x+NODE_GROUND_X,sy=start.y+NODE_GROUND_Y,ex=end.x+NODE_GROUND_X,ey=end.y+NODE_GROUND_Y,bend=Math.min(180,Math.abs(ex-sx)*.4);
@@ -17,15 +17,16 @@ export function connectionCurve(start,end){
 }
 export function attachConstellationRotation(viewport,button,{requestFrame,cancelFrame}={}){
  const doc=viewport.ownerDocument,win=doc.defaultView,query=win.matchMedia?.('(prefers-reduced-motion: reduce)');
+ const frameInterval=win.matchMedia?.('(pointer: coarse)')?.matches?100:50;
  requestFrame??=fn=>win.requestAnimationFrame(fn);cancelFrame??=id=>win.cancelAnimationFrame(id);
  let enabled=!!query&&!query.matches,frame=null,last=null,painted=0,map=null,clusters=[],links=[],nodes=new Map(),positions={},hovered=null,pointerDown=false,blurred=false;
  const clocks=new Map();
  function paintButton(){button.disabled=!!query?.matches;button.setAttribute('aria-pressed',String(enabled));button.setAttribute('aria-label',enabled?'Pause constellation rotation':'Start constellation rotation');button.title=query?.matches?'Rotation disabled by reduced-motion preference':enabled?'Pause constellation rotation':'Start constellation rotation';doc.body.classList.toggle('constellations-rotating',enabled&&!query?.matches);}
  function cancel(){if(frame!==null)cancelFrame(frame);frame=null;last=null;}
- function paused(){return !enabled||query?.matches||doc.hidden||blurred||pointerDown||viewport.classList.contains('dragging')||viewport.classList.contains('tracing-path')||!!doc.querySelector('dialog[open]')||!!doc.querySelector('#map-page.hidden');}
+ function paused(){return !enabled||query?.matches||doc.hidden||blurred||pointerDown||hovered||viewport.classList.contains('dragging')||viewport.classList.contains('tracing-path')||!!doc.querySelector('dialog[open]')||!!doc.querySelector('#map-page.hidden');}
  function wake(){if(!paused()&&map&&frame===null)frame=requestFrame(tick);}
  function updateCluster(cluster){
-  const clock=clocks.get(cluster.key),angle=Math.sin(clock.time/(64+cluster.index*3)*Math.PI*2)*(cluster.index%2?-1:1)*Math.PI/60;
+  const clock=clocks.get(cluster.key),angle=(clock.time*.011)%(Math.PI*2);
   const pose=rotatedCluster(cluster.chart,map.positions,cluster.courses,cluster.label,angle);
   const trails=cluster.svg.querySelectorAll('.sky-trails polyline,.sky-plane-shadow polyline');
   trails.forEach((path,i)=>{const ids=cluster.chart.paths[i%cluster.chart.paths.length];path.setAttribute('points',ids.map(id=>`${pose.vertices[id].x},${pose.vertices[id].y}`).join(' '));});
@@ -40,7 +41,7 @@ export function attachConstellationRotation(viewport,button,{requestFrame,cancel
  function tick(now){
   frame=null;if(paused()){last=null;return;}
   if(last===null)last=now;
-  if(now-painted>=50){
+  if(now-painted>=frameInterval){
    const elapsed=Math.min(.15,Math.max(0,(now-last)/1000));last=now;painted=now;
    for(const cluster of clusters){if(cluster.key!==hovered)clocks.get(cluster.key).time+=elapsed;}
    draw();
@@ -61,11 +62,11 @@ export function attachConstellationRotation(viewport,button,{requestFrame,cancel
  function toggle(){enabled=!enabled;paintButton();state();}
  function preference(){if(query.matches){enabled=false;paintButton();cancel();if(map){for(const clock of clocks.values())clock.time=0;draw();}}else{paintButton();state();}}
  function hover(event){
-  const node=event.target.closest?.('.course-node');
-  if(!node){hovered=null;return;}
-  hovered=clusters.find(c=>c.courses.some(course=>course.id===node.dataset.course))?.key||null;
+  const node=event.target.closest?.('.course-node'),path=event.target.closest?.('[data-connection]');
+  hovered=path?'path':node?clusters.find(c=>c.courses.some(course=>course.id===node.dataset.course))?.key||null:null;
+  state();
  }
- const leave=()=>{hovered=null;};
+ const leave=()=>{hovered=null;state();};
  const down=()=>{pointerDown=true;state();};const up=()=>{pointerDown=false;state();};
  const blur=()=>{blurred=true;pointerDown=false;hovered=null;state();},focus=()=>{blurred=false;state();};
  const observer=win.MutationObserver?new win.MutationObserver(state):null;
@@ -74,5 +75,5 @@ export function attachConstellationRotation(viewport,button,{requestFrame,cancel
  button.addEventListener('click',toggle);viewport.addEventListener('pointerover',hover);viewport.addEventListener('focusin',hover);viewport.addEventListener('pointerleave',leave);viewport.addEventListener('focusout',leave);viewport.addEventListener('pointerdown',down);
  win.addEventListener('pointerup',up);win.addEventListener('pointercancel',up);win.addEventListener('blur',blur);win.addEventListener('focus',focus);doc.addEventListener('visibilitychange',state);query?.addEventListener('change',preference);
  paintButton();
- return {setMap,destroy(){cancel();observer?.disconnect();button.removeEventListener('click',toggle);viewport.removeEventListener('pointerover',hover);viewport.removeEventListener('focusin',hover);viewport.removeEventListener('pointerleave',leave);viewport.removeEventListener('focusout',leave);viewport.removeEventListener('pointerdown',down);win.removeEventListener('pointerup',up);win.removeEventListener('pointercancel',up);win.removeEventListener('blur',blur);win.removeEventListener('focus',focus);doc.removeEventListener('visibilitychange',state);query?.removeEventListener('change',preference);doc.body.classList.remove('constellations-rotating');}};
+ return {setMap,getPosition:id=>positions[id]?{...positions[id]}:null,destroy(){cancel();observer?.disconnect();button.removeEventListener('click',toggle);viewport.removeEventListener('pointerover',hover);viewport.removeEventListener('focusin',hover);viewport.removeEventListener('pointerleave',leave);viewport.removeEventListener('focusout',leave);viewport.removeEventListener('pointerdown',down);win.removeEventListener('pointerup',up);win.removeEventListener('pointercancel',up);win.removeEventListener('blur',blur);win.removeEventListener('focus',focus);doc.removeEventListener('visibilitychange',state);query?.removeEventListener('change',preference);doc.body.classList.remove('constellations-rotating');}};
 }

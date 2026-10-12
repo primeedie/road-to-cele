@@ -31,7 +31,7 @@ test('rotation updates visible and clickable paths together, pauses interaction,
   const node=doc.querySelector(`[data-course="${a.id}"]`),before=node.style.left;assert.notEqual(before,map.positions[a.id].x+'px');
   const d=doc.querySelector('.connection-line').getAttribute('d');assert.equal(doc.querySelector('.connection-hit').getAttribute('d'),d);assert.equal(doc.querySelector('.thread-shadows path').getAttribute('d'),d);
   assert.ok(d.startsWith(`M ${parseFloat(node.style.left)+NODE_GROUND_X} ${parseFloat(node.style.top)+NODE_GROUND_Y}`));
-  node.dispatchEvent(new win.Event('pointerover',{bubbles:true}));step(300);assert.equal(node.style.left,before);
+  node.dispatchEvent(new win.Event('pointerover',{bubbles:true}));assert.equal(scheduled,null);assert.equal(node.style.left,before);viewport.dispatchEvent(new win.Event('pointerleave'));assert.ok(scheduled);
   viewport.dispatchEvent(new win.Event('pointerdown'));assert.equal(scheduled,null);win.dispatchEvent(new win.Event('pointerup'));assert.ok(scheduled);
   button.click();assert.equal(scheduled,null);assert.equal(button.getAttribute('aria-pressed'),'false');button.click();assert.ok(scheduled);
   doc.querySelector('dialog').setAttribute('open','');await Promise.resolve();assert.equal(scheduled,null);doc.querySelector('dialog').removeAttribute('open');await Promise.resolve();assert.ok(scheduled);

@@ -1,0 +1,192 @@
+/* A reading rail, a living sky, and a course file. Quiet surfaces, useful type. */
+:root { --atlas-rail:238px;--atlas-file:430px;--atlas-header:62px;--atlas-mono:ui-monospace,'SFMono-Regular',Consolas,monospace;--atlas-rule:#ffffff24 }
+.app-shell { display:block;min-height:100dvh;background:#000 }
+.app-shell>.rail { position:relative;z-index:15;display:flex;height:var(--atlas-header);min-height:var(--atlas-header);padding:0 22px;gap:24px;border-bottom:1px solid var(--atlas-rule);background:#000;flex-wrap:nowrap }
+.rail .brand { gap:10px;flex-shrink:0 }
+.rail .brand-mark { width:26px;height:26px;border:0;background:none;box-shadow:none }
+.rail .brand-name { display:flex;align-items:baseline;gap:7px }
+.rail .brand-prefix { font:11px var(--atlas-mono);letter-spacing:.02em;text-transform:uppercase;color:#bbb }
+.rail .brand-title { font-size:20px;letter-spacing:.04em }
+.rail nav { display:flex;gap:18px;margin-left:20px }
+.rail .nav-item { min-height:42px;padding:7px 0;background:none;border:0;border-bottom:1px solid transparent;border-radius:0;box-shadow:none;font:11px var(--atlas-mono);color:#aaa }
+.rail .nav-item.active { color:#f2f2ed;border-bottom-color:#deded6 }
+.rail .nav-symbol { display:none }
+.rail .player { margin-left:auto }
+.rail .companion-button { gap:8px;padding:0;background:none;border:0;min-height:42px }
+.rail .companion-button>span:last-child { font:10px var(--atlas-mono);color:#ddd }
+.rail .companion-button small { font:9px var(--atlas-mono);margin-top:5px;color:#aaa }
+.rail .avatar-badge { width:34px;height:34px }
+.rail .account-panel { margin:0;padding-left:16px;border-left:1px solid var(--atlas-rule);max-width:220px;display:flex;gap:10px;align-items:center;flex-wrap:wrap }
+.rail .account-status,.rail .account-message { display:none }
+.rail .account-panel .account-status { display:block;order:3;flex:1 1 100%;font:9px var(--atlas-mono);margin:0;text-align:right;color:#bbb }
+.rail .account-identity strong { font:11px var(--atlas-mono) }
+.rail .account-panel button { min-height:36px;padding:6px 9px;background:none;border:1px solid #ffffff35;border-radius:2px;font:10px var(--atlas-mono) }
+main { padding:0 }
+#map-page { height:calc(100dvh - var(--atlas-header));min-height:600px;position:relative }
+.workspace,.map-panel { height:100%;position:relative }
+.workspace { display:block;padding:0;max-width:none;margin:0 }
+.map-panel { border:0;box-shadow:none;background:#000;border-radius:0;overflow:hidden }
+.atlas-sidebar { position:absolute;left:0;top:0;bottom:63px;width:var(--atlas-rail);z-index:7;padding:24px 20px 18px;display:flex;flex-direction:column;gap:18px;overflow-y:auto;background:linear-gradient(90deg,#000 82%,#000e);border-right:1px solid #ffffff12;scrollbar-width:thin }
+.atlas-caption { display:grid;gap:8px }
+.atlas-caption>span,.atlas-section-label { font:10px var(--atlas-mono);letter-spacing:.1em;text-transform:uppercase;color:#a5a5a0 }
+.atlas-caption strong { font-size:23px;line-height:1.1;color:#f3f3ed }
+.atlas-sidebar .map-toolbar { padding:0;background:none;border:0;display:flex;flex-direction:column;align-items:stretch;gap:12px }
+.atlas-sidebar .year-tabs { display:grid;grid-template-columns:1fr 1fr;gap:0;border-top:1px solid var(--atlas-rule);border-left:1px solid var(--atlas-rule) }
+.atlas-sidebar .year-tabs button { min-height:42px;padding:9px;border:0;border-right:1px solid var(--atlas-rule);border-bottom:1px solid var(--atlas-rule);border-radius:0;background:none;box-shadow:none;color:#aaa;font:11px var(--atlas-mono) }
+.atlas-sidebar .year-tabs button.active { color:#000;background:#e1e1da }
+.atlas-sidebar .map-tools { display:flex;flex-direction:column;align-items:stretch;gap:4px }
+.atlas-sidebar .map-tools button { min-height:40px;padding:8px 0;background:none;border:0;border-radius:0;text-align:left;justify-content:flex-start;box-shadow:none;font:10px var(--atlas-mono);letter-spacing:0;color:#ccc }
+.atlas-sidebar .map-tools svg { width:15px;height:15px }
+.atlas-sidebar #reset-progress { color:#aaa }
+.atlas-sidebar #specialization-menu { padding:0;border:0;position:relative }
+.atlas-sidebar #specialization-menu summary { min-height:46px;padding:10px 0;border:0;border-top:1px solid var(--atlas-rule);border-bottom:1px solid var(--atlas-rule);border-radius:0;background:none;display:flex;flex-wrap:wrap;gap:5px 12px;font-size:12px;color:#eee }
+.atlas-sidebar #specialization-selection { font:9px var(--atlas-mono);color:#aaa }
+.atlas-sidebar .branch-cards { position:absolute;top:100%;left:0;right:0;z-index:22;display:grid;grid-template-columns:1fr;gap:0;padding:4px 8px;background:#070707;border:1px solid #ffffff35;max-height:48dvh;overflow:auto;border-radius:0;box-shadow:0 12px 40px #000 }
+.atlas-sidebar .branch-card { padding:12px 0;border:0;border-bottom:1px solid #ffffff18;border-radius:0;min-height:52px;box-shadow:none;background:none }
+.atlas-sidebar .branch-name { font-size:11px }
+.atlas-course-index { min-height:130px;display:flex;flex-direction:column;flex:1 }
+.atlas-course-index>label { display:flex;align-items:center;justify-content:space-between;font:10px var(--atlas-mono);letter-spacing:.05em;text-transform:uppercase;color:#bbb }
+#course-index-count { color:#969696;font-size:9px }
+.atlas-search { position:relative;margin-top:10px;border-bottom:1px solid #ffffff40 }
+#course-search { width:100%;background:none;border:0;color:#f3f3ed;font:11px var(--atlas-mono);padding:11px 24px 11px 0;border-radius:0;min-height:42px;box-shadow:none }
+#course-search::placeholder { color:#999 }
+#clear-course-search { position:absolute;right:0;top:0;min-width:28px;min-height:42px;background:none;border:0;font-size:20px;color:#ccc }
+.atlas-course-results { overflow-y:auto;min-height:0;margin-top:10px;scrollbar-width:thin }
+.atlas-course-row { display:grid;grid-template-columns:1fr auto;gap:4px;width:100%;padding:10px 0;text-align:left;border:0;border-bottom:1px solid #ffffff12;border-radius:0;background:none;box-shadow:none }
+.atlas-course-row strong { font:12px var(--atlas-mono);color:#ddd }
+.atlas-course-row>span { grid-column:1/-1;grid-row:2;font-size:10px;line-height:1.45;color:#aaa }
+.atlas-course-row small { font:8px var(--atlas-mono);color:#888;align-self:center }
+.atlas-course-row:hover strong,.atlas-course-row:focus-visible strong { color:#fff }
+.atlas-course-row.selected { border-left:2px solid #e2e2d9;padding-left:8px }
+.atlas-no-results { font-size:11px;color:#bbb;line-height:1.6 }
+.atlas-sidebar .map-legend { padding:12px 0 0;margin-top:auto;display:grid;grid-template-columns:1fr 1fr;gap:8px;border:0;border-top:1px solid var(--atlas-rule);background:none;color:#aaa;font:8px var(--atlas-mono);line-height:1.5 }
+.map-panel>.map-context { position:absolute;z-index:5;left:calc(var(--atlas-rail) + 28px);right:30px;top:24px;background:none;border:0;padding:0;pointer-events:none }
+.map-context .map-caption { display:flex;align-items:center;gap:14px;flex-wrap:wrap }
+.map-context .map-caption #map-title { font-size:18px;color:#f0f0e9 }
+.map-context #map-mode { font:9px var(--atlas-mono);color:#aaa;letter-spacing:.04em }
+.map-context #help-button { pointer-events:auto;border:1px solid #ffffff35;border-radius:50%;width:28px;min-height:28px;font:12px var(--atlas-mono) }
+.map-panel>.map-viewport { position:absolute;left:var(--atlas-rail);right:0;top:0;bottom:62px;width:auto;height:auto;min-height:0;max-height:none;border:0;background:#000 }
+.workspace.inspector-open .map-panel>.map-viewport,.workspace.inspector-open .map-context { right:var(--atlas-file) }
+.workspace.path-inspector-open .map-panel>.map-viewport,.workspace.path-inspector-open .map-context { right:var(--atlas-file) }
+.map-panel>#path-card { position:absolute;bottom:0;left:0;right:0;z-index:8;height:62px;min-height:62px;display:grid;grid-template-columns:minmax(250px,1fr) minmax(280px,40%);padding:12px 24px;border-top:1px solid var(--atlas-rule);background:#000e;backdrop-filter:blur(8px);gap:24px }
+#path-card .path-identity,#path-card .journey-label { font:10px var(--atlas-mono);color:#ddd }
+#path-card .path-identity strong { font:10px var(--atlas-mono) }
+#path-card .path-scope { font:9px var(--atlas-mono);color:#aaa }
+#path-card .journey-track { height:3px;border-radius:0;background:#222 }
+#path-card .journey-fill { border-radius:0;background:#e2e2dc;box-shadow:none }
+.map-controls { border:1px solid #ffffff30;border-radius:2px;background:#070707df;box-shadow:none;bottom:18px;right:18px }
+.map-controls button { width:42px;min-width:42px;height:42px;border-radius:0;font-size:19px }
+.map-controls #expand-map { padding:0 10px }
+.pan-hint { bottom:24px;left:24px;font:9px var(--atlas-mono);color:#aaa;background:none }
+.sky-backdrop { opacity:.78;filter:saturate(.5) }
+.term-label .cluster-year { font:24px var(--atlas-mono);text-transform:uppercase;letter-spacing:.04em }
+.term-label .cluster-term { font:18px var(--atlas-mono);color:#aaa }
+.term-label>strong { font-size:42px }
+.node-copy .node-code { font-family:var(--atlas-mono);font-size:30px;letter-spacing:.03em;font-weight:500 }
+.course-node .node-copy { min-width:100px;padding:5px 9px;border-radius:1px;border-color:color-mix(in srgb,var(--sky-accent) 24%,transparent);background:#0008 }
+.connection-inspector { position:absolute;top:20px;right:14px;bottom:78px;width:390px;max-height:none;border:1px solid #ffffff35;border-radius:0;background:#080808ed;box-shadow:none }
+.workspace.inspector-open .connection-inspector { display:none }
+/* The course file is nonmodal, so the map remains a working surface. */
+#course-card.course-dossier { position:fixed;left:auto;right:0;top:var(--atlas-header);bottom:62px;margin:0;width:var(--atlas-file);max-width:var(--atlas-file);height:calc(100dvh - var(--atlas-header) - 62px);max-height:none;border:0;border-left:1px solid var(--atlas-rule);border-radius:0;background:#080808f5;box-shadow:-16px 0 42px #0005;z-index:25;padding:0;color:#eee }
+#course-card::backdrop { background:transparent;backdrop-filter:none }
+#course-card .dossier-layout { display:flex;flex-direction:column;height:100%;min-height:0;animation:dossier-arrive .25s ease-out }
+#course-card .dossier-close { right:17px;top:13px;width:34px;height:34px;border:1px solid #ffffff30;border-radius:1px;background:none;font-size:23px;color:#ddd }
+#course-card .dossier-identity { padding:25px 26px 17px;display:block;overflow:visible;flex:none;background:none;border-bottom:1px solid #ffffff20 }
+#course-card .dossier-identity::after { display:none }
+#course-card .dossier-path { font:9px var(--atlas-mono);letter-spacing:.08em;color:#bbb;display:block;padding-right:38px }
+#course-card .dossier-sky { display:block;position:absolute;right:20px;top:40px;width:105px;height:80px;min-height:0;margin:0;opacity:.42;pointer-events:none }
+#course-card .dossier-sky svg { height:80px;filter:none }
+#course-card .dossier-sky>span { display:none }
+#course-card .dossier-heading { border:0;padding:15px 0 0 }
+#course-card .dossier-heading .course-code { font:15px var(--atlas-mono);color:#f1f1e9;letter-spacing:.06em;padding-right:90px }
+#course-card .dossier-heading h2 { font:800 28px/1.15 'CELE WenHei',Arial,sans-serif;max-width:360px;margin:13px 0 16px;text-shadow:none;color:#f1f1eb }
+#course-card .course-meta { display:flex;gap:12px;font:10px var(--atlas-mono);border:0;padding:0;color:#bbb }
+#course-card .course-status { position:static;display:inline-block;font:9px var(--atlas-mono);border-radius:1px;margin:12px 0 0;padding:6px 8px;max-width:none;background:#161616;border:1px solid #ffffff2b;color:#ddd }
+#course-card .dossier-tabs { flex:none;align-self:stretch;display:grid;grid-template-columns:repeat(4,1fr);gap:0;padding:0;border-bottom:1px solid #ffffff25 }
+#course-card .dossier-thread,#course-card .dossier-diamond,#course-card .dossier-tab::before,#course-card .dossier-tab::after { display:none }
+#course-card .dossier-tab { width:100%;height:44px;border-right:1px solid #ffffff20;border-radius:0;background:none;color:#aaa }
+#course-card .dossier-numeral { font:14px var(--atlas-mono);text-shadow:none }
+#course-card .dossier-tab[aria-selected="true"] { background:#e1e1da;color:#111 }
+#course-card .dossier-reading { padding:20px 26px 18px;min-height:0;flex:1;display:flex;flex-direction:column }
+#course-card .dossier-section-heading { gap:9px;padding:0 0 14px;border-bottom:1px solid #ffffff25 }
+#course-card .dossier-section-heading::after { display:none }
+#course-card .dossier-section-heading>span { font:12px var(--atlas-mono);color:#aaa;text-shadow:none }
+#course-card .dossier-section-heading h3 { font:800 17px 'CELE WenHei',Arial,sans-serif;color:#eee }
+#course-card .dossier-scroll { min-height:0;overflow-y:auto;flex:1;padding-top:15px;scrollbar-width:thin }
+#course-card .dossier-placeholder { padding:17px 0 20px;min-height:0;border:0;border-bottom:1px solid #ffffff22;border-radius:0;background:none;box-shadow:none }
+#course-card .dossier-placeholder h4 { font-size:16px;color:#ddd;margin:0 0 10px }
+#course-card .dossier-placeholder p { font:12px/1.7 'CELE WenHei',Arial,sans-serif;color:#aaa;margin:0 }
+#course-card .dossier-small-star { display:none }
+#course-card .dossier-connections h4 { font:11px var(--atlas-mono);letter-spacing:.04em;text-transform:uppercase;margin:24px 0 9px;color:#ccc }
+#course-card .dossier-prereq { padding:10px 0;border:0;border-bottom:1px solid #ffffff20;border-radius:0;background:none;gap:10px }
+#course-card .dossier-prereq button { font-size:11px;line-height:1.5 }
+#course-card .dossier-prereq button strong { font:12px var(--atlas-mono);color:#eee }
+#course-card .dossier-prereq button span { font-size:10px;color:#aaa }
+#course-card .relation-type { font:10px var(--atlas-mono);color:#ccc }
+#course-card .dossier-key { display:grid;gap:10px;border-top:1px solid #ffffff25;padding-top:18px;margin-top:22px }
+#course-card .dossier-key>div { display:grid;grid-template-columns:17px 1fr;gap:10px;align-items:start }
+#course-card .dossier-key dt { font:11px var(--atlas-mono);color:#ddd }
+#course-card .dossier-key dd { font:10px/1.7 'CELE WenHei',Arial,sans-serif;color:#aaa }
+#course-card .dossier-footer { flex:none;padding:16px 0 0;border-top:1px solid #ffffff25 }
+#course-card .dossier-academic { border-radius:1px;min-height:44px;padding:12px;font-size:12px;background:#e1e1da;color:#111;border:0;box-shadow:none }
+#course-card .dossier-academic:disabled { background:#181818;color:#999 }
+#course-card .dossier-reason,#course-card .dossier-mastery-scope { font:9px/1.6 var(--atlas-mono);color:#aaa;margin-top:10px }
+#course-card .dossier-readonly { padding:10px 0;background:none;border:0;font-size:11px;color:#ccc }
+#course-card .completion-reward { padding:12px 0;border:0;border-radius:0;background:none;gap:12px }
+#course-card .completion-reward h4 { font-size:15px;color:#eee }
+#course-card .completion-reward p { font:10px/1.6 var(--atlas-mono) }
+#course-card .reward-return { border-radius:1px;font-size:11px;min-height:40px }
+.map-panel.map-expanded { height:100dvh;inset:0;padding-top:0;display:block }
+.map-expanded .atlas-sidebar { top:0;bottom:62px }
+.map-expanded .map-viewport { top:0;bottom:62px;min-height:0;height:auto }
+body.tree-expanded #course-card { top:0;height:calc(100dvh - 62px) }
+body.tree-expanded #course-card { z-index:41 }
+.atlas-sidebar .commitment-banner { display:block;padding:12px 0;background:none;border:0;border-top:1px solid #ffffff25;border-radius:0;margin:0 }
+.atlas-sidebar .commitment-banner strong { font-size:11px;color:#eee }
+.atlas-sidebar .commitment-banner p { font-size:10px;line-height:1.6;margin:9px 0;color:#bbb }
+.atlas-sidebar .commitment-banner button { min-height:42px;font-size:10px;border-radius:1px;padding:10px 8px;width:100%;margin-top:8px }
+.constellations-rotating .dossier-sky svg { animation:atlas-chart-turn 570s linear infinite }
+@keyframes atlas-chart-turn { to { rotate:360deg } }
+#journal-page,#gate-page { max-width:1280px;margin:0 auto;padding:40px 30px 70px }
+@media(max-width:1100px) and (min-width:761px) { :root { --atlas-rail:206px;--atlas-file:370px }.atlas-sidebar { padding:20px 16px }.rail nav { gap:11px;margin-left:0 }.rail .companion-button>span:last-child { display:none }.rail .account-identity { display:none }#course-card .dossier-heading h2 { font-size:25px }.map-context #map-mode { display:none } }
+@media(max-width:760px) {
+ :root { --atlas-header:calc(112px + env(safe-area-inset-top,0px));--atlas-rail:0px;--atlas-file:100vw }
+ .app-shell>.rail { height:var(--atlas-header);min-height:var(--atlas-header);padding:calc(10px + env(safe-area-inset-top,0px)) 14px 10px;gap:12px;flex-wrap:wrap;align-content:center }
+ .rail .brand-title { font-size:18px }.rail .brand-prefix { font-size:9px }.rail .player { margin-left:auto }.rail .companion-button>span:last-child { display:none }
+ .rail nav { order:4;flex:1 1 100%;margin:0;justify-content:space-between;gap:8px }.rail .nav-item { font-size:10px;min-height:38px }
+ .rail .account-panel { border:0;width:auto;max-width:120px;display:flex;padding:0;margin:0 }.rail .account-identity { display:none }.rail .account-panel button { min-height:40px;font-size:9px }
+ #map-page { height:calc(100dvh - var(--atlas-header));min-height:0 }
+ .atlas-sidebar { position:absolute;top:0;left:0;right:0;bottom:auto;width:auto;max-height:none;overflow:visible;display:grid;grid-template-columns:1fr auto;gap:0;padding:0 12px;background:#000e;border-right:0;border-bottom:1px solid #ffffff20 }
+ .atlas-caption,.atlas-section-label,.atlas-sidebar .map-legend { display:none }
+ .atlas-sidebar .map-toolbar { padding:8px 0;display:contents }
+ .atlas-sidebar .year-tabs { grid-column:1;grid-row:1;display:flex;border:0;gap:0;align-items:center;padding:4px 0 }
+ .atlas-sidebar .year-tabs button { padding:7px 9px;min-height:42px;border:0;font-size:10px }
+ .atlas-sidebar .map-tools { grid-column:2;grid-row:1;display:flex;flex-direction:row;gap:9px;align-items:center }
+ .atlas-sidebar .map-tools #explore-toggle { width:40px;overflow:hidden;white-space:nowrap;font-size:0;justify-content:center }
+ .atlas-sidebar .map-tools #explore-toggle svg { width:20px;height:20px }
+ .atlas-sidebar .map-tools #reset-progress { font-size:9px;min-height:42px }
+ .atlas-sidebar .map-tools #reset-progress svg { display:none }
+ .atlas-sidebar #specialization-menu { grid-column:1;grid-row:2;margin-right:12px }
+ .atlas-sidebar #specialization-menu summary { min-height:42px;font-size:10px;border:0;gap:5px;align-items:center;flex-wrap:nowrap }
+ .atlas-sidebar #specialization-selection { display:none }
+ .atlas-sidebar .branch-cards { width:calc(100vw - 24px);max-height:50dvh }
+ .atlas-course-index { grid-column:2;grid-row:2;min-height:0;display:block;width:min(50vw,240px) }
+ .atlas-course-index>label { display:none }.atlas-search { margin:0;border-bottom:0 }#course-search { min-height:42px;font-size:16px;padding:8px 23px 8px 4px }
+ .atlas-course-results { display:none;position:absolute;left:12px;right:12px;top:100%;max-height:38dvh;background:#080808f5;border:1px solid #ffffff30;padding:4px 14px;z-index:20 }
+ .atlas-course-index.searching .atlas-course-results { display:block }.atlas-course-row { min-height:48px }.atlas-course-row>span { font-size:11px }
+ .map-panel>.map-context { top:100px;left:17px;right:17px;padding:0 }.map-context .map-caption #map-title { font-size:14px }.map-context #map-mode { display:none }.map-context #help-button { min-width:28px }
+ .map-panel>.map-viewport,.workspace.inspector-open .map-panel>.map-viewport,.workspace.path-inspector-open .map-panel>.map-viewport { left:0;right:0;top:90px;bottom:calc(61px + env(safe-area-inset-bottom,0px));height:auto;min-height:0 }
+ .workspace.inspector-open .map-context,.workspace.path-inspector-open .map-context { right:17px }
+ .map-panel>#path-card { height:calc(61px + env(safe-area-inset-bottom,0px));min-height:61px;padding:9px 14px calc(9px + env(safe-area-inset-bottom,0px));grid-template-columns:1fr;gap:4px }
+ #path-card .path-summary { min-height:16px }#path-card .path-scope { display:none }#path-card .path-identity { font-size:9px }#path-card .path-identity strong { font-size:9px }#path-card .journey-label { font-size:9px }
+ .map-controls { bottom:14px;right:12px }.map-controls button { width:42px;min-width:42px;height:44px }.map-controls span { width:36px }.pan-hint { left:14px;bottom:74px;font-size:9px }
+ #course-card.course-dossier { top:auto;bottom:0;right:0;left:0;width:100vw;max-width:100vw;height:75dvh;max-height:calc(100dvh - 20px);border-left:0;border-top:1px solid #ffffff45;border-radius:12px 12px 0 0;box-shadow:0 -20px 55px #0008;z-index:40 }
+ #course-card .dossier-identity { padding:22px 22px 14px }#course-card .dossier-heading h2 { font-size:24px;margin:10px 0 13px }#course-card .dossier-sky { display:none }#course-card .dossier-heading .course-code { padding-right:0;font-size:14px }
+ #course-card .dossier-reading { padding:16px 22px max(16px,env(safe-area-inset-bottom)) }#course-card .dossier-tab { min-height:44px }#course-card .dossier-prereq button { min-height:44px;font-size:12px }#course-card .dossier-prereq button span { font-size:11px }
+ .connection-inspector { top:145px;bottom:75px;right:12px;left:12px;width:auto;max-height:55dvh }
+ .map-expanded .atlas-sidebar { top:env(safe-area-inset-top) }.map-expanded .map-viewport { top:calc(90px + env(safe-area-inset-top,0px));bottom:calc(61px + env(safe-area-inset-bottom,0px)) }.map-expanded .map-context { top:calc(100px + env(safe-area-inset-top,0px)) }
+ .atlas-sidebar #commitment-banner { grid-column:1/-1;grid-row:3 }.atlas-sidebar .commitment-banner { display:flex;gap:12px;align-items:center;justify-content:space-between;padding:9px 0 }.atlas-sidebar .commitment-banner p { display:none }.atlas-sidebar .commitment-banner button { width:auto;margin:0;min-height:40px }.atlas-sidebar:has(#commitment-banner:not(:empty))~.map-viewport { top:145px }.atlas-sidebar:has(#commitment-banner:not(:empty))~.map-context { top:155px }
+ body.tree-expanded #course-card { top:auto;height:75dvh }
+ #journal-page,#gate-page { padding:30px 17px 65px }
+}
+@media(prefers-reduced-motion:reduce) { #course-card .dossier-layout,.constellations-rotating .dossier-sky svg { animation:none } }
