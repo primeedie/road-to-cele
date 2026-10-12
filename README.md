@@ -37,8 +37,6 @@ The academic journey meter uses shared requirements plus the confirmed specializ
 
 Guest progress resides in the current browser. With Supabase configured, Google sign-in loads a private account journey and saves changes across devices. Account caches are separated from guest saves, first-time guest import requires a choice, and revision checks detect conflicting device saves. Export preserves the full progression record. See [DEPLOYMENT.md](DEPLOYMENT.md) for Cloudflare Pages, database migration, public configuration, and Google OAuth setup. The galaxy is a local generated bitmap; constellation geometry uses attributed d3-celestial data (see `src/data/README.md`). Hanyi WenHei 85W is the bundled primary UI typeface, supplied by the project owner in `hywenhei.zip`. `font-face.css` and the build load `src/assets/fonts/HYWenHei-85W.ttf` (see its README). Manrope/Arial is the loading fallback. Cinzel supplies Roman numerals. `interface.css` defines the final chart annotation and instrument styling.
 
-## Authorship
-
 ## Motion
 
 `sky-motion.mjs` and `motion.css` add drifting background stars, bounded mouse parallax, a gently tilting course chart, selected-path light flow and completion sparks. Decoration never changes camera coordinates, hit targets, or progression. Touch devices use fewer background stars without pointer tilt. Motion pauses while the map is hidden or a dialog is open and respects reduced-motion preferences. Completed nodes use a small inner-star glow instead of a wide blurred outline.
