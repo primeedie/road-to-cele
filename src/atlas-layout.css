@@ -204,13 +204,16 @@ body.tree-expanded #course-card { z-index:41 }
 .course-node .star-facet-light,.course-node.locked .star-facet-light { fill:color-mix(in srgb,var(--sky-accent) 45%,white);fill-opacity:.5 }
 .course-node .star-center,.course-node.locked .star-center { fill:color-mix(in srgb,var(--sky-accent) 55%,white);opacity:.88;filter:drop-shadow(0 0 1px var(--sky-accent)) }
 .course-node .star-spark { fill:#f4faff;opacity:.95 }
-.course-node.active-course .star-hover-glyph { opacity:.88 }
-.course-node.active-course .star-center { fill:color-mix(in srgb,var(--sky-accent) 30%,white);opacity:1;filter:drop-shadow(0 0 2px var(--sky-accent)) }
-.course-node.active-course .star-facet-light { fill-opacity:.7 }
+.course-node.active-course .star-hover-glyph { opacity:1 }
+.course-node.active-course .star-rays { fill:color-mix(in srgb,var(--sky-accent) 65%,white);opacity:1 }
+.course-node.active-course .star-center { fill:color-mix(in srgb,var(--sky-accent) 10%,white);opacity:1;filter:drop-shadow(0 0 3px var(--sky-accent)) }
+.course-node.active-course .star-facet-light { fill:color-mix(in srgb,var(--sky-accent) 25%,white);fill-opacity:.95 }
+.course-node.active-course .star-facet-dark { fill:color-mix(in srgb,var(--sky-accent) 85%,white);fill-opacity:.7 }
 .course-node.completed .star-hover-glyph { opacity:1 }
-.course-node.completed .star-rays { opacity:1 }
-.course-node.completed .star-center { fill:#f5fcff;opacity:1;filter:drop-shadow(0 0 3px var(--sky-accent)) }
-.course-node.completed .star-facet-light { fill:#fff;fill-opacity:.9 }
+.course-node.completed .star-rays { fill:color-mix(in srgb,var(--sky-accent) 35%,white);opacity:1 }
+.course-node.completed .star-center { fill:#fff;opacity:1;filter:drop-shadow(0 0 4px color-mix(in srgb,var(--sky-accent) 60%,white)) }
+.course-node.completed .star-facet-light { fill:#fff;fill-opacity:1 }
+.course-node.completed .star-facet-dark { fill:color-mix(in srgb,var(--sky-accent) 65%,white);fill-opacity:.9 }
 .course-node:is(:hover,:focus-visible) .star-hover-glyph { opacity:1 }
 .sky-outline .sky-trails,.sky-outline .catalog-stars { opacity:var(--constellation-brightness,.3) }
 /* Large SVG filters and dozens of backdrop blurs were costly while panning. */
