@@ -6,6 +6,7 @@ import {createSkyMap} from '../src/map-curriculum.mjs';
 import {createOrbitLayout,orbitSceneBounds} from '../src/orbit-layout.mjs';
 import {rotatedCluster} from '../src/constellation-rotation.mjs';
 import {filterCourseIndex,courseIndexMarkup} from '../src/course-index.mjs';
+import {drawConstellation} from '../src/sky-layout.mjs';
 import {showCourseDossier,attachSidePanelDismiss} from '../src/side-panel.mjs';
 
 test('course index searches codes, titles and branches without duplicate map IDs or unsafe markup',()=>{
@@ -45,4 +46,21 @@ test('course file uses a nonmodal dialog and dismisses only background presses, 
   send('#map','pointerdown');send('#map','pointercancel');send('#map','click');assert.equal(dismissed,0);
   send('#map','pointerdown');send('#map','click');assert.equal(dismissed,1);
  }finally{detach();dom.window.close();}
+});
+
+test('each rotating chart has a local SVG surface with matching global coordinates, not a full-map render layer',()=>{
+ const map=createOrbitLayout(createSkyMap('TRE'));
+ for(const chart of [...map.charts.map(c=>c.chart),map.branchChart]){
+  const b=chart.orbit.bounds,dom=new JSDOM(drawConstellation(chart,{bounds:b})),svg=dom.window.document.querySelector('svg');
+  const width=b.maxX-b.minX,height=b.maxY-b.minY;
+  assert.equal(svg.getAttribute('viewBox'),`${b.minX} ${b.minY} ${width} ${height}`);
+  assert.equal(svg.style.left,b.minX+'px');assert.equal(svg.style.top,b.minY+'px');
+  assert.equal(svg.style.width,width+'px');assert.equal(svg.style.height,height+'px');
+  assert.ok(width*height<map.width*map.height/4);
+  for(const angle of [0,Math.PI/8,Math.PI/4]){
+   const pose=rotatedCluster(chart,map.positions,map.courses.filter(c=>map.positions[c.id].chart===chart.id),{x:0,y:0},angle);
+   for(const p of pose.vertices){assert.ok(p.x>=b.minX&&p.x<=b.maxX&&p.y>=b.minY&&p.y<=b.maxY);}
+  }
+  dom.window.close();
+ }
 });

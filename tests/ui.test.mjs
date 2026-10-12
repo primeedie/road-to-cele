@@ -57,18 +57,18 @@ test('actual website interactions keep exploration separate from academic progre
   assert.ok($('#world').classList.contains('navigation-motion'));
   const heading=$('.term-label[data-term="10"]');
   assert.match(heading.textContent,/Year IV.*Term 10/);
-  const pose=$('#world').style.transform.match(/translate3d\(([-.\d]+)px,([-.\d]+)px,0\) scale\(([-.\d]+)\)/),camera={x:+pose[1],y:+pose[2],scale:+pose[3]};
+  const pose=$('#world').style.transform.match(/translate\(([-.\d]+)px,([-.\d]+)px\) scale\(([-.\d]+)\)/),camera={x:+pose[1],y:+pose[2],scale:+pose[3]};
   assert.ok(COURSES.filter(c=>c.year===4&&!c.specialization).some(c=>{const node=$(`[data-course="${c.id}"]`),x=(parseFloat(node.style.left)+125)*camera.scale+camera.x,y=(parseFloat(node.style.top)+176)*camera.scale+camera.y;return x>=0&&x<=800&&y>=0&&y<=500;}));
   assert.equal(localStorage.getItem(STORAGE_KEY),null);
   click('[data-year="1"]');
  });
- await t.test('left course search opens a right file and year controls remain usable without changing progress',()=>{
+ await t.test('minimal sidebar opens specialist courses from the map and year controls remain usable',()=>{
   assert.ok($('.atlas-sidebar .year-tabs'));assert.ok($('.atlas-sidebar #specialization-menu'));
-  const before=localStorage.getItem(STORAGE_KEY),search=$('#course-search');search.value='sterqua';search.dispatchEvent(new w.Event('input',{bubbles:true}));
-  assert.equal(document.querySelectorAll('.atlas-course-row').length,1);assert.equal($('.atlas-course-row').dataset.courseIndex,'STERQUA');
-  click('.atlas-course-row');assert.equal($('#course-card').open,true);assert.ok($('.workspace').classList.contains('inspector-open'));assert.match($('#dossier-title').textContent,/Earthquake Engineering/);assert.match($('#course-card').textContent,/Preview only/);
+  assert.equal($('.atlas-course-index'),null);assert.equal($('#course-search'),null);
+  const before=localStorage.getItem(STORAGE_KEY);
+  click('.branch-card[data-branch="STE"]');click('[data-course="STERQUA"]');
+  assert.equal($('#course-card').open,true);assert.ok($('.workspace').classList.contains('inspector-open'));assert.match($('#dossier-title').textContent,/Earthquake Engineering/);assert.match($('#course-card').textContent,/Preview only/);
   click('[data-year="2"]');assert.equal($('#course-card').open,false);assert.equal($('.workspace').classList.contains('inspector-open'),false);assert.equal(localStorage.getItem(STORAGE_KEY),before);
-  click('#clear-course-search');assert.equal(search.value,'');assert.equal($('.atlas-course-index').classList.contains('searching'),false);
   click('.branch-card[data-branch="STE"]');click('[data-year="1"]');
  });
  await t.test('real map gestures stay bounded and overview zoom increases gradually without changing records',()=>{
@@ -77,7 +77,7 @@ test('actual website interactions keep exploration separate from academic progre
   w.Element.prototype.hasPointerCapture=function(id){return captures.get(id)===this;};
   w.Element.prototype.releasePointerCapture=function(id){captures.delete(id);};
   const pointer=(type,x,y)=>{const event=new w.MouseEvent(type,{bubbles:true,cancelable:true,button:0,clientX:x,clientY:y});Object.defineProperties(event,{pointerId:{value:1},isPrimary:{value:true}});viewport.dispatchEvent(event);};
-  const pose=()=>{const match=$('#world').style.transform.match(/translate3d\(([-.\d]+)px,([-.\d]+)px,0\) scale\(([-.\d]+)\)/);return {x:+match[1],y:+match[2],scale:+match[3]};};
+  const pose=()=>{const match=$('#world').style.transform.match(/translate\(([-.\d]+)px,([-.\d]+)px\) scale\(([-.\d]+)\)/);return {x:+match[1],y:+match[2],scale:+match[3]};};
   for(const x of [-100000,100000])for(const y of [-100000,100000]){
    pointer('pointerdown',100,100);pointer('pointermove',x,y);pointer('pointerup',x,y);
    const camera=pose();

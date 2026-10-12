@@ -219,7 +219,37 @@ body.tree-expanded #course-card { z-index:41 }
 .course-node .star-floor-shadow,.course-node .elevation-contact { filter:none }
 .course-node .node-copy,.course-node:hover .node-copy,.node-title,.map-controls,.connection-inspector,#path-card { backdrop-filter:none }
 .sky-backdrop { filter:none }
-.world { contain:layout style }
+.world { contain:none;will-change:auto }
 .map-viewport.dragging .sky-backdrop,.map-viewport.dragging::before,.map-viewport.dragging::after { transition:none }
 .map-viewport.dragging .graph-lines .path-selected { animation-play-state:paused }
 @media(max-width:760px) { .rail .nav-item { font-size:12px }.rail .brand-prefix { font-size:10px } }
+/* A single dropdown row; the current branch stays named on the map itself. */
+.atlas-sidebar #specialization-menu summary { display:flex;width:100%;flex-wrap:nowrap;justify-content:space-between;gap:12px;padding:13px 0;min-height:48px;font-size:14px;white-space:nowrap }
+.atlas-sidebar #specialization-selection { display:none }
+.atlas-sidebar #specialization-menu summary::after { content:'';width:7px;height:7px;border-right:1.5px solid #aaa;border-bottom:1.5px solid #aaa;transform:rotate(45deg);margin:0 3px 4px auto;flex:none }
+.atlas-sidebar #specialization-menu[open] summary::after { transform:rotate(225deg);margin-bottom:-3px }
+/* One avatar, one account name, and a quiet save state directly beneath it. */
+.app-shell>.rail { gap:18px }
+.rail .companion-button { width:42px;height:42px;min-height:42px;justify-content:center }
+.rail .companion-button>span:last-child { display:none }
+.rail .companion-button .avatar-badge { width:32px;height:32px }
+.rail .account-panel { display:grid;grid-template-columns:minmax(80px,1fr) auto;column-gap:16px;row-gap:3px;margin:0;padding:0;border:0;min-width:174px;max-width:260px;align-items:center }
+.rail .account-panel .account-identity { display:flex;grid-column:1;grid-row:1 }
+.rail .account-identity strong { font:800 12px var(--atlas-type);color:#e6e6e6 }
+.rail .account-panel .account-light { display:none }
+.rail .account-panel .account-status { grid-column:1;grid-row:2;order:initial;flex:initial;text-align:left;margin:0;font:10px/1.2 Arial,sans-serif;color:#aaa;white-space:nowrap }
+.rail .account-actions,.rail .account-panel>button { grid-column:2;grid-row:1/span 2 }
+.rail .account-actions { align-items:center;gap:6px }
+.rail .account-panel button { padding:9px 13px;min-height:38px;font:800 11px var(--atlas-type);border-color:#ffffff26;border-radius:5px }
+.rail .account-panel button:hover { background:#141414;border-color:#ffffff50 }
+@media(max-width:1100px) and (min-width:761px) { .rail .account-panel { min-width:154px;column-gap:10px }.rail .account-identity strong { max-width:100px } }
+@media(max-width:760px) {
+ .app-shell>.rail { gap:7px 10px }
+ .rail .account-panel { min-width:0;max-width:190px;width:auto;column-gap:9px;grid-template-columns:minmax(45px,1fr) auto }
+ .rail .account-identity strong { font-size:11px;max-width:83px }
+ .rail .account-panel .account-status { font-size:9px;max-width:100px;overflow:hidden;text-overflow:ellipsis }
+ .rail .account-panel button { min-height:42px;font-size:10px;padding:9px }
+ .rail .companion-button { width:36px;height:42px }.rail .companion-button .avatar-badge { width:29px;height:29px }
+ .atlas-sidebar #specialization-menu { grid-column:1/-1;margin:0 }
+ .atlas-sidebar #specialization-menu summary { font-size:12px;min-height:42px;padding:9px 0;border:0 }
+}
