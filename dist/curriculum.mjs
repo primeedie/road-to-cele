@@ -27,7 +27,7 @@ const rows = [
  ['CTMQAQC','CTM Quality Assurance and Quality Control',9,3,'CEMATEL','','','CTM'], ['CTMPROM','CTM Process Management',10,3,'CEMANAG','','','CTM'], ['CTMBLDR','CTM Introduction to Builders',11,3,'CTMPROM','','','CTM'], ['CTMBUEN','CTM Built Environment',11,3,'CTMQAQC','','','CTM']
 ];
 const split = s => (s || '').split(' ').filter(Boolean);
-export const COURSES = rows.map(([id,title,term,units,h,s,c,specialization]) => ({ id,title,term,year:Math.ceil(term/3),units,specialization:specialization || null,hardPrerequisites:split(h),softPrerequisites:split(s),corequisites:split(c),requiredMastery:!id.startsWith('LBY') }));
+export const COURSES = rows.map(([id,title,term,units,h,s,c,specialization]) => ({ id,title,term,year:Math.ceil(term/3),units,specialization:specialization || null,hardPrerequisites:split(h),softPrerequisites:split(s),corequisites:split(c),courseKind:id.startsWith('LBY')?'LAB':'LECTURE',requiredMastery:!id.startsWith('LBY') }));
 export const COURSE_BY_ID = Object.fromEntries(COURSES.map(c => [c.id,c]));
 export const MASTERY_SCOPE = { shared:true, selectedSpecialization:true };
 // Shared CELE review domains. Optional specialist review never contributes to the gate.

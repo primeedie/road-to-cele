@@ -7,6 +7,9 @@ export function normalizeUsername(value){
  return username;
 }
 export const usernameIdentifier=value=>normalizeUsername(value)+'@'+USERNAME_DOMAIN;
+export function passwordField(name,label,autocomplete,minlength=1){
+ return `<label>${label}<span class="password-field"><input id="account-${name}" name="${name}" type="password" autocomplete="${autocomplete}" required minlength="${minlength}" maxlength="128"><button class="password-toggle" type="button" data-password-toggle="${name}" aria-controls="account-${name}" aria-label="Show ${label.toLowerCase()}" aria-pressed="false">Show</button></span></label>`;
+}
 export function accountName(user){
  if(!user)return 'Guest journey';
  if(user.email?.endsWith('@'+USERNAME_DOMAIN))return user.email.slice(0,-USERNAME_DOMAIN.length-1);
@@ -17,10 +20,10 @@ export function usernameForm(mode='signin'){
  return `<div class="account-or"><span>or use your username</span></div><h3>${signup?'Create an account':'Username sign-in'}</h3>
  <form class="username-form" data-username-form="${mode}">
  <label>Username<input name="username" autocomplete="username" required minlength="3" maxlength="24" pattern="[A-Za-z0-9_]{3,24}" autocapitalize="none" spellcheck="false" placeholder="Your name in the sky"></label>
- <label>Password<input name="password" type="password" autocomplete="${signup?'new-password':'current-password'}" required minlength="${signup?8:1}" ${signup?'placeholder="At least 8 characters"':''}></label>
- ${signup?'<label>Confirm password<input name="confirmPassword" type="password" autocomplete="new-password" required minlength="8"></label><p class="card-note">No email needed. Keep your password safe; email recovery is unavailable.</p>':''}
+ ${passwordField('password',signup?'Password · at least 8 characters':'Password',signup?'new-password':'current-password',signup?8:1)}
+ ${signup?passwordField('confirmPassword','Confirm password','new-password',8)+'<p class="card-note">No email needed. After signing in, save recovery codes from Account when recovery is available.</p>':''}
  <button type="submit" class="primary">${signup?'Create account':'Sign in with username'}</button></form>
- <button class="username-switch" data-account="${signup?'username-signin':'username-signup'}">${signup?'Already have an account? Sign in':'Create a username account'}</button>`;
+ <button class="username-switch" data-account="${signup?'username-signin':'username-signup'}">${signup?'Already have an account? Sign in':'Create a username account'}</button><button class="recovery-link" data-account="recover">Forgot password? Use a recovery code</button>`;
 }
 export function usernameCredentials(form){
  const username=normalizeUsername(form.elements.namedItem('username').value),password=form.elements.namedItem('password').value;

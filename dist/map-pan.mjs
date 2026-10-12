@@ -39,6 +39,7 @@ export function attachMapPan(viewport,{getPosition,onPan,onZoom,threshold=5}){
   if(applied){gesture.x+=applied.x-requested.x;gesture.y+=applied.y-requested.y;}
  };
  const end=e=>{
+  if(gesture&&(e.type==='pointercancel'||e.type==='lostpointercapture'))gesture.moved=true;
   if(touches.has(e.pointerId)){
    const point=touches.get(e.pointerId);touches.delete(e.pointerId);release(point.capture,e.pointerId);
    if(pinch){
@@ -52,8 +53,14 @@ export function attachMapPan(viewport,{getPosition,onPan,onZoom,threshold=5}){
  };
  const click=e=>{if(suppressPointerClick&&e.detail!==0){suppressPointerClick=false;e.preventDefault();e.stopImmediatePropagation();}};
  const nativeDrag=e=>e.preventDefault();
+ const blur=()=>{
+  const points=[...touches.entries()],current=gesture;
+  touches.clear();gesture=null;pinch=null;suppressPointerClick=true;viewport.classList.remove('dragging');
+  for(const [id,p] of points)release(p.capture,id);if(current)release(current.capture,current.id);
+ };
  const handlers=[['pointerdown',down],['pointermove',move],['pointerup',end],['pointercancel',end],['lostpointercapture',end],['dragstart',nativeDrag]];
  for(const [name,fn] of handlers)viewport.addEventListener(name,fn);
  viewport.addEventListener('click',click,true);
- return ()=>{for(const [name,fn] of handlers)viewport.removeEventListener(name,fn);viewport.removeEventListener('click',click,true);for(const [id,p] of touches)release(p.capture,id);touches.clear();if(gesture)release(gesture.capture,gesture.id);gesture=null;pinch=null;viewport.classList.remove('dragging');};
+ viewport.ownerDocument.defaultView.addEventListener('blur',blur);
+ return ()=>{for(const [name,fn] of handlers)viewport.removeEventListener(name,fn);viewport.removeEventListener('click',click,true);viewport.ownerDocument.defaultView.removeEventListener('blur',blur);blur();};
 }

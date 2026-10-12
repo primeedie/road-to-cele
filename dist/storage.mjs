@@ -6,6 +6,7 @@ export function hydrateProgress(raw) {
  if(!raw || raw.version!==3)throw Error('Unsupported progress format');
  const p=newProgress();
  if(![1,2,3,4].includes(raw.academicYear))throw Error('Invalid academic year');
+ if(raw.academicTerm!==undefined&&(!Number.isInteger(raw.academicTerm)||Math.ceil(raw.academicTerm/3)!==raw.academicYear))throw Error('Invalid academic term');
  const r=raw.specializationProgression;
  if(!r || !['UNDECIDED','CONFIRMED'].includes(r.specializationStatus) || !Array.isArray(r.previousSpecializationHistory))throw Error('Invalid specialization record');
  if(r.specializationStatus==='CONFIRMED' && (!SPECIALIZATIONS[r.selectedSpecialization] || r.confirmationMethod!=='SELF_REPORTED' || !r.confirmedAt))throw Error('Invalid confirmation');

@@ -1,5 +1,5 @@
 // Follow a selected prerequisite in its direction, without pulling in unrelated siblings.
-export const CONNECTION_TYPES={H:'Hard prerequisite · must be completed beforehand',S:'Soft prerequisite · must be taken beforehand',C:'Co-requisite · taken concurrently'};
+export const CONNECTION_TYPES={H:'Hard prerequisite · must be completed beforehand',S:'Soft prerequisite · activated or completed',C:'Co-requisite · lecture pairs can activate together; labs require their lecture first'};
 export function courseConnections(courses){
  const ids=new Set(courses.map(c=>c.id));
  return courses.flatMap(c=>[['H',c.hardPrerequisites],['S',c.softPrerequisites],['C',c.corequisites]].flatMap(([type,list])=>list.filter(id=>ids.has(id)).map(from=>({from,to:c.id,type,key:`${from}:${c.id}:${type}`}))));

@@ -18,3 +18,16 @@ test('pinch keeps the midpoint anchored, pans with two fingers, and resumes one-
   pointer('pointerdown',1,0,0);pointer('pointerdown',2,20,0);detach();assert.equal(captures.size,0);
  }finally{dom.window.close();}
 });
+test('a canceled touch or window interruption releases gestures without opening a course',()=>{
+ const dom=new JSDOM('<div id="map"><button class="course-node">FNDMATH</button></div>'),w=dom.window,viewport=w.document.querySelector('#map'),node=viewport.firstChild,captures=new Set();
+ w.Element.prototype.setPointerCapture=id=>captures.add(id);w.Element.prototype.hasPointerCapture=id=>captures.has(id);w.Element.prototype.releasePointerCapture=id=>captures.delete(id);
+ let opened=0;node.addEventListener('click',()=>opened++);
+ const detach=attachMapPan(viewport,{getPosition:()=>({x:0,y:0}),onPan:p=>p});
+ const pointer=type=>{const e=new w.MouseEvent(type,{bubbles:true,cancelable:true,button:0});Object.defineProperties(e,{pointerType:{value:'touch'},pointerId:{value:1}});node.dispatchEvent(e);};
+ try{
+  pointer('pointerdown');pointer('pointercancel');node.dispatchEvent(new w.MouseEvent('click',{bubbles:true,detail:1}));assert.equal(opened,0);assert.equal(captures.size,0);
+  pointer('pointerdown');w.dispatchEvent(new w.Event('blur'));assert.equal(captures.size,0);assert.equal(viewport.classList.contains('dragging'),false);
+  node.dispatchEvent(new w.MouseEvent('click',{bubbles:true,detail:1}));assert.equal(opened,0);
+  node.dispatchEvent(new w.MouseEvent('click',{bubbles:true,detail:0}));assert.equal(opened,1);
+ }finally{detach();dom.window.close();}
+});

@@ -27,7 +27,7 @@ Create your account at https://dash.cloudflare.com/sign-up. In **Workers & Pages
 | Environment variable | `PUBLIC_SUPABASE_URL` = your project URL |
 | Environment variable | `PUBLIC_SUPABASE_PUBLISHABLE_KEY` = your publishable key |
 
-Cloudflare installs dependencies from the lockfile before running the build. Save and deploy. Use the actual `*.pages.dev` URL returned by Cloudflare; the requested name may already be taken. These two Supabase values are intentionally public browser configuration. Privileged credentials are unnecessary for hosting the app.
+Cloudflare installs dependencies from the lockfile before running the build. Save and deploy. Use the actual `*.pages.dev` URL returned by Cloudflare; the requested name may already be taken. These two Supabase values are intentionally public browser configuration. Ordinary hosting and login need no privileged key. The optional password-recovery Pages Function needs a separate private runtime secret, described in [RECOVERY_SETUP.md](RECOVERY_SETUP.md).
 
 Production automatically redeploys from `main` and uses `config/public-production.json` when neither Supabase environment variable is supplied. Keep production Supabase variables out of preview builds unless you deliberately want previews to use the same database. Preview and local builds without explicit variables safely run guest-only mode. Change the public configuration file when moving production to another Supabase project; clear both values to disable production login. A partial environment override fails the build instead of mixing settings from different projects.
 
@@ -53,11 +53,11 @@ To enable username signup:
 
 1. Run `supabase/migrations/202610110002_username_signup.sql` in Supabase SQL Editor.
 2. In **Authentication > Hooks**, add a **Before User Created** Postgres hook targeting `public.road_to_cele_before_signup`. This allows Google and valid username identifiers and rejects real-email password signups.
-3. In **Authentication > Sign In / Providers > Email**, leave Email enabled and turn **Confirm email** off. Save. The Email provider powers the internal identifier adapter; students never enter email. Configure a minimum password length of 8 in the password settings.
+3. On the main **Authentication > Sign In / Providers** page, turn **Confirm email** off under **User Signups**. Leave the Email provider enabled in its separate panel. Save the settings. The Email provider powers the internal identifier adapter; students never enter email. Configure a minimum password length of 8 in the password settings.
 
 Apply the hook before disabling confirmation. The browser checks the public confirmation setting and refuses to submit username signup while confirmation is still enabled, avoiding mail delivery attempts. Registration requires an actual authenticated session before loading account progress. Google stays available while this setup is pending.
 
-Username-only accounts have no email password recovery. Keep passwords safe; users can choose Google if they prefer Google's recovery options. The two login methods do not automatically merge accounts or progress. No admin/service-role credential is needed in the browser or Cloudflare build.
+Username accounts can recover through saved single-use codes once [RECOVERY_SETUP.md](RECOVERY_SETUP.md) is completed. Google accounts use Google's recovery options. The two login methods do not automatically merge accounts or progress. No admin/service-role credential is needed in the browser or Cloudflare build.
 
 Official reference: [Supabase Before User Created hook](https://supabase.com/docs/guides/auth/auth-hooks/before-user-created-hook).
 

@@ -587,33 +587,6 @@ button:focus-visible,a:focus-visible,summary:focus-visible {
   border-color:color-mix(in srgb,var(--sky-accent) 35%,transparent);
   border-radius:4px
 }
-/* Light comes from progress, while the course codes stay legible. */
-.course-node .skill-star {
-  opacity:.38;
-  filter:none;
-  transition:opacity .35s ease,filter .35s ease
-}
-.course-node.locked .skill-star { opacity:.24;filter:none }
-.course-node.preview .skill-star { opacity:.32;filter:none }
-.course-node.active-course .skill-star,.course-node.completed .skill-star {
-  opacity:1;
-  filter:drop-shadow(0 0 10px color-mix(in srgb,var(--sky-accent) 70%,transparent))
-    drop-shadow(0 0 25px color-mix(in srgb,var(--sky-accent) 42%,transparent))
-}
-.course-node.active-course .star-aura,.course-node.completed .star-aura { opacity:.65 }
-.course-node.active-course .star-center,.course-node.completed .star-center { opacity:1 }
-.course-node.active-course .node-code,.course-node.completed .node-code {
-  text-shadow:0 0 9px color-mix(in srgb,var(--sky-accent) 45%,transparent)
-}
-.course-node:hover .skill-star,.course-node:focus-visible .skill-star {
-  opacity:.85;
-  filter:drop-shadow(0 0 12px color-mix(in srgb,var(--sky-accent) 45%,transparent))
-}
-.course-node.active-course:hover .skill-star,.course-node.completed:hover .skill-star {
-  opacity:1;
-  filter:drop-shadow(0 0 14px color-mix(in srgb,var(--sky-accent) 80%,transparent))
-    drop-shadow(0 0 30px color-mix(in srgb,var(--sky-accent) 50%,transparent))
-}
 .sky-outline .sky-trails,.sky-outline .catalog-stars {
   opacity:.2;
   filter:none;
