@@ -9,6 +9,7 @@ import { skyAccent } from './sky-palette.mjs';
 import { sceneBounds, constrainCamera, overviewCamera, resizeCamera } from './map-camera.mjs';
 import { COURSE_SECTIONS, renderCoursePanel } from './course-panel.mjs';
 import { attachMapPan } from './map-pan.mjs';
+import { attachSkyMotion } from './sky-motion.mjs';
 import { COURSES, COURSE_BY_ID, SPECIALIZATIONS, CELE_DOMAINS } from './curriculum.mjs';
 import { newProgress, selected, courseAccess, setAcademicYear, setAcademicTerm, currentAcademicTerm, confirmSpecialization, changeSpecialization, recordAcademicProgress, progressSummary, gateStatus } from './progression.mjs';
 import { loadProgress } from './storage.mjs';
@@ -233,6 +234,7 @@ document.addEventListener('click',e=>{
   const earned=unlockedFrames(next).filter(f=>!beforeFrames.some(old=>old.id===f.id));
   if(earned.length)setTimeout(()=>toast(earned.map(f=>f.name).join(', ')+' frame unlocked. Open My companion to equip it.'),900);
   commit(next,b.dataset.academic==='COMPLETED'?null:'Course activated on your academic path.');
+  if(view.reward)skyMotion.celebrate();
   $('#course-card .reward-return, #course-card [data-academic]')?.focus({preventScroll:true});
  }catch(err){toast(err.message);}return;}
  if(b.dataset.action==='reset-progress'){openResetDialog(b);return;}
@@ -287,6 +289,7 @@ $('#course-card').addEventListener('keydown',e=>{
  courseCard();$('#course-tab-'+view.section).focus({preventScroll:true});
 });
 const viewport=$('#map-viewport');
+const skyMotion=attachSkyMotion(viewport);
 attachMapPan(viewport,{onZoom:zoom,getPosition:()=>{stopMapTravel();return {x:view.x,y:view.y};},onPan:position=>{Object.assign(view,position);applyTransform();return {x:view.x,y:view.y};}});
 viewport.addEventListener('wheel',e=>{e.preventDefault();const r=viewport.getBoundingClientRect();zoom(e.deltaY<0?1.09:1/1.09,e.clientX-r.left,e.clientY-r.top);},{passive:false});
 let lastViewport=viewport.getBoundingClientRect();

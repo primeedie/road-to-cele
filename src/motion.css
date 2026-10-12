@@ -1,0 +1,44 @@
+/* Layers move at different depths; course positions belong only to the camera. */
+.sky-backdrop {
+ transform:translate3d(calc(var(--far-x) + var(--look-x,0px)),calc(var(--far-y) + var(--look-y,0px)),0) scale(var(--sky-scale));
+ transition:transform .65s cubic-bezier(.2,.7,.2,1);
+}
+.map-viewport::before {
+ transform:translate3d(calc(var(--far-x) * 1.4 + var(--look-x,0px) * 1.5),calc(var(--far-y) * 1.4 + var(--look-y,0px) * 1.5),0);
+ transition:transform .7s cubic-bezier(.2,.7,.2,1);
+}
+.map-viewport::after {
+ transform:translate3d(calc(var(--near-x) + var(--look-x,0px) * 2),calc(var(--near-y) + var(--look-y,0px) * 2),0);
+ transition:transform .8s cubic-bezier(.2,.7,.2,1);
+}
+.motion-stars { position:absolute;inset:-8%;z-index:1;pointer-events:none;overflow:hidden;transform:translate3d(calc(var(--look-x,0px) * 1.8),calc(var(--look-y,0px) * 1.8),0);transition:transform .75s ease-out }
+.motion-stars i { position:absolute;width:var(--star-size);height:var(--star-size);border-radius:50%;background:#dce8f2;opacity:.2;animation:sky-drift var(--star-period) ease-in-out var(--star-delay) infinite alternate;pointer-events:none }
+@keyframes sky-drift { 0% { transform:translate3d(0,12px,0);opacity:.12 } 50% { opacity:.38 } 100% { transform:translate3d(var(--star-drift),-18px,0);opacity:.2 } }
+.motion-paused .motion-stars i,.motion-paused::before,.map-viewport.dragging .motion-stars i { animation-play-state:paused }
+.graph-lines .connection-line.path-selected { stroke-dasharray:12 18;animation:thread-flow 3s linear infinite;filter:drop-shadow(0 0 2px currentColor) }
+@keyframes thread-flow { to { stroke-dashoffset:-60 } }
+.motion-paused .graph-lines .path-selected { animation-play-state:paused }
+.dossier-sky { perspective:850px }
+.dossier-sky svg { transform:rotateX(var(--portrait-x,0deg)) rotateY(var(--portrait-y,0deg));transform-origin:center;transition:transform .65s cubic-bezier(.2,.7,.2,1) }
+.completion-reward { position:relative;overflow:visible }
+.completion-sparks { position:absolute;left:24px;top:50%;width:0;height:0;pointer-events:none }
+.completion-sparks i { position:absolute;width:3px;height:3px;background:#eaf4ff;clip-path:polygon(50% 0,65% 35%,100% 50%,65% 65%,50% 100%,35% 65%,0 50%,35% 35%);opacity:0;animation:completion-spark .85s ease-out var(--spark-delay) both }
+@keyframes completion-spark { 0% { opacity:0;transform:translate(0,0) scale(.5) } 12% { opacity:.9 } 100% { opacity:0;transform:translate(var(--spark-x),var(--spark-y)) scale(.25) } }
+/* Keep maximum brightness crisp. Light is confined to the inner star. */
+.course-node:is(.active-course,.completed) .star-hover-glyph { filter:none }
+.course-node.active-course .star-center { filter:drop-shadow(0 0 2px color-mix(in srgb,var(--sky-accent) 65%,transparent)) }
+.course-node.completed .star-center { filter:drop-shadow(0 0 3px color-mix(in srgb,var(--sky-accent) 85%,transparent)) }
+.course-node.completed .star-rays { opacity:.9 }
+.course-node.completed .star-facet-light { fill-opacity:.6 }
+@media(hover:none) {
+ .motion-stars i:nth-child(n+21) { display:none }
+ .motion-stars i { animation-duration:35s }
+ .dossier-sky svg { transform:none }
+}
+@media(prefers-reduced-motion:reduce) {
+ .sky-backdrop,.map-viewport::before,.map-viewport::after,.motion-stars,.dossier-sky svg { transform:none;transition:none }
+ .motion-stars i,.graph-lines .connection-line.path-selected,.completion-sparks i { animation:none }
+ .graph-lines .connection-line.path-selected { stroke-dasharray:none }
+ .completion-sparks { display:none }
+}
+.motion-reduced .motion-stars i { animation:none }

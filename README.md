@@ -39,6 +39,12 @@ Guest progress resides in the current browser. With Supabase configured, Google 
 
 ## Authorship
 
+## Motion
+
+`sky-motion.mjs` and `motion.css` add drifting background stars, bounded mouse parallax, a gently tilting course chart, selected-path light flow and completion sparks. Decoration never changes camera coordinates, hit targets, or progression. Touch devices use fewer background stars without pointer tilt. Motion pauses while the map is hidden or a dialog is open and respects reduced-motion preferences. Completed nodes use a small inner-star glow instead of a wide blurred outline.
+
+## Authorship
+
 Application author: milch pogiman. The source and embedded page metadata carry the project author notice. `author-mark.mjs` preserves browser metadata, the build validates the required notices, and `dist/provenance.json` records SHA-256 fingerprints of the built assets. These mechanisms discourage casual removal; they do not prevent someone with full source control from changing the application. Third-party fonts and constellation data retain their own credits.
 
 ## Companions and mobile atlas
