@@ -15,18 +15,21 @@ test('course index searches codes, titles and branches without duplicate map IDs
  const result=courseIndexMarkup(COURSES,'earthquake');assert.equal(result.count,1);assert.match(result.html,/data-course-index="STERQUA"/);assert.ok(!result.html.includes('data-course="'));
  assert.ok(!courseIndexMarkup([{id:'SAFE',title:'<script>bad</script>',year:1}], 'safe').html.includes('<script>'));
 });
-test('full-turn footprints remain separate and inside pan bounds for every specialization, preserving source graphs',()=>{
+test('45-degree sweep footprints pack closely without overlap, stay inside pan bounds, and preserve source graphs',()=>{
  for(const branch of [null,'STE','GTE','HWR','TRE','CTM']){
   const source=createSkyMap(branch),before=JSON.stringify(source),map=createOrbitLayout(source),bounds=orbitSceneBounds(map),groups=[...map.charts,...(map.branchChart?[{chart:map.branchChart,label:map.branchLabel,branch:true}]:[])];
   assert.equal(JSON.stringify(source),before);assert.equal(new Set(map.courses.map(c=>c.id)).size,map.courses.length);
   for(let i=0;i<groups.length;i++)for(let j=i+1;j<groups.length;j++){
-   const a=groups[i].chart.orbit,b=groups[j].chart.orbit;assert.ok(Math.hypot(a.center.x-b.center.x,a.center.y-b.center.y)>a.radius+b.radius);
+   const a=groups[i].chart.orbit.bounds,b=groups[j].chart.orbit.bounds;assert.ok(a.maxX<=b.minX||b.maxX<=a.minX||a.maxY<=b.minY||b.maxY<=a.minY);
   }
-  for(const group of groups)for(const angle of [0,Math.PI/2,Math.PI,Math.PI*1.5]){
+  for(const group of groups)for(const angle of Array.from({length:33},(_,i)=>Math.PI/4*i/32)){
    const courses=map.courses.filter(c=>group.branch?!!c.specialization:!c.specialization&&c.term===group.term),pose=rotatedCluster(group.chart,map.positions,courses,group.label,angle);
    for(const point of pose.vertices){assert.ok(point.x>=bounds.minX&&point.x<=bounds.maxX);assert.ok(point.y>=bounds.minY&&point.y<=bounds.maxY);}
    assert.deepEqual(pose.label,group.label);
   }
+  const firstRowBottom=Math.max(...map.charts.filter(c=>c.term<=3).map(c=>c.chart.orbit.bounds.maxY));
+  const secondRowTop=Math.min(...map.charts.filter(c=>c.term>=4&&c.term<=6).map(c=>c.chart.orbit.bounds.minY));
+  assert.equal(secondRowTop-firstRowBottom,120);
   assert.ok(map.width>=bounds.maxX&&map.height>=bounds.maxY);
  }
 });

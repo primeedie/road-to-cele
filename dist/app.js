@@ -9,6 +9,7 @@ import { skyAccent } from './sky-palette.mjs';
 import { constrainCamera, overviewCamera, resizeCamera } from './map-camera.mjs';
 import { COURSE_SECTIONS, renderCoursePanel } from './course-panel.mjs';
 import { attachMapPan } from './map-pan.mjs';
+import { createFramePainter } from './frame-painter.mjs';
 import { courseIndexMarkup } from './course-index.mjs';
 import { showCourseDossier, attachSidePanelDismiss } from './side-panel.mjs';
 import { createOrbitLayout, orbitSceneBounds } from './orbit-layout.mjs';
@@ -132,14 +133,20 @@ function renderConnectionCard(trace){
 function selectConnection(key){view.connection=key;renderMap();document.querySelector('[data-connection="'+key+'"]')?.focus({preventScroll:true});}
 function clearConnection(){view.connection=null;renderMap();}
 function applyTransform(){
+ cameraPainter?.cancel();
  if(mapBounds)Object.assign(view,constrainCamera(view,$('#map-viewport').getBoundingClientRect(),mapBounds));
- $('#world').style.transform=`translate(${view.x}px,${view.y}px) scale(${view.scale})`;
+ paintCamera();
+}
+function paintCamera(){
+ $('#world').style.transform=`translate3d(${view.x}px,${view.y}px,0) scale(${view.scale})`;
  const sky=$('#map-viewport');
+ if(!sky.classList.contains('dragging')){
  sky.style.setProperty('--far-x',Math.tanh(view.x/1100)*45+'px');
  sky.style.setProperty('--far-y',Math.tanh(view.y/1800)*45+'px');
  sky.style.setProperty('--near-x',Math.tanh(view.x/1100)*85+'px');
  sky.style.setProperty('--near-y',Math.tanh(view.y/1800)*85+'px');
  sky.style.setProperty('--sky-scale',1+(view.scale-1)*.07);
+ }
  sky.classList.toggle('camera-travel',$('#world').classList.contains('navigation-motion'));
  $('#zoom-label').textContent=Math.round(view.scale*100)+'%';
 }
@@ -173,8 +180,8 @@ let travelTimer;
 function stopMapTravel(){
  const world=$('#world');
  if(!world.classList.contains('navigation-motion'))return;
- const match=window.getComputedStyle(world).transform.match(/^matrix\(([^)]+)\)$/);
- if(match){const values=match[1].split(',').map(Number);view.scale=values[0];view.x=values[4];view.y=values[5];}
+ const match=window.getComputedStyle(world).transform.match(/^matrix(3d)?\(([^)]+)\)$/);
+ if(match){const values=match[2].split(',').map(Number);view.scale=values[0];view.x=values[match[1]?12:4];view.y=values[match[1]?13:5];}
  clearTimeout(travelTimer);world.classList.remove('navigation-motion');applyTransform();
 }
 function animateMapTravel(move){
@@ -188,7 +195,7 @@ function travelToYear(year){
 }
 
 
-function zoom(factor,cx,cy){stopMapTravel();const r=$('#map-viewport').getBoundingClientRect();cx??=r.width/2;cy??=r.height/2;const next=Math.max(Math.min(.28,overviewCamera(r,mapBounds).scale),Math.min(1.8,view.scale*factor)),ratio=next/view.scale;view.x=cx-(cx-view.x)*ratio;view.y=cy-(cy-view.y)*ratio;view.scale=next;applyTransform();}
+function zoom(factor,cx,cy,defer=false){stopMapTravel();const r=defer?lastViewport:$('#map-viewport').getBoundingClientRect();cx??=r.width/2;cy??=r.height/2;const next=Math.max(Math.min(.28,overviewCamera(r,mapBounds).scale),Math.min(1.8,view.scale*factor)),ratio=next/view.scale;view.x=cx-(cx-view.x)*ratio;view.y=cy-(cy-view.y)*ratio;view.scale=next;if(defer){Object.assign(view,constrainCamera(view,r,mapBounds));cameraPainter.schedule();}else applyTransform();}
 function milestone(){const visible=progress.academicYear>=3&&!selected(progress);$('#commitment-banner').innerHTML=visible?'<div class="commitment-banner"><div><strong>Year III · Choose your calling</strong><p>Shared subjects stay available while you await acceptance.</p></div><button class="primary" data-action="confirm">Confirm specialization →</button></div>':'';}
 function journal(){
  const s=progressSummary(progress),branch=selected(progress),r=progress.specializationProgression;
@@ -312,10 +319,11 @@ $('#course-card').addEventListener('keydown',e=>{
  courseCard();$('#course-tab-'+view.section).focus({preventScroll:true});
 });
 const viewport=$('#map-viewport');
+const cameraPainter=createFramePainter(paintCamera,{requestFrame:fn=>window.requestAnimationFrame(fn),cancelFrame:id=>window.cancelAnimationFrame(id)});
 const skyMotion=attachSkyMotion(viewport);
 constellationRotation=attachConstellationRotation(viewport,$('#rotate-sky'));
-attachMapPan(viewport,{onZoom:zoom,getPosition:()=>{stopMapTravel();return {x:view.x,y:view.y};},onPan:position=>{Object.assign(view,position);applyTransform();return {x:view.x,y:view.y};}});
-viewport.addEventListener('wheel',e=>{e.preventDefault();const r=viewport.getBoundingClientRect();zoom(e.deltaY<0?1.09:1/1.09,e.clientX-r.left,e.clientY-r.top);},{passive:false});
+attachMapPan(viewport,{onZoom:(factor,x,y)=>zoom(factor,x,y,true),getPosition:()=>{stopMapTravel();return {x:view.x,y:view.y};},onPan:position=>{Object.assign(view,constrainCamera({...view,...position},lastViewport,mapBounds));cameraPainter.schedule();return {x:view.x,y:view.y};},onEnd:()=>cameraPainter.flush()});
+viewport.addEventListener('wheel',e=>{e.preventDefault();const r=lastViewport;zoom(e.deltaY<0?1.09:1/1.09,e.clientX-r.left,e.clientY-r.top,true);},{passive:false});
 let lastViewport=viewport.getBoundingClientRect();
 function resizeMap(){
  if(view.page!=='map')return;

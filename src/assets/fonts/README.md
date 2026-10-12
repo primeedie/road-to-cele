@@ -9,7 +9,7 @@ The exact `HYWenHei-85W` font is bundled as `HYWenHei-85W.ttf` (7,232,220 bytes)
 - `HYWenHei-85W.otf`
 - `HYWenHei-85W.ttf`
 
-The build adds the bundled font to the CSS source automatically. Manrope/Arial serves as a loading fallback. Roman section numerals retain their separate serif treatment.
+The build adds the bundled font to the CSS source automatically. Hanyi covers headings, navigation, identifiers, metadata and Roman section numerals; Arial serves as its loading fallback. No external font service is required.
 
 Official family: https://www.hanyi.com/font-browser/287-hywenhei
 Official 85W product: https://www.hanyi.com.cn/productdetail?id=986

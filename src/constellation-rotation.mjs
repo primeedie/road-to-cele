@@ -1,5 +1,6 @@
 import {courseConnections} from './connections.mjs';
 import {NODE_GROUND_X,NODE_GROUND_Y} from './sky-layout.mjs';
+import {constellationAngle} from './rotation-range.mjs';
 
 export function rotateSkyPoint(point,center,angle){
  const x=point.x-center.x,y=point.y-center.y,c=Math.cos(angle),s=Math.sin(angle);
@@ -26,13 +27,11 @@ export function attachConstellationRotation(viewport,button,{requestFrame,cancel
  function paused(){return !enabled||query?.matches||doc.hidden||blurred||pointerDown||hovered||viewport.classList.contains('dragging')||viewport.classList.contains('tracing-path')||!!doc.querySelector('dialog[open]')||!!doc.querySelector('#map-page.hidden');}
  function wake(){if(!paused()&&map&&frame===null)frame=requestFrame(tick);}
  function updateCluster(cluster){
-  const clock=clocks.get(cluster.key),angle=(clock.time*.011)%(Math.PI*2);
+  const clock=clocks.get(cluster.key),angle=constellationAngle(clock.time);
   const pose=rotatedCluster(cluster.chart,map.positions,cluster.courses,cluster.label,angle);
-  const trails=cluster.svg.querySelectorAll('.sky-trails polyline,.sky-plane-shadow polyline');
-  trails.forEach((path,i)=>{const ids=cluster.chart.paths[i%cluster.chart.paths.length];path.setAttribute('points',ids.map(id=>`${pose.vertices[id].x},${pose.vertices[id].y}`).join(' '));});
-  cluster.svg.querySelectorAll('.catalog-stars circle,.sky-plane-shadow circle').forEach((circle,i)=>{const point=pose.vertices[i%pose.vertices.length];circle.setAttribute('cx',point.x);circle.setAttribute('cy',point.y);});
+  cluster.trails.forEach((path,i)=>{const ids=cluster.chart.paths[i%cluster.chart.paths.length];path.setAttribute('points',ids.map(id=>`${pose.vertices[id].x},${pose.vertices[id].y}`).join(' '));});
+  cluster.stars.forEach((circle,i)=>{const point=pose.vertices[i%pose.vertices.length];circle.setAttribute('cx',point.x);circle.setAttribute('cy',point.y);});
   for(const [id,p] of Object.entries(pose.positions)){positions[id]=p;const node=nodes.get(id);if(node){node.style.left=p.x+'px';node.style.top=p.y+'px';}}
-  if(cluster.heading){cluster.heading.style.left=pose.label.x+'px';cluster.heading.style.top=pose.label.y+'px';}
  }
  function draw(){
   for(const cluster of clusters)updateCluster(cluster);
@@ -52,7 +51,7 @@ export function attachConstellationRotation(viewport,button,{requestFrame,cancel
   map=next;positions={...map.positions};nodes=new Map([...viewport.querySelectorAll('.course-node')].map(n=>[n.dataset.course,n]));
   const outlines=[...viewport.querySelectorAll('.sky-outline')];
   const source=[...map.charts.map(({chart,term,label})=>({chart,label,key:'term-'+term,courses:map.courses.filter(c=>!c.specialization&&c.term===term),heading:viewport.querySelector('[data-term="'+term+'"]')})),...(map.branchChart?[{chart:map.branchChart,label:map.branchLabel,key:'branch-'+map.courses.find(c=>c.specialization)?.specialization,courses:map.courses.filter(c=>c.specialization),heading:viewport.querySelector('.specialization-heading')}]:[])];
-  clusters=source.map((c,index)=>({...c,index,svg:outlines[index]}));
+  clusters=source.map((c,index)=>({...c,index,svg:outlines[index],trails:[...outlines[index].querySelectorAll('.sky-trails polyline,.sky-plane-shadow polyline')],stars:[...outlines[index].querySelectorAll('.catalog-stars circle,.sky-plane-shadow circle')]}));
   for(const cluster of clusters){if(!clocks.has(cluster.key))clocks.set(cluster.key,{time:0});}
   const lines=viewport.querySelectorAll('.connection-line'),hits=viewport.querySelectorAll('.connection-hit'),shadows=viewport.querySelectorAll('.thread-shadows path');
   links=courseConnections(map.courses).map((edge,i)=>({edge,paths:[lines[i],hits[i],shadows[i]]}));

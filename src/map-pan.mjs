@@ -1,5 +1,5 @@
 // One finger pans; two fingers zoom around their midpoint. A gesture never opens a course.
-export function attachMapPan(viewport,{getPosition,onPan,onZoom,threshold=5}){
+export function attachMapPan(viewport,{getPosition,onPan,onZoom,onEnd,threshold=5}){
  let gesture=null,pinch=null,suppressPointerClick=false;
  const touches=new Map();
  const release=(target,id)=>{if(target.hasPointerCapture?.(id))target.releasePointerCapture(id);};
@@ -49,7 +49,7 @@ export function attachMapPan(viewport,{getPosition,onPan,onZoom,threshold=5}){
   }
   if(!gesture||gesture.id!==e.pointerId)return;
   const current=gesture;gesture=null;suppressPointerClick=current.moved;
-  viewport.classList.remove('dragging');release(current.capture,current.id);
+  viewport.classList.remove('dragging');release(current.capture,current.id);if(current.moved)onEnd?.();
  };
  const click=e=>{if(suppressPointerClick&&e.detail!==0){suppressPointerClick=false;e.preventDefault();e.stopImmediatePropagation();}};
  const nativeDrag=e=>e.preventDefault();
@@ -57,6 +57,7 @@ export function attachMapPan(viewport,{getPosition,onPan,onZoom,threshold=5}){
   const points=[...touches.entries()],current=gesture;
   touches.clear();gesture=null;pinch=null;suppressPointerClick=true;viewport.classList.remove('dragging');
   for(const [id,p] of points)release(p.capture,id);if(current)release(current.capture,current.id);
+  if(current?.moved)onEnd?.();
  };
  const handlers=[['pointerdown',down],['pointermove',move],['pointerup',end],['pointercancel',end],['lostpointercapture',end],['dragstart',nativeDrag]];
  for(const [name,fn] of handlers)viewport.addEventListener(name,fn);

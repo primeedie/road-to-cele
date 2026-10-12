@@ -4,6 +4,14 @@ import {JSDOM} from 'jsdom';
 import {createSkyMap} from '../src/map-curriculum.mjs';
 import {drawConstellation,NODE_GROUND_X,NODE_GROUND_Y} from '../src/sky-layout.mjs';
 import {rotatedCluster,rotateSkyPoint,connectionCurve,attachConstellationRotation} from '../src/constellation-rotation.mjs';
+import {constellationAngle,ROTATION_LIMIT,ROTATION_PERIOD} from '../src/rotation-range.mjs';
+
+test('rotation makes a bounded 45-degree loop with a smooth return and no reset jump',()=>{
+ assert.equal(constellationAngle(0),0);assert.equal(constellationAngle(ROTATION_PERIOD/2),ROTATION_LIMIT);
+ assert.equal(constellationAngle(ROTATION_PERIOD),0);
+ for(let t=0;t<1000;t+=.5){const angle=constellationAngle(t);assert.ok(angle>=0&&angle<=ROTATION_LIMIT);}
+ for(const t of [0,ROTATION_PERIOD/2,ROTATION_PERIOD])assert.ok(Math.abs(constellationAngle(t+.01)-constellationAngle(t-.01))<1e-8);
+});
 
 test('rotation keeps courses on catalog anchors in every shared and specialist constellation without changing source data',()=>{
  assert.ok(Math.abs(rotateSkyPoint({x:1,y:0},{x:0,y:0},Math.PI/2).y-1)<1e-9);

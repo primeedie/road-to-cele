@@ -7,3 +7,5 @@
   Cache-Control: no-cache
 /runtime-config.mjs
   Cache-Control: no-cache
+/site.css
+  Cache-Control: no-cache
