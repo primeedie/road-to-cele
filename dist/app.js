@@ -10,6 +10,7 @@ import { sceneBounds, constrainCamera, overviewCamera, resizeCamera } from './ma
 import { COURSE_SECTIONS, renderCoursePanel } from './course-panel.mjs';
 import { attachMapPan } from './map-pan.mjs';
 import { attachSkyMotion } from './sky-motion.mjs';
+import { attachConstellationRotation } from './constellation-rotation.mjs';
 import { COURSES, COURSE_BY_ID, SPECIALIZATIONS, CELE_DOMAINS } from './curriculum.mjs';
 import { newProgress, selected, courseAccess, setAcademicYear, setAcademicTerm, currentAcademicTerm, confirmSpecialization, changeSpecialization, recordAcademicProgress, progressSummary, gateStatus } from './progression.mjs';
 import { loadProgress } from './storage.mjs';
@@ -23,6 +24,7 @@ try{progress=loadProgress(localStorage);}catch{progress=newProgress();storageOK=
 const view={year:1,branch:selected(progress),preview:false,course:null,connection:null,reward:null,section:0,page:'map',scale:1,x:0,y:0};
 const initialAcademic=progressSummary(progress).academic;
 let resetOrigin;
+let constellationRotation;
 let transferMode=false,toastTimer,shownMap,mapBounds,previousAcademicFill=100*initialAcademic.complete/initialAcademic.total,sharedCamera=null,lastRenderedBranch=null;
 const icon=key=>`<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${{
  bridge:'<path d="M4 35H44M9 35V16M39 35V16M9 19Q24 41 39 19M15 35V27M21 35V30M27 35V30M33 35V27M6 16H12M36 16H42M4 38H44"/>',
@@ -100,6 +102,7 @@ function renderMap(reset=false){
  $('#map-viewport').classList.toggle('tracing-path',!!trace);
  renderConnectionCard(trace);
  $('#world').innerHTML=html;$('#world').style.width=WORLD_WIDTH+'px';$('#world').style.height=WORLD_HEIGHT+'px';
+ constellationRotation?.setMap(map);
  if(reset)fitMap();else applyTransform();
  $('.explore-button').setAttribute('aria-pressed',String(view.preview));
  document.querySelectorAll('[data-year]').forEach(b=>{b.classList.toggle('active',+b.dataset.year===view.year);b.setAttribute('aria-pressed',String(+b.dataset.year===view.year));});
@@ -290,6 +293,7 @@ $('#course-card').addEventListener('keydown',e=>{
 });
 const viewport=$('#map-viewport');
 const skyMotion=attachSkyMotion(viewport);
+constellationRotation=attachConstellationRotation(viewport,$('#rotate-sky'));
 attachMapPan(viewport,{onZoom:zoom,getPosition:()=>{stopMapTravel();return {x:view.x,y:view.y};},onPan:position=>{Object.assign(view,position);applyTransform();return {x:view.x,y:view.y};}});
 viewport.addEventListener('wheel',e=>{e.preventDefault();const r=viewport.getBoundingClientRect();zoom(e.deltaY<0?1.09:1/1.09,e.clientX-r.left,e.clientY-r.top);},{passive:false});
 let lastViewport=viewport.getBoundingClientRect();

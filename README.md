@@ -39,6 +39,8 @@ Guest progress resides in the current browser. With Supabase configured, Google 
 
 ## Motion
 
+All shared and specialization constellations have slow, bounded rotation around their chart centers. `constellation-rotation.mjs` updates catalog outlines, raised course anchors, upright labels, prerequisite paths and their hit areas together without changing the dataset or progress. The circular-arrow map control pauses/resumes rotation. Course hover and focus freeze its constellation; dragging, selected paths, dialogs, hidden pages, and reduced-motion preferences pause the animation. The detail chart also gently rotates while rotation is enabled.
+
 `sky-motion.mjs` and `motion.css` add drifting background stars, bounded mouse parallax, a gently tilting course chart, selected-path light flow and completion sparks. Decoration never changes camera coordinates, hit targets, or progression. Touch devices use fewer background stars without pointer tilt. Motion pauses while the map is hidden or a dialog is open and respects reduced-motion preferences. Completed nodes use a small inner-star glow instead of a wide blurred outline.
 
 ## Authorship

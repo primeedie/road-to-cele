@@ -42,3 +42,8 @@
  .completion-sparks { display:none }
 }
 .motion-reduced .motion-stars i { animation:none }
+.constellations-rotating .dossier-sky svg { animation:chart-orbit 48s ease-in-out infinite alternate }
+@keyframes chart-orbit { from { rotate:-3deg } to { rotate:3deg } }
+#rotate-sky[aria-pressed="true"] { color:#f2f2f2;background:#ffffff0b }
+#rotate-sky svg { width:22px;height:22px }
+@media(prefers-reduced-motion:reduce) { .constellations-rotating .dossier-sky svg { animation:none } }
