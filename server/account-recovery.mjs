@@ -1,5 +1,7 @@
 // This module is imported only by the Pages Function, never by the browser build.
-import publicProject from '../config/public-production.json' with {type:'json'};
+// The site build emits these validated public settings before Functions compile.
+// Plain ESM also works with the older Wrangler compiler used by Pages builds.
+import {cloudConfig} from '../dist/runtime-config.mjs';
 const domain='accounts.road-to-cele.invalid';
 const username=value=>typeof value==='string'&&/^[a-z0-9_]{3,24}$/.test(value)?value:null;
 export const normalizeRecoveryCode=value=>String(value||'').replace(/[\s-]/g,'').toLowerCase();
@@ -20,7 +22,8 @@ async function bodyJSON(request){
 }
 export async function handleRecovery(request,env,{fetcher=fetch}={}) {
  const key=env.SUPABASE_RECOVERY_SECRET_KEY;
- const base=publicProject.PUBLIC_SUPABASE_URL,publishable=publicProject.PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+ const base=cloudConfig.url,publishable=cloudConfig.publishableKey;
+ const configured=!!(key&&base&&publishable);
  const adminHeaders={apikey:key,Authorization:'Bearer '+key,'Content-Type':'application/json'};
  async function api(path,{method='POST',data,headers=adminHeaders}={}){
   const result=await fetcher(base+path,{method,headers,body:data===undefined?undefined:JSON.stringify(data),signal:AbortSignal.timeout(10000)});
@@ -29,12 +32,12 @@ export async function handleRecovery(request,env,{fetcher=fetch}={}) {
  }
  const rpc=(name,data)=>api('/rest/v1/rpc/'+name,{data});
  if(request.method==='GET'){
-  if(!key)return response({available:false});
+  if(!configured)return response({available:false});
   try{return response({available:(await rpc('recovery_ready',{}))===true});}catch{return response({available:false});}
  }
  if(request.method!=='POST')return response({error:'Method not allowed'},405);
  if(request.headers.get('origin')!==new URL(request.url).origin)return response({error:'Request not allowed'},403);
- if(!key)return response({error:'Recovery is awaiting server setup. Google sign-in and username sign-in are available.'},503);
+ if(!configured)return response({error:'Recovery is awaiting server setup. Google sign-in and username sign-in are available.'},503);
  if(!request.headers.get('content-type')?.startsWith('application/json'))return response({error:'Invalid request'},400);
  let input;try{input=await bodyJSON(request);}catch{return response({error:'Invalid request'},400);}
  if(!['issue','recover'].includes(input?.action))return response({error:'Invalid request'},400);
