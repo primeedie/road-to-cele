@@ -27,7 +27,7 @@ test('rotation keeps courses on catalog anchors in every shared and specialist c
 });
 test('rotation updates visible and clickable paths together, pauses interaction, and honors reduced motion',async()=>{
  const map=createSkyMap(),cluster=map.charts[0],courses=map.courses.filter(c=>c.term===1),nodes=courses.map(c=>`<button class="course-node" data-course="${c.id}" style="left:${map.positions[c.id].x}px;top:${map.positions[c.id].y}px"></button>`).join('');
- const dom=new JSDOM(`<button id="rotate"></button><section id="map-page"><div id="map">${drawConstellation(cluster.chart)}<div data-term="1"></div>${nodes}<svg class="graph-lines"></svg></div></section><dialog></dialog>`,{pretendToBeVisual:true,url:'https://road.test/'}),win=dom.window,doc=win.document,viewport=doc.querySelector('#map'),button=doc.querySelector('#rotate');
+ const dom=new JSDOM(`<button id="rotate"></button><section id="map-page"><div id="map">${drawConstellation(cluster.chart,{lights:[{anchor:map.positions[courses[0].id].anchorIndex,strength:1}],scope:courses[0].id})}<div data-term="1"></div>${nodes}<svg class="graph-lines"></svg></div></section><dialog></dialog>`,{pretendToBeVisual:true,url:'https://road.test/'}),win=dom.window,doc=win.document,viewport=doc.querySelector('#map'),button=doc.querySelector('#rotate');
  let reduced=false,preference;win.matchMedia=()=>({get matches(){return reduced;},addEventListener:(event,fn)=>{preference=fn;},removeEventListener:()=>{}});
  let scheduled=null;const rotation=attachConstellationRotation(viewport,button,{requestFrame:fn=>{scheduled=fn;return 1;},cancelFrame:()=>{scheduled=null;}});
  // Keep a small graph with a dependency joining these two stars for this runtime test.
@@ -37,6 +37,8 @@ test('rotation updates visible and clickable paths together, pauses interaction,
  try{
   rotation.setMap(localMap);step(100);step(200);
   const node=doc.querySelector(`[data-course="${a.id}"]`),before=node.style.left;assert.notEqual(before,map.positions[a.id].x+'px');
+  const glow=doc.querySelector('.local-light-segment'),gradient=doc.querySelector('.local-light-gradient'),anchor=+glow.dataset.lightFrom,neighbor=+glow.dataset.lightTo,pose=rotatedCluster(cluster.chart,map.positions,courses,cluster.label,constellationAngle(.1));
+  for(const element of [glow,gradient]){assert.ok(Math.abs(+element.getAttribute('x1')-pose.vertices[anchor].x)<1e-8);assert.ok(Math.abs(+element.getAttribute('y2')-pose.vertices[neighbor].y)<1e-8);}
   const d=doc.querySelector('.connection-line').getAttribute('d');assert.equal(doc.querySelector('.connection-hit').getAttribute('d'),d);assert.equal(doc.querySelector('.thread-shadows path').getAttribute('d'),d);
   assert.ok(d.startsWith(`M ${parseFloat(node.style.left)+NODE_GROUND_X} ${parseFloat(node.style.top)+NODE_GROUND_Y}`));
   node.dispatchEvent(new win.Event('pointerover',{bubbles:true}));assert.equal(scheduled,null);assert.equal(node.style.left,before);viewport.dispatchEvent(new win.Event('pointerleave'));assert.ok(scheduled);

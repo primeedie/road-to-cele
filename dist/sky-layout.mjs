@@ -61,13 +61,24 @@ export function placeCourses(chart,courses){
  });
  return positions;
 }
-export function drawConstellation(chart,{activated=0,completed=0,total=0,width=WORLD_WIDTH,height=WORLD_HEIGHT,bounds=null}={}){
+export function localLightSegments(chart,lights=[]){
+ const strengths=new Map(lights.filter(l=>Number.isInteger(l.anchor)&&l.anchor>=0&&l.anchor<chart.vertices.length).map(l=>[l.anchor,Math.max(0,Math.min(1,l.strength))]));
+ const seen=new Set();
+ return chart.edges.filter(([a,b])=>{const key=[a,b].sort((x,y)=>x-y).join('-');if(seen.has(key))return false;seen.add(key);return strengths.get(a)>0||strengths.get(b)>0;}).map(([from,to])=>({from,to,start:strengths.get(from)||0,end:strengths.get(to)||0}));
+}
+export function drawConstellation(chart,{activated=0,completed=0,total=0,width=WORLD_WIDTH,height=WORLD_HEIGHT,bounds=null,lights=[],scope=chart.id}={}){
  const points=chart.vertices;
  const lines=chart.paths.map(path=>`<polyline points="${path.map(i=>`${points[i].x},${points[i].y}`).join(' ')}"/>`).join('');
  const stars=points.map(p=>`<circle cx="${p.x}" cy="${p.y}" r="${p.degree>2?4:2.8}"/>`).join('');
  const lit=activated+completed>0,brightness=lit ? .42+.58*Math.min(1,(activated*.4+completed)/Math.max(1,total)) : .3;
  const box=bounds?`${bounds.minX} ${bounds.minY} ${bounds.maxX-bounds.minX} ${bounds.maxY-bounds.minY}`:`0 0 ${width} ${height}`;
  const placement=bounds?`;inset:auto;left:${bounds.minX}px;top:${bounds.minY}px;width:${bounds.maxX-bounds.minX}px;height:${bounds.maxY-bounds.minY}px`:'';
- return `<svg class="sky-outline ${lit?'constellation-lit':''}" style="${skyAccent(chart.id)};--constellation-brightness:${brightness.toFixed(3)}${placement}" data-lit-courses="${activated+completed}" data-completed-courses="${completed}" data-constellation="${chart.id}" viewBox="${box}" aria-hidden="true"><g class="sky-plane-shadow" transform="translate(10 24)">${lines}${stars}</g><g class="sky-trails">${lines}</g><g class="catalog-stars">${stars}</g></svg>`;
+ let gradients='',nearby='';
+ localLightSegments(chart,lights).forEach(({from,to,start,end},i)=>{
+  const a=points[from],b=points[to],falloff=Math.min(.45,260/Math.max(1,Math.hypot(a.x-b.x,a.y-b.y))),id='near-'+String(scope).replace(/[^a-z0-9_-]/gi,'')+'-'+i;
+  gradients+=`<linearGradient class="local-light-gradient" id="${id}" gradientUnits="userSpaceOnUse" data-light-from="${from}" data-light-to="${to}" x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}"><stop offset="0" stop-opacity="${start}"/><stop offset="${falloff}" stop-opacity="0"/><stop offset="${1-falloff}" stop-opacity="0"/><stop offset="1" stop-opacity="${end}"/></linearGradient>`;
+  nearby+=`<line class="local-light-segment" data-light-from="${from}" data-light-to="${to}" x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="url(#${id})"/>`;
+ });
+ return `<svg class="sky-outline ${lit?'constellation-lit':''}" style="${skyAccent(chart.id)};--constellation-brightness:${brightness.toFixed(3)}${placement}" data-lit-courses="${activated+completed}" data-completed-courses="${completed}" data-constellation="${chart.id}" viewBox="${box}" aria-hidden="true"><defs>${gradients}</defs><g class="sky-plane-shadow" transform="translate(10 24)">${lines}${stars}</g><g class="sky-trails">${lines}</g><g class="sky-lights">${nearby}</g><g class="catalog-stars">${stars}</g></svg>`;
 }
 export function starBadge(){return `<svg class="skill-star" viewBox="0 0 144 164" aria-hidden="true"><ellipse class="star-floor-shadow" cx="72" cy="148" rx="55" ry="20"/><path class="elevation-base-side" d="M23 132A49 23 0 0 0 121 132V138A49 23 0 0 1 23 138Z"/><ellipse class="elevation-base" cx="72" cy="132" rx="49" ry="23"/><path class="elevation-base-light" d="M23 132A49 23 0 0 1 121 132"/><ellipse class="elevation-contact" cx="72" cy="132" rx="22" ry="8"/><path class="elevation-stem" d="M72 104V131"/><g transform="translate(0 18)"><g class="star-hover-glyph"><path class="star-extrusion" d="M72 17L79 45L109 52L79 60L72 88L65 60L35 52L65 45Z" transform="translate(0 5)"/><path class="star-rays" d="M72 17L79 45L109 52L79 60L72 88L65 60L35 52L65 45Z"/><path class="star-facet-light" d="M72 17L72 52L65 45ZM35 52L72 52L65 60ZM72 52L79 60L72 88Z"/><path class="star-facet-dark" d="M72 17L79 45L72 52ZM72 52L109 52L79 60ZM72 52L72 88L65 60Z"/><path class="star-center" d="M72 37L77 47L87 52L77 57L72 67L67 57L57 52L67 47Z"/><circle class="star-spark" cx="72" cy="52" r="3"/></g></g></svg>`;}

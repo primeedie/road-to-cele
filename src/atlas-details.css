@@ -1,0 +1,40 @@
+/* Light stays on the star's cut surfaces; no ring or broad blurred aura. */
+.course-node .star-facet-light { fill:color-mix(in srgb,var(--sky-accent) 32%,white);fill-opacity:.7 }
+.course-node.active-course .star-rays { fill:color-mix(in srgb,var(--sky-accent) 38%,white) }
+.course-node.active-course .star-facet-light { fill:#f3faff;fill-opacity:1 }
+.course-node.active-course .star-facet-dark { fill:color-mix(in srgb,var(--sky-accent) 65%,white);fill-opacity:.95 }
+.course-node.completed .star-rays { fill:color-mix(in srgb,var(--sky-accent) 12%,white);stroke:color-mix(in srgb,var(--sky-accent) 35%,white);stroke-width:1 }
+.course-node.completed .star-facet-dark { fill:color-mix(in srgb,var(--sky-accent) 38%,white);fill-opacity:1 }
+.course-node.completed .star-center { filter:drop-shadow(0 0 2px #fff) }
+.course-node.completed .star-spark { r:4;fill:#fff }
+.sky-outline .local-light-segment { stroke-width:4;stroke-linecap:round;fill:none;filter:none }
+.sky-outline .local-light-gradient stop { stop-color:color-mix(in srgb,var(--sky-accent) 58%,white) }
+.tracing-path .sky-lights { opacity:.35 }
+/* This card belongs to the viewport, so overview labels never scale to tiny text. */
+.overview-tooltip { position:absolute;z-index:18;width:280px;max-width:calc(100% - 24px);padding:15px 17px;background:#080808f5;border:1px solid #ffffff35;border-left:2px solid var(--sky-accent,#aaa);border-radius:5px;color:#eee;box-shadow:0 8px 24px #0008;pointer-events:none;font-size:14px;line-height:1.45 }
+.overview-tooltip[hidden] { display:none }
+.overview-tooltip strong,.overview-tooltip span,.overview-tooltip small { display:block }
+.overview-tooltip .overview-code { color:var(--sky-accent,#eee);font-size:15px;margin-bottom:5px }
+.overview-tooltip .overview-title { margin-bottom:9px }
+.overview-tooltip small { color:#bbb;font-size:12px }
+.map-overview .course-node .node-title { display:none }
+.map-overview .course-node .skill-star { pointer-events:auto }
+/* An integration destination in the unused Year IV column. */
+.world .civinco-portal { position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:0;border:0;background:none;border-radius:0;color:#ead9b7;cursor:pointer }
+.civinco-portal svg { width:100%;height:75%;overflow:visible;opacity:.75;transition:opacity .2s }
+.civinco-portal strong { font-size:34px;letter-spacing:.14em }
+.civinco-portal>span { font-size:19px;color:#c1b69f }
+.civinco-portal .portal-seal { fill:#ecd5a1;font:800 40px var(--atlas-type) }
+.civinco-portal .portal-orbits { transform-origin:300px 200px;animation:portal-orbit 70s ease-in-out infinite alternate }
+.civinco-portal:is(:hover,:focus-visible) svg,.civinco-portal.gate-ready svg,.civinco-portal.gate-cleared svg { opacity:1 }
+.civinco-portal:focus-visible { outline:2px solid #e4cb92;outline-offset:8px }
+.dragging .portal-orbits,.zooming .portal-orbits,.motion-paused .portal-orbits { animation-play-state:paused }
+@keyframes portal-orbit { to { transform:rotate(12deg) } }
+/* One brief streak after a long quiet interval; no camera or scene animation. */
+.sky-comet { position:absolute;z-index:1;width:110px;height:1px;background:linear-gradient(90deg,transparent,#c6e2ec80);pointer-events:none;opacity:0;transform:rotate(24deg);animation:sky-comet var(--comet-duration,3.4s) linear forwards }
+.sky-comet::after { content:'';position:absolute;right:0;top:-1px;width:3px;height:3px;background:#edfaff;border-radius:50% }
+@keyframes sky-comet { 12% { opacity:.65 } 80% { opacity:.65 } to { opacity:0;transform:translate(var(--comet-distance,240px),110px) rotate(24deg) } }
+.dossier-reading .future-skill-scaffold { display:grid;gap:10px;padding:0;list-style:none;color:#ddd;text-align:left;font-size:12px }
+.future-skill-scaffold li { border-left:1px solid #ffffff30;padding-left:12px }
+.future-skill-scaffold span { display:block;color:#aaa;font-size:11px;margin-top:3px }
+@media(prefers-reduced-motion:reduce) { .civinco-portal .portal-orbits { animation:none }.sky-comet { display:none } }

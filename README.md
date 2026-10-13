@@ -27,6 +27,8 @@ Run `npm ci`, `npm test`, `npm run build`, then `npm start`. On Windows PowerShe
 - `supabase/migrations/202610110001_student_progress.sql`: private progress rows, row-level security, ownership checks and optimistic save revisions.
 - `tests/account-progress.test.mjs`, `tests/account-browser.test.mjs` and `tests/database.test.mjs`: account isolation, offline saving, guest import, Google flow and actual PostgreSQL permission tests.
 
+Course authoring follows [CONTENT_GUIDELINES.md](CONTENT_GUIDELINES.md): compact topics, lecture links to future subjects, verified laboratory resume skills, and CIVINCO backreferences only after its files arrive.
+
 ## Curriculum scope
 
 Transcribed from the five supplied DLSU AY2022–2023 ID122 checklists. Only technical courses are modeled; GE, PE, NSTP and OJT are excluded from the app’s technical progress denominator. CIVINCO is a common integration gate outside the course denominator. Shared Urban Engineering (CESPECS) remains shared because it appears in all five checklists. Specialist lecture courses are required mastery nodes when selected; laboratories are academic requirements only. This scope can be changed in `MASTERY_SCOPE` and course `requiredMastery` fields.
@@ -70,3 +72,5 @@ Camera input updates its bounded position immediately but `frame-painter.mjs` co
 `smooth-zoom.mjs` eases wheel, trackpad and zoom-button targets with elapsed-time damping on each `requestAnimationFrame`, without a frame-rate cap. Wheel delta magnitude and pixel/line/page units determine sensitivity. Cursor anchoring is preserved through the transition, successive input accumulates and retargets smoothly, and every frame respects map bounds. Rotation and decorative animation pause during zoom; background updates resume when it settles. Direct touch pinch remains tied to finger movement with frame-batched painting. Pan, navigation, resizing, hidden pages and window interruption cancel pending zoom at the displayed position; reduced motion uses immediate zoom. Simulated 60 Hz and 144 Hz tests verify equivalent timing and one camera paint per display frame. Actual frame rate depends on the browser, device and display.
 
 The reference direction is the restrained interface and continuous network movement of [BL00D.MONEY](https://bl00d.money/); Road to CELE retains its own constellation art, black palette and academic workflows.
+
+At 20% zoom and below, a viewport-sized hover/focus card shows course code, title, year and within-year term. The CIVINCO portal occupies the unused Year IV column and opens the existing gate requirements. Nearby constellation lines fade out from activated anchors; they rotate with the chart. Comets appear singly after 35?80 seconds of quiet time and pause for interaction, hidden pages, dialogs and reduced motion.

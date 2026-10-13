@@ -18,6 +18,11 @@ test('actual website interactions keep exploration separate from academic progre
  const $=s=>document.querySelector(s),click=s=>$(s).click();
  await import('../src/app.js');
  const saved=()=>JSON.parse(localStorage.getItem(STORAGE_KEY));
+ await t.test('map portal opens gate requirements without granting completion or changing records',()=>{
+  assert.equal($('.civinco-portal').dataset.gateState,'locked');click('.civinco-portal');
+  assert.equal($('#gate-page').classList.contains('hidden'),false);assert.ok($('#gate-page button').disabled);
+  assert.equal(localStorage.getItem(STORAGE_KEY),null);click('[data-page="map"]');
+ });
  await t.test('expanded tree retains browsing state, protects modal Escape, and returns without changing progress',()=>{
   const pose=$('#world').style.transform,total=document.querySelectorAll('.course-node').length;
   click('#expand-map');assert.ok($('.map-panel').classList.contains('map-expanded'));
@@ -207,7 +212,9 @@ test('actual website interactions keep exploration separate from academic progre
   click('[data-academic="ACTIVE"]');assert.equal(saved().academicRecords.FNDMATH.status,'ACTIVE');
   assert.ok($('[data-course="FNDMATH"]').classList.contains('active-course'));
   assert.equal($(chart).classList.contains('constellation-lit'),true);assert.equal($(chart).dataset.litCourses,'1');
+  assert.ok($(chart+' .local-light-segment'));assert.ok([...document.querySelectorAll(chart+' stop')].some(stop=>+stop.getAttribute('stop-opacity')===.7));
   const before=localStorage.getItem(STORAGE_KEY);click('#explore-toggle');assert.equal($('#course-card [data-academic]'),null);assert.match($('#course-card').textContent,/Preview only/);
+  assert.equal(document.querySelectorAll('.local-light-segment').length,0);
   click('.branch-card[data-branch="STE"]');click('.course-node');assert.equal(localStorage.getItem(STORAGE_KEY),before);
   click('#explore-toggle');click('[data-year="1"]');click('[data-course="FNDMATH"]');click('[data-academic="COMPLETED"]');assert.equal(saved().academicRecords.FNDMATH.status,'COMPLETED');
   assert.match($('.completion-reward').textContent,/A new star in your sky/);

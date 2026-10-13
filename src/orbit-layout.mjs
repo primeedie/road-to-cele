@@ -40,10 +40,15 @@ export function createOrbitLayout(source){
   branchChart=branch.chart;branchLabel=branch.label;
  }
  const groups=[...charts.map(c=>c.chart),...(branchChart?[branchChart]:[])];
- const width=Math.max(...groups.map(c=>c.orbit.bounds.maxX))+100,height=Math.max(...groups.map(c=>c.orbit.bounds.maxY))+100;
- return {...source,charts,positions,branchChart,branchLabel,width,height};
+ // Year IV has two shared terms; its third column holds the integration gate.
+ const portalWidth=Math.min(720,widths[2]),portalHeight=Math.min(520,heights[3]);
+ const portal={x:columns[2]+(widths[2]-portalWidth)/2,y:rows[3]+heights[3]-portalHeight,width:portalWidth,height:portalHeight};
+ portal.bounds={minX:portal.x,minY:portal.y,maxX:portal.x+portal.width,maxY:portal.y+portal.height};
+ const width=Math.max(portal.bounds.maxX,...groups.map(c=>c.orbit.bounds.maxX))+100,height=Math.max(portal.bounds.maxY,...groups.map(c=>c.orbit.bounds.maxY))+100;
+ return {...source,charts,positions,branchChart,branchLabel,portal,width,height};
 }
 export function orbitSceneBounds(map){
  const territories=[...map.charts.map(c=>c.chart),...(map.branchChart?[map.branchChart]:[])].map(c=>({...c.orbit.bounds}));
+ if(map.portal)territories.push({...map.portal.bounds});
  return {minX:Math.min(...territories.map(t=>t.minX)),minY:Math.min(...territories.map(t=>t.minY)),maxX:Math.max(...territories.map(t=>t.maxX)),maxY:Math.max(...territories.map(t=>t.maxY)),territories,targets:territories};
 }

@@ -15,6 +15,9 @@ import { showCourseDossier, attachSidePanelDismiss } from './side-panel.mjs';
 import { createOrbitLayout, orbitSceneBounds } from './orbit-layout.mjs';
 import { attachSkyMotion } from './sky-motion.mjs';
 import { attachConstellationRotation } from './constellation-rotation.mjs';
+import { attachOverviewTooltip } from './overview-tooltip.mjs';
+import { civincoPortalMarkup } from './civinco-portal.mjs';
+import { attachComets } from './comets.mjs';
 import { COURSES, COURSE_BY_ID, SPECIALIZATIONS, CELE_DOMAINS } from './curriculum.mjs';
 import { newProgress, selected, courseAccess, setAcademicYear, setAcademicTerm, currentAcademicTerm, confirmSpecialization, changeSpecialization, recordAcademicProgress, progressSummary, gateStatus } from './progression.mjs';
 import { loadProgress } from './storage.mjs';
@@ -88,7 +91,12 @@ function renderMap(reset=false){
  let html=terrain;
  $('#map-title').textContent='Civil Engineering';
  $('#map-mode').textContent=view.preview?'EXPLORE MODE · NO PROGRESS CHANGES':view.branch?(selected(progress)===view.branch?'ACTIVE PATH · ':'PREVIEW BRANCH · ')+view.branch:'YEARS I–IV · SHARED CURRICULUM';
- const outline=(chart,list)=>drawConstellation(chart,{bounds:chart.orbit.bounds,total:list.length,activated:list.filter(c=>!isPreview(c)&&progress.academicRecords[c.id]?.status==='ACTIVE').length,completed:list.filter(c=>!isPreview(c)&&progress.academicRecords[c.id]?.status==='COMPLETED').length});
+ const outline=(chart,list)=>{
+  const recorded=list.filter(c=>!isPreview(c)&&['ACTIVE','COMPLETED'].includes(progress.academicRecords[c.id]?.status));
+  const completed=recorded.filter(c=>progress.academicRecords[c.id].status==='COMPLETED').length;
+  const lights=recorded.map(c=>({anchor:positions[c.id].anchorIndex,strength:progress.academicRecords[c.id].status==='COMPLETED'?1:.7}));
+  return drawConstellation(chart,{bounds:chart.orbit.bounds,scope:list[0]?.id,total:list.length,lights,activated:recorded.length-completed,completed});
+ };
  map.charts.forEach(({chart,term,label})=>{
   html+=outline(chart,courses.filter(c=>!c.specialization&&c.term===term));
   html+=`<div class="term-label" data-term="${term}" style="left:${label.x}px;top:${label.y}px;${skyAccent(chart.id)}"><div class="cluster-meta"><span class="cluster-year">Year ${['I','II','III','IV'][Math.ceil(term/3)-1]}</span><span class="cluster-term">Term ${String(term).padStart(2,'0')}</span></div><strong>${chart.name}</strong></div>`;
@@ -111,6 +119,7 @@ function renderMap(reset=false){
  });
  html+=`<svg class="graph-lines" viewBox="0 0 ${map.width} ${map.height}" aria-label="Course prerequisite connections"><g class="thread-shadows" transform="translate(10 24)">${shadows}</g>${lines}${hits}</svg>`;
  html+=courses.map(c=>courseButton(c,positions[c.id],trace)).join('');
+ html+=civincoPortalMarkup(map.portal,gateStatus(progress));
  $('#map-viewport').classList.toggle('tracing-path',!!trace);
  renderConnectionCard(trace);
  $('#world').innerHTML=html;$('#world').style.width=map.width+'px';$('#world').style.height=map.height+'px';
@@ -147,6 +156,8 @@ function paintCamera(){
  const traveling=cameraWorld.classList.contains('navigation-motion');
  if(sky.classList.contains('camera-travel')!==traveling)sky.classList.toggle('camera-travel',traveling);
  const label=Math.round(view.scale*100)+'%';if(cameraLabel.textContent!==label)cameraLabel.textContent=label;
+ if(sky.classList.contains('map-overview')!==(view.scale<=.2))sky.classList.toggle('map-overview',view.scale<=.2);
+ overviewTooltip.refresh();
 }
 function fitMap({overview=false}={}){
  const r=$('#map-viewport').getBoundingClientRect();if(!r.width)return;lastViewport=r;
@@ -321,6 +332,7 @@ $('#course-card').addEventListener('keydown',e=>{
 });
 const viewport=$('#map-viewport');
 const cameraWorld=$('#world'),cameraLabel=$('#zoom-label');
+const overviewTooltip=attachOverviewTooltip(viewport,{getCourse:id=>COURSE_BY_ID[id],getScale:()=>view.scale});
 const cameraPainter=createFramePainter(paintCamera,{requestFrame:fn=>window.requestAnimationFrame(fn),cancelFrame:id=>window.cancelAnimationFrame(id)});
 const zoomPreference=window.matchMedia?.('(prefers-reduced-motion: reduce)');
 zoomController=createSmoothZoom({
@@ -330,13 +342,14 @@ zoomController=createSmoothZoom({
  getLimits:()=>({min:Math.min(.28,overviewCamera(lastViewport,mapBounds).scale),max:1.8}),
  requestFrame:fn=>window.requestAnimationFrame(fn),cancelFrame:id=>window.cancelAnimationFrame(id),now:()=>window.performance.now(),
  reducedMotion:()=>!!zoomPreference?.matches,
- onActivity:active=>viewport.classList.toggle('zooming',active)
+ onActivity:active=>{viewport.classList.toggle('zooming',active);overviewTooltip.refresh();}
 });
 viewport.addEventListener('pointerdown',e=>{if(!e.target.closest('button:not(.course-node),a,input,select,textarea'))zoomController.cancel();});
 window.addEventListener('blur',()=>zoomController.cancel());
 document.addEventListener('visibilitychange',()=>{if(document.hidden)zoomController.cancel();});
 zoomPreference?.addEventListener('change',()=>{if(zoomPreference.matches)zoomController.finish();});
 const skyMotion=attachSkyMotion(viewport);
+attachComets(viewport);
 constellationRotation=attachConstellationRotation(viewport,$('#rotate-sky'));
 attachMapPan(viewport,{onZoom:(factor,x,y)=>zoom(factor,x,y,true),getPosition:()=>{stopMapTravel();return {x:view.x,y:view.y};},onPan:position=>{Object.assign(view,constrainCamera({...view,...position},lastViewport,mapBounds));cameraPainter.schedule();return {x:view.x,y:view.y};},onEnd:()=>cameraPainter.flush()});
 viewport.addEventListener('wheel',e=>{e.preventDefault();const r=lastViewport;zoom(wheelZoomFactor(e,r.height),e.clientX-r.left,e.clientY-r.top);},{passive:false});
