@@ -13,7 +13,7 @@
 .course-node.completed .star-hover-glyph { transform:scale(var(--completed-star-size,1));transform-origin:72px 52px;transition:none }
 .course-node.active-course .node-code { color:color-mix(in srgb,var(--sky-accent) 35%,white) }
 .course-node.completed .node-code { color:#fff }
-/* Compensate for camera scale so overview lines remain roughly one screen pixel. */
+/* A restrained sub-pixel outline stays readable without overpowering distant stars. */
 .sky-outline .sky-trails,.sky-outline.constellation-lit .sky-trails { stroke-width:var(--chart-stroke,2.4px);opacity:var(--chart-visibility,.3);stroke-linecap:round;stroke-linejoin:round;transition:none }
 .sky-outline .local-light-segment { stroke-width:var(--local-stroke,4px);stroke-linecap:round;fill:none;filter:none }
 .sky-outline .local-light-gradient stop { stop-color:color-mix(in srgb,var(--sky-accent) 58%,white) }

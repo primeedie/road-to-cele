@@ -149,9 +149,9 @@ function paintCamera(){
  const sky=viewport;
  if(lastSkyScale!==view.scale){
   const overview=Math.max(0,Math.min(1,(.4-view.scale)/.25));
-  sky.style.setProperty('--chart-stroke',Math.max(2.4,1/view.scale).toFixed(3)+'px');
-  sky.style.setProperty('--chart-visibility',(.3+.28*overview).toFixed(3));
-  sky.style.setProperty('--local-stroke',Math.max(4,1.65/view.scale).toFixed(3)+'px');
+  sky.style.setProperty('--chart-stroke',Math.max(2.4,.65/view.scale).toFixed(3)+'px');
+  sky.style.setProperty('--chart-visibility',(.3+.08*overview).toFixed(3));
+  sky.style.setProperty('--local-stroke',Math.max(4,.95/view.scale).toFixed(3)+'px');
   sky.style.setProperty('--active-star-size',(1+.25*overview).toFixed(3));
   sky.style.setProperty('--completed-star-size',(1+.4*overview).toFixed(3));
   sky.style.setProperty('--star-edge',Math.max(1.2,.3/view.scale).toFixed(3)+'px');
