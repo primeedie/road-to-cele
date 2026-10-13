@@ -86,7 +86,10 @@ test('actual website interactions keep exploration separate from academic progre
   for(const x of [-100000,100000])for(const y of [-100000,100000]){
    pointer('pointerdown',100,100);pointer('pointermove',x,y);pointer('pointerup',x,y);
    const camera=pose();
-   assert.ok([...document.querySelectorAll('.course-node')].some(n=>{const sx=(parseFloat(n.style.left)+125)*camera.scale+camera.x,sy=(parseFloat(n.style.top)+176)*camera.scale+camera.y;return sx>-110&&sx<910&&sy>-80&&sy<650;}));
+   const courseVisible=[...document.querySelectorAll('.course-node')].some(n=>{const sx=(parseFloat(n.style.left)+125)*camera.scale+camera.x,sy=(parseFloat(n.style.top)+176)*camera.scale+camera.y;return sx>-110&&sx<910&&sy>-80&&sy<650;});
+   const portal=$('.civinco-portal'),px=parseFloat(portal.style.left),py=parseFloat(portal.style.top),pw=parseFloat(portal.style.width);
+   const gateVisible=(px+pw*.85)*camera.scale+camera.x>0&&(px+pw*.15)*camera.scale+camera.x<800&&(py+1170)*camera.scale+camera.y>0&&(py+30)*camera.scale+camera.y<500;
+   assert.ok(courseVisible||gateVisible,'Panning retains a course or the CIVINCO destination in view');
   }
   click('#fit-map');const fit=pose().scale;assert.ok(fit<.28);
   const originalFrame=w.requestAnimationFrame,originalCancel=w.cancelAnimationFrame,originalNow=w.performance.now;

@@ -45,7 +45,8 @@ test('CIVINCO portal occupies a bounded unused column and its actions only open 
  for(const branch of [null,'STE','GTE','HWR','TRE','CTM']){
   const map=createOrbitLayout(createSkyMap(branch)),p=map.portal.bounds,b=orbitSceneBounds(map);
   const finalTerm=map.charts.find(c=>c.term===11).chart.orbit.bounds;
-  assert.ok(map.portal.width>=1100&&map.portal.height>=750);assert.equal(p.minX-finalTerm.maxX,100);assert.equal(p.minY-finalTerm.minY,80);
+  assert.ok(map.portal.width>=1800&&map.portal.height>=1200);assert.ok(p.minX-finalTerm.maxX>=450);
+  assert.ok(p.minY-map.charts.find(c=>c.term===9).chart.orbit.bounds.maxY>=60);
   assert.ok(p.minX>=b.minX&&p.maxX<=b.maxX&&p.minY>=b.minY&&p.maxY<=b.maxY);
   for(const chart of [...map.charts.map(c=>c.chart),...(map.branchChart?[map.branchChart]:[])]){const c=chart.orbit.bounds;assert.ok(p.maxX<=c.minX||p.minX>=c.maxX||p.maxY<=c.minY||p.minY>=c.maxY);}
   for(const [gate,state] of [[{eligible:false,cleared:false},'locked'],[{eligible:true,cleared:false},'ready'],[{eligible:false,cleared:true},'cleared']]){

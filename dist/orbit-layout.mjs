@@ -41,10 +41,11 @@ export function createOrbitLayout(source){
  }
  const groups=[...charts.map(c=>c.chart),...(branchChart?[branchChart]:[])];
  // Year IV has two shared terms; its third column holds the integration gate.
- const portalWidth=Math.min(1180,widths[2]),portalHeight=Math.min(800,heights[3]-80);
- const finalTerm=charts.find(c=>c.term===11).chart.orbit.bounds;
- const portal={x:finalTerm.maxX+100,y:rows[3]+80,width:portalWidth,height:portalHeight};
- portal.bounds={minX:portal.x,minY:portal.y,maxX:portal.x+portal.width,maxY:portal.y+portal.height};
+ const portalWidth=Math.min(1920,widths[2]),portalHeight=1440;
+ const precedingTerm=charts.find(c=>c.term===9).chart.orbit.bounds;
+ const portal={x:columns[2]+80,y:precedingTerm.maxY+60,width:portalWidth,height:portalHeight};
+ // Bound the visible disk/particles and caption rather than the SVG's empty margins.
+ portal.bounds={minX:portal.x+280,minY:portal.y+10,maxX:portal.x+portal.width-280,maxY:portal.y+1200};
  const width=Math.max(portal.bounds.maxX,...groups.map(c=>c.orbit.bounds.maxX))+100,height=Math.max(portal.bounds.maxY,...groups.map(c=>c.orbit.bounds.maxY))+100;
  return {...source,charts,positions,branchChart,branchLabel,portal,width,height};
 }

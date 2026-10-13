@@ -8,7 +8,7 @@ export function civincoPortalMarkup(position,gate){
  <defs>
  <linearGradient id="portal-disk"><stop stop-color="#8f7050" stop-opacity=".3"/><stop offset=".35" stop-color="#f7ce89"/><stop offset=".65" stop-color="#fff6db"/><stop offset="1" stop-color="#b48349" stop-opacity=".4"/></linearGradient>
  <radialGradient id="portal-edge"><stop offset=".87" stop-color="#000"/><stop offset=".96" stop-color="#241c10"/><stop offset=".987" stop-color="#edc784"/><stop offset="1" stop-color="#fff4d5"/></radialGradient>
- <clipPath id="portal-lens-clip"><path d="M536 225A176 176 0 1 0 184 225A176 176 0 1 0 536 225ZM470 225A110 110 0 1 1 250 225A110 110 0 1 1 470 225Z" clip-rule="evenodd"/></clipPath>
+ <clipPath id="portal-lens-clip"><path d="M580 225A220 220 0 1 0 140 225A220 220 0 1 0 580 225ZM470 225A110 110 0 1 1 250 225A110 110 0 1 1 470 225Z" clip-rule="evenodd"/></clipPath>
  </defs>
  <g clip-path="url(#portal-lens-clip)" class="portal-lens"><image class="portal-lens-texture" href="assets/galaxy-v1.png" x="110" y="-25" width="500" height="500" preserveAspectRatio="xMidYMid slice"/><g class="portal-lens-arcs"><path d="M196 268C178 104 361 35 498 130M234 106C388 26 548 177 506 322M507 325C382 435 196 346 194 227"/></g></g>
  <g transform="translate(360 225)">${particles}</g>
