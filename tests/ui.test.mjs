@@ -111,16 +111,16 @@ test('actual website interactions keep exploration separate from academic progre
  await t.test('Roman numeral course chapters are inspectable placeholders with keyboard navigation',()=>{
   click('[data-course="FNDMATH"]');
   assert.equal($('#course-card').open,true);
-  assert.equal(document.querySelectorAll('#course-card [role="tab"]').length,4);
+  assert.equal(document.querySelectorAll('#course-card [role="tab"]').length,5);
   assert.match($('#course-section').textContent,/official course description/);
-  for(const [section,title] of [[1,'Topic rundown'],[2,'Skills for the future'],[3,'Mastery quiz']]){
+  for(const [section,title] of [[1,'Topic rundown'],[2,'Skills for the future'],[3,'Grade calculator'],[4,'Mastery quiz']]){
    click(`[data-course-section="${section}"]`);
    assert.equal($('#course-card [aria-selected="true"]').dataset.courseSection,String(section));
    assert.match($('.dossier-section-heading').textContent,new RegExp(title));
    assert.equal(localStorage.getItem(STORAGE_KEY),null);
   }
   assert.ok($('#course-section button').disabled);
-  $('#course-tab-3').dispatchEvent(new w.KeyboardEvent('keydown',{key:'Home',bubbles:true}));
+  $('#course-tab-4').dispatchEvent(new w.KeyboardEvent('keydown',{key:'Home',bubbles:true}));
   assert.equal($('#course-tab-0').getAttribute('aria-selected'),'true');
   assert.equal(document.activeElement,$('#course-tab-0'));
   $('#course-card').dispatchEvent(new w.Event('cancel',{cancelable:true}));
@@ -134,6 +134,12 @@ test('actual website interactions keep exploration separate from academic progre
   assert.equal(localStorage.getItem(STORAGE_KEY),null);
   for(const branch of ['STE','GTE','HWR','TRE','CTM']){click(`.branch-card[data-branch="${branch}"]`);assert.match($('#map-mode').textContent,/PREVIEW/);click(`[data-specialization="${branch}"]`);assert.match($('#course-card').textContent,/Preview only/);assert.equal($('#course-card [data-academic]'),null);}
   assert.equal(localStorage.getItem(STORAGE_KEY),null);
+ });
+ await t.test('lab chapters end at grade calculator and keyboard navigation wraps within four tabs',()=>{
+  click('[data-course="LBYPH1A"]');assert.equal(document.querySelectorAll('#course-card [role="tab"]').length,4);assert.equal($('#course-tab-4'),null);
+  $('#course-tab-0').dispatchEvent(new w.KeyboardEvent('keydown',{key:'End',bubbles:true}));assert.equal($('#course-tab-3').getAttribute('aria-selected'),'true');assert.match($('#course-section').textContent,/laboratory grading scheme/);
+  $('#course-tab-3').dispatchEvent(new w.KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true}));assert.equal($('#course-tab-0').getAttribute('aria-selected'),'true');
+  assert.equal(localStorage.getItem(STORAGE_KEY),null);click('[data-action="close-inspector"]');
  });
  await t.test('course details expose downstream H/S requirements and co-requisites from both sides without saving',()=>{
   click('[data-year="1"]');click('[data-course="FNDMATH"]');

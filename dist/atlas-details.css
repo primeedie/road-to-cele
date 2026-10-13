@@ -14,8 +14,8 @@
 .course-node.active-course .node-code { color:color-mix(in srgb,var(--sky-accent) 35%,white) }
 .course-node.completed .node-code { color:#fff }
 /* A restrained sub-pixel outline stays readable without overpowering distant stars. */
-.sky-outline .sky-trails,.sky-outline.constellation-lit .sky-trails { stroke-width:var(--chart-stroke,2.4px);opacity:var(--chart-visibility,.3);stroke-linecap:round;stroke-linejoin:round;transition:none }
-.sky-outline .local-light-segment { stroke-width:var(--local-stroke,4px);stroke-linecap:round;fill:none;filter:none }
+.sky-outline .sky-trails,.sky-outline.constellation-lit .sky-trails { stroke-width:var(--chart-stroke,1.8px);opacity:var(--chart-visibility,.3);stroke-linecap:round;stroke-linejoin:round;transition:none }
+.sky-outline .local-light-segment { stroke-width:var(--local-stroke,3px);stroke-linecap:round;fill:none;filter:none }
 .sky-outline .local-light-gradient stop { stop-color:color-mix(in srgb,var(--sky-accent) 58%,white) }
 .tracing-path .sky-lights { opacity:.35 }
 /* This card belongs to the viewport, so overview labels never scale to tiny text. */
@@ -59,4 +59,13 @@
 .dossier-reading .future-skill-scaffold { display:grid;gap:10px;padding:0;list-style:none;color:#ddd;text-align:left;font-size:12px }
 .future-skill-scaffold li { border-left:1px solid #ffffff30;padding-left:12px }
 .future-skill-scaffold span { display:block;color:#aaa;font-size:11px;margin-top:3px }
+.grade-form { display:grid;gap:17px;font-size:13px }
+.grade-source,.grade-scope-note { font-size:11px;line-height:1.6;color:#aaa }
+.grade-pending .grade-scope-note { margin-top:16px;font-size:12px }
+.grade-row { display:grid;grid-template-columns:1fr 110px;gap:12px;align-items:center }
+.grade-row>span>small { display:block;font-size:11px;color:#aaa;margin-top:4px }
+.grade-score { display:flex;gap:8px;align-items:center }
+.grade-form input,.grade-form select { min-width:0;width:100%;min-height:44px;padding:9px;border:1px solid #ffffff30;border-radius:4px;background:#080808;color:#eee;font:16px var(--atlas-type) }
+.grade-score small { white-space:nowrap }.grade-target { display:grid;gap:9px }
+.grade-result { display:block;border-left:2px solid #a8a293;background:#111;padding:14px;line-height:1.6;color:#e8e6df }
 @media(prefers-reduced-motion:reduce) { .civinco-portal :is(.portal-orbits,.portal-infall,.portal-stream,.portal-front-stream,.portal-lens-texture,.portal-lens-arcs) { animation:none }.portal-infall { display:none }.portal-stream,.portal-front-stream,.portal-lens-arcs { stroke-dasharray:none }.sky-comet { display:none } }

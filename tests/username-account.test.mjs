@@ -20,14 +20,14 @@ test('username signup and login share cloud progress while retaining Google and 
  dom.window.HTMLDialogElement.prototype.showModal=function(){this.open=true;};dom.window.HTMLDialogElement.prototype.close=function(){this.open=false;};
  const guest=newProgress();guest.academicYear=2;saveProgress(dom.window.localStorage,guest);const before=dom.window.localStorage.getItem(STORAGE_KEY);
  let enabled=false,signupArgs,signinArgs;
- const user={id:'username-student',email:usernameIdentifier('Builder'),user_metadata:{username:'builder'}};
+ const user={id:'username-student',email:usernameIdentifier('Builder'),user_metadata:{username:'builder',batch_id:124}};
  const client={auth:{onAuthStateChange:()=>{},getSession:async()=>({data:{session:null},error:null}),
   signUp:async args=>{signupArgs=args;return {data:{session:{user}},error:null};},
   signInWithPassword:async args=>{signinArgs=args;return {data:{session:{user}},error:null};}
  },from:()=>({select:()=>({eq:()=>({maybeSingle:async()=>({data:null,error:null})})})}),rpc:async()=>({data:{saved:true,revision:1},error:null})};
  const setup=setupAccount({storage:dom.window.localStorage,document:doc,onProgress:()=>{},config:{url:'https://example.supabase.co',publishableKey:'sb_publishable_test'},clientFactory:()=>client,settingsFetcher:async()=>({mailer_autoconfirm:enabled})});
  const click=action=>doc.querySelector(`[data-account="${action}"]`).click();
- const submit=async values=>{const form=doc.querySelector('[data-username-form]');for(const [name,value] of Object.entries(values))form.elements.namedItem(name).value=value;form.dispatchEvent(new dom.window.Event('submit',{bubbles:true,cancelable:true}));await new Promise(resolve=>setTimeout(resolve,5));};
+ const submit=async values=>{const form=doc.querySelector('[data-username-form]');if(form.elements.namedItem('batchId'))form.elements.namedItem('batchId').value='124';for(const [name,value] of Object.entries(values))form.elements.namedItem(name).value=value;form.dispatchEvent(new dom.window.Event('submit',{bubbles:true,cancelable:true}));await new Promise(resolve=>setTimeout(resolve,5));};
  try{
   await setup.start();click('open');assert.ok(doc.querySelector('[data-account="login"]'));assert.equal(doc.querySelector('[type="email"]'),null);
   click('username-signup');
@@ -37,7 +37,7 @@ test('username signup and login share cloud progress while retaining Google and 
   assert.equal(signupArgs,undefined);assert.match(doc.querySelector('#account-dialog').textContent,/awaiting setup/);
   assert.equal(doc.querySelector('[name="password"]').value,'');
   enabled=true;await submit({username:'Builder',password:'test-password-long',confirmPassword:'test-password-long'});
-  assert.deepEqual(signupArgs,{email:usernameIdentifier('Builder'),password:'test-password-long',options:{data:{username:'builder'}}});
+  assert.deepEqual(signupArgs,{email:usernameIdentifier('Builder'),password:'test-password-long',options:{data:{username:'builder',batch_id:124}}});
   assert.equal(setup.model.state().choice,'import');assert.match(doc.querySelector('#account-panel').textContent,/builder/);
   assert.ok(!doc.querySelector('#account-dialog').textContent.includes('.invalid'));
   assert.equal(dom.window.localStorage.getItem(STORAGE_KEY),before);

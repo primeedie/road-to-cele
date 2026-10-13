@@ -13,7 +13,7 @@ It is the working foundation that content plugs into:
 | Curriculum data | Defines course IDs, titles, terms, units, branches and prerequisites | `src/curriculum.mjs` |
 | Progression rules | Decides whether a course can activate and updates academic/mastery records | `src/progression.mjs` |
 | Interface | Connects buttons, course panels, map browsing and saving | `src/app.js` |
-| Course content slots | Description, compact topics, future skills and mastery quiz | `src/course-panel.mjs` |
+| Course content slots | Description, compact topics, future skills, grade calculator and mastery quiz | `src/course-panel.mjs` |
 | Guest saving | Loads and validates the browser's saved journey | `src/storage.mjs` |
 | Account saving | Separates account journeys, handles cloud saving and conflicts | `src/account-progress.mjs` |
 
@@ -82,3 +82,5 @@ Automated tests cover prerequisites, lab ordering, read-only previews, transfers
 **What was the difficult part?** Keeping rotating visual anchors and clickable paths aligned, making pan/zoom smooth, handling directional lab requirements, and preventing previews or account switches from changing the wrong journey.
 
 **If someone asks about AI assistance:** Describe the workflow accurately: the project's requirements, visual direction and course materials were developed through an iterative process with coding assistance, followed by code changes, automated checks and deployment. These notes explain the implementation; they are not a claim that every line was manually typed.
+
+The fourth course tab is now a syllabus-based grade calculator; lecture mastery quizzes move to the fifth tab. Laboratories use four tabs and no mastery quiz. The calculator checks weighted contributions and forecasts the raw score needed on an assessment, but stays unavailable until its verified syllabus scheme is supplied. Batch ID 119?128 is stored separately in Supabase Auth user metadata; it does not select a new curriculum or academic year.

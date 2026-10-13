@@ -7,7 +7,7 @@ import { BRANCH_CONSTELLATIONS, SKY_NAMES, NODE_GROUND_X, NODE_GROUND_Y, drawCon
 import { createSkyMap } from './map-curriculum.mjs';
 import { skyAccent } from './sky-palette.mjs';
 import { constrainCamera, overviewCamera, resizeCamera } from './map-camera.mjs';
-import { COURSE_SECTIONS, renderCoursePanel } from './course-panel.mjs';
+import { courseSections, renderCoursePanel } from './course-panel.mjs';
 import { attachMapPan } from './map-pan.mjs';
 import { createFramePainter } from './frame-painter.mjs';
 import { createSmoothZoom, wheelZoomFactor } from './smooth-zoom.mjs';
@@ -18,6 +18,7 @@ import { attachConstellationRotation } from './constellation-rotation.mjs';
 import { attachOverviewTooltip } from './overview-tooltip.mjs';
 import { civincoPortalMarkup } from './civinco-portal.mjs';
 import { attachComets } from './comets.mjs';
+import {COURSE_GRADING_SCHEMES,gradeForecast,gradeForecastText} from './grade-calculator.mjs';
 import { COURSES, COURSE_BY_ID, SPECIALIZATIONS, CELE_DOMAINS } from './curriculum.mjs';
 import { newProgress, selected, courseAccess, setAcademicYear, setAcademicTerm, currentAcademicTerm, confirmSpecialization, changeSpecialization, recordAcademicProgress, progressSummary, gateStatus } from './progression.mjs';
 import { loadProgress } from './storage.mjs';
@@ -34,6 +35,7 @@ let resetOrigin;
 let constellationRotation;
 let zoomController;
 let lastSkyScale=null;
+const gradeDrafts=new Map();
 let transferMode=false,toastTimer,shownMap,mapBounds,previousAcademicFill=100*initialAcademic.complete/initialAcademic.total,sharedCamera=null,lastRenderedBranch=null;
 const icon=key=>`<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${{
  bridge:'<path d="M4 35H44M9 35V16M39 35V16M9 19Q24 41 39 19M15 35V27M21 35V30M27 35V30M33 35V27M6 16H12M36 16H42M4 38H44"/>',
@@ -45,7 +47,7 @@ const icon=key=>`<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stro
 const terrain='';
 function toast(message){$('#toast').textContent=message;$('#toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').classList.remove('show'),4500);}
 const account=setupAccount({storage:localStorage,document,onError:toast,onProgress:next=>{
- progress=next;view.course=null;view.reward=null;view.connection=null;view.preview=false;view.branch=selected(next);sharedCamera=null;lastRenderedBranch=null;
+ gradeDrafts.clear();progress=next;view.course=null;view.reward=null;view.connection=null;view.preview=false;view.branch=selected(next);sharedCamera=null;lastRenderedBranch=null;
  renderAll();requestAnimationFrame(()=>view.branch?focusBranch():fitMap());
 }});
 function commit(next,message){
@@ -68,8 +70,19 @@ function courseCard(){
  $('.workspace').classList.toggle('inspector-open',!!c);
  if(!c){if(dialog.open)dialog.close();dialog.innerHTML='';return;}
  dialog.innerHTML=renderCoursePanel(progress,c,{preview:isPreview(c),section:view.section,reward:view.reward});
+ const gradeForm=dialog.querySelector('[data-grade-course]');if(gradeForm){const draft=gradeDrafts.get(c.id);if(draft)for(const [key,value] of Object.entries(draft))gradeForm.elements.namedItem(key).value=value;updateGradeCalculator(gradeForm);}
  if(!dialog.open)showCourseDossier(dialog);
 }
+function updateGradeCalculator(form){
+ const scheme=COURSE_GRADING_SCHEMES[form.dataset.gradeCourse];if(!scheme)return;
+ const scores={},draft={};
+ for(const c of scheme.components){const raw=form.elements.namedItem(c.id).value;draft[c.id]=raw;scores[c.id]=raw===''?null:Number(raw);}
+ const target=form.elements.namedItem('gradeTarget').value;draft.gradeTarget=target;gradeDrafts.set(form.dataset.gradeCourse,draft);
+ try{form.querySelector('output').textContent=gradeForecastText(gradeForecast(scheme,scores,target));}
+ catch(failure){form.querySelector('output').textContent=failure.message;}
+}
+for(const event of ['input','change'])document.addEventListener(event,e=>{const form=e.target.closest('[data-grade-course]');if(form)updateGradeCalculator(form);});
+document.addEventListener('submit',e=>{if(e.target.matches('[data-grade-course]'))e.preventDefault();});
 function closeCourse(){const id=view.course;view.course=null;courseCard();renderMap();document.querySelector('[data-course="'+id+'"]')?.focus({preventScroll:true});}
 function focusCourse(id){
  const p=constellationRotation?.getPosition(id)||shownMap.positions[id];if(!p)return;
@@ -149,9 +162,9 @@ function paintCamera(){
  const sky=viewport;
  if(lastSkyScale!==view.scale){
   const overview=Math.max(0,Math.min(1,(.4-view.scale)/.25));
-  sky.style.setProperty('--chart-stroke',Math.max(2.4,.65/view.scale).toFixed(3)+'px');
-  sky.style.setProperty('--chart-visibility',(.3+.08*overview).toFixed(3));
-  sky.style.setProperty('--local-stroke',Math.max(4,.95/view.scale).toFixed(3)+'px');
+  sky.style.setProperty('--chart-stroke',Math.max(1.8,.4/view.scale).toFixed(3)+'px');
+  sky.style.setProperty('--chart-visibility',(.3-.06*overview).toFixed(3));
+  sky.style.setProperty('--local-stroke',Math.max(3,.65/view.scale).toFixed(3)+'px');
   sky.style.setProperty('--active-star-size',(1+.25*overview).toFixed(3));
   sky.style.setProperty('--completed-star-size',(1+.4*overview).toFixed(3));
   sky.style.setProperty('--star-edge',Math.max(1.2,.3/view.scale).toFixed(3)+'px');
@@ -338,7 +351,8 @@ $('#course-card').addEventListener('keydown',e=>{
  const tab=e.target.closest('[data-course-section]');if(!tab)return;
  const offsets={ArrowDown:1,ArrowRight:1,ArrowUp:-1,ArrowLeft:-1};
  if(!(e.key in offsets)&&e.key!=='Home'&&e.key!=='End')return;
- e.preventDefault();view.section=e.key==='Home'?0:e.key==='End'?COURSE_SECTIONS.length-1:(view.section+offsets[e.key]+COURSE_SECTIONS.length)%COURSE_SECTIONS.length;
+ const count=courseSections(COURSE_BY_ID[view.course]).length;
+ e.preventDefault();view.section=e.key==='Home'?0:e.key==='End'?count-1:(view.section+offsets[e.key]+count)%count;
  courseCard();$('#course-tab-'+view.section).focus({preventScroll:true});
 });
 const viewport=$('#map-viewport');

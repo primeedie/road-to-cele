@@ -1,5 +1,6 @@
 // Supabase manages passwords and sessions; this reserved domain is an internal
 // identifier only. Nothing is sent to it or shown as a student's email address.
+import {batchSelect,parseBatchId} from './student-profile.mjs';
 export const USERNAME_DOMAIN='accounts.road-to-cele.invalid';
 export function normalizeUsername(value){
  const username=String(value).trim().toLowerCase();
@@ -20,6 +21,7 @@ export function usernameForm(mode='signin'){
  return `<div class="account-or"><span>or use your username</span></div><h3>${signup?'Create an account':'Username sign-in'}</h3>
  <form class="username-form" data-username-form="${mode}">
  <label>Username<input name="username" autocomplete="username" required minlength="3" maxlength="24" pattern="[A-Za-z0-9_]{3,24}" autocapitalize="none" spellcheck="false" placeholder="Your name in the sky"></label>
+ ${signup?batchSelect():''}
  ${passwordField('password',signup?'Password · at least 8 characters':'Password',signup?'new-password':'current-password',signup?8:1)}
  ${signup?passwordField('confirmPassword','Confirm password','new-password',8)+'<p class="card-note">No email needed. After signing in, save recovery codes from Account when recovery is available.</p>':''}
  <button type="submit" class="primary">${signup?'Create account':'Sign in with username'}</button></form>
@@ -32,7 +34,7 @@ export function usernameCredentials(form){
   if(password.length<8)throw Error('Choose a password with at least 8 characters.');
   if(password!==form.elements.namedItem('confirmPassword').value)throw Error('Your passwords do not match.');
  }
- return {username,password,email:usernameIdentifier(username)};
+ return {username,password,email:usernameIdentifier(username),...(form.dataset.usernameForm==='signup'?{batchId:parseBatchId(form.elements.namedItem('batchId')?.value)}:{})};
 }
 export function usernameAuthError(error){
  return {

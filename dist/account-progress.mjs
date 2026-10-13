@@ -48,7 +48,7 @@ export function createAccountProgress({storage,service=null,onProgress=()=>{},on
  return {
   state,progress:()=>structuredClone(current),
   setUser(next) {
-   if(next?.id===user?.id&&(ready||user))return loading;
+   if(next?.id===user?.id&&(ready||user)){if(user&&next){user=next;emit();}return loading;}
    const token=++epoch;user=next;choice=null;remote=null;message='';dirty=false;base=0;
    if(!user){try{current=loadProgress(storage);guestReadable=true;}catch{current=newProgress();guestReadable=false;}deviceSaved=guestReadable;ready=true;phase=guestReadable?'guest':'local-error';publish();return Promise.resolve();}
    current=newProgress();deviceSaved=false;
