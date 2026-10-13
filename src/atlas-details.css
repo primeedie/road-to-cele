@@ -1,13 +1,21 @@
 /* Light stays on the star's cut surfaces; no ring or broad blurred aura. */
 .course-node .star-facet-light { fill:color-mix(in srgb,var(--sky-accent) 32%,white);fill-opacity:.7 }
-.course-node.active-course .star-rays { fill:color-mix(in srgb,var(--sky-accent) 38%,white) }
+.course-node.active-course .star-rays { fill:color-mix(in srgb,var(--sky-accent) 20%,white);stroke:color-mix(in srgb,var(--sky-accent) 45%,white);stroke-width:var(--star-edge,1.2px) }
 .course-node.active-course .star-facet-light { fill:#f3faff;fill-opacity:1 }
-.course-node.active-course .star-facet-dark { fill:color-mix(in srgb,var(--sky-accent) 65%,white);fill-opacity:.95 }
-.course-node.completed .star-rays { fill:color-mix(in srgb,var(--sky-accent) 12%,white);stroke:color-mix(in srgb,var(--sky-accent) 35%,white);stroke-width:1 }
-.course-node.completed .star-facet-dark { fill:color-mix(in srgb,var(--sky-accent) 38%,white);fill-opacity:1 }
-.course-node.completed .star-center { filter:drop-shadow(0 0 2px #fff) }
-.course-node.completed .star-spark { r:4;fill:#fff }
-.sky-outline .local-light-segment { stroke-width:4;stroke-linecap:round;fill:none;filter:none }
+.course-node.active-course .star-facet-dark { fill:color-mix(in srgb,var(--sky-accent) 48%,white);fill-opacity:1 }
+.course-node.active-course .star-center { fill:#fff;filter:drop-shadow(0 0 3px var(--sky-accent)) }
+.course-node.active-course .star-spark { r:4.5;fill:#fff }
+.course-node.completed .star-rays { fill:#fff;stroke:color-mix(in srgb,var(--sky-accent) 15%,white);stroke-width:var(--star-edge,1.2px) }
+.course-node.completed .star-facet-dark { fill:color-mix(in srgb,var(--sky-accent) 18%,white);fill-opacity:1 }
+.course-node.completed .star-center { filter:drop-shadow(0 0 3px #fff) }
+.course-node.completed .star-spark { r:6;fill:#fff }
+.course-node.active-course .star-hover-glyph { transform:scale(var(--active-star-size,1));transform-origin:72px 52px;transition:none }
+.course-node.completed .star-hover-glyph { transform:scale(var(--completed-star-size,1));transform-origin:72px 52px;transition:none }
+.course-node.active-course .node-code { color:color-mix(in srgb,var(--sky-accent) 35%,white) }
+.course-node.completed .node-code { color:#fff }
+/* Compensate for camera scale so overview lines remain roughly one screen pixel. */
+.sky-outline .sky-trails,.sky-outline.constellation-lit .sky-trails { stroke-width:var(--chart-stroke,2.4px);opacity:var(--chart-visibility,.3);stroke-linecap:round;stroke-linejoin:round;transition:none }
+.sky-outline .local-light-segment { stroke-width:var(--local-stroke,4px);stroke-linecap:round;fill:none;filter:none }
 .sky-outline .local-light-gradient stop { stop-color:color-mix(in srgb,var(--sky-accent) 58%,white) }
 .tracing-path .sky-lights { opacity:.35 }
 /* This card belongs to the viewport, so overview labels never scale to tiny text. */

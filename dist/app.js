@@ -33,6 +33,7 @@ const initialAcademic=progressSummary(progress).academic;
 let resetOrigin;
 let constellationRotation;
 let zoomController;
+let lastSkyScale=null;
 let transferMode=false,toastTimer,shownMap,mapBounds,previousAcademicFill=100*initialAcademic.complete/initialAcademic.total,sharedCamera=null,lastRenderedBranch=null;
 const icon=key=>`<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${{
  bridge:'<path d="M4 35H44M9 35V16M39 35V16M9 19Q24 41 39 19M15 35V27M21 35V30M27 35V30M33 35V27M6 16H12M36 16H42M4 38H44"/>',
@@ -146,6 +147,16 @@ function applyTransform(){
 function paintCamera(){
  cameraWorld.style.transform=`translate(${view.x}px,${view.y}px) scale(${view.scale})`;
  const sky=viewport;
+ if(lastSkyScale!==view.scale){
+  const overview=Math.max(0,Math.min(1,(.4-view.scale)/.25));
+  sky.style.setProperty('--chart-stroke',Math.max(2.4,1/view.scale).toFixed(3)+'px');
+  sky.style.setProperty('--chart-visibility',(.3+.28*overview).toFixed(3));
+  sky.style.setProperty('--local-stroke',Math.max(4,1.65/view.scale).toFixed(3)+'px');
+  sky.style.setProperty('--active-star-size',(1+.25*overview).toFixed(3));
+  sky.style.setProperty('--completed-star-size',(1+.4*overview).toFixed(3));
+  sky.style.setProperty('--star-edge',Math.max(1.2,.3/view.scale).toFixed(3)+'px');
+  lastSkyScale=view.scale;
+ }
  if(!sky.classList.contains('dragging')&&!sky.classList.contains('zooming')){
  sky.style.setProperty('--far-x',Math.tanh(view.x/1100)*45+'px');
  sky.style.setProperty('--far-y',Math.tanh(view.y/1800)*45+'px');

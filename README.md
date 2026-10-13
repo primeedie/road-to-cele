@@ -4,6 +4,8 @@ A Civil Engineering skill-tree skeleton with a static interface and an optional 
 
 Run `npm ci`, `npm test`, `npm run build`, then `npm start`. On Windows PowerShell use `npm.cmd` if execution policy blocks `npm.ps1`. Open http://localhost:4173.
 
+For a presentation-friendly explanation of the skeleton and implementation, see [CODE_WALKTHROUGH.md](CODE_WALKTHROUGH.md).
+
 ## Architecture
 
 - `src/curriculum.mjs`: shared course identities, ID122 term placement and H/S/C prerequisites, specialization metadata, configurable required mastery scope, and common CELE review groupings.
@@ -76,3 +78,5 @@ The reference direction is the restrained interface and continuous network movem
 At 20% zoom and below, a viewport-sized hover/focus card shows course code, title, year and within-year term. The CIVINCO portal occupies the unused Year IV column and opens the existing gate requirements. Nearby constellation lines fade out from activated anchors; they rotate with the chart. Comets appear singly after 35?80 seconds of quiet time and pause for interaction, hidden pages, dialogs and reduced motion.
 
 The larger CIVINCO black hole sits in the lower-right column with room beside the final shared term, with a local galaxy lens, inward-spiraling particles and flowing disk trails. These SVG effects pause during pan/zoom, dialogs and hidden pages, and stop for reduced motion. Academic activation lights incident constellation segments only, fading to zero at each segment midpoint; the overall chart remains faint. Keyboard focus on a prerequisite highlights its curved line instead of drawing a rectangular SVG outline.
+
+Overview line weights compensate for camera scale, preserving roughly a one-pixel constellation outline at distant zoom. Local activation light remains stronger and fades out halfway along incident segments. Active and completed stars have brighter facets and a modest scale-dependent size increase; completed stars stay the strongest.
