@@ -10,6 +10,7 @@ import { constrainCamera, overviewCamera, resizeCamera } from './map-camera.mjs'
 import { COURSE_SECTIONS, renderCoursePanel } from './course-panel.mjs';
 import { attachMapPan } from './map-pan.mjs';
 import { createFramePainter } from './frame-painter.mjs';
+import { createSmoothZoom, wheelZoomFactor } from './smooth-zoom.mjs';
 import { showCourseDossier, attachSidePanelDismiss } from './side-panel.mjs';
 import { createOrbitLayout, orbitSceneBounds } from './orbit-layout.mjs';
 import { attachSkyMotion } from './sky-motion.mjs';
@@ -28,6 +29,7 @@ const view={year:1,branch:selected(progress),preview:false,course:null,connectio
 const initialAcademic=progressSummary(progress).academic;
 let resetOrigin;
 let constellationRotation;
+let zoomController;
 let transferMode=false,toastTimer,shownMap,mapBounds,previousAcademicFill=100*initialAcademic.complete/initialAcademic.total,sharedCamera=null,lastRenderedBranch=null;
 const icon=key=>`<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${{
  bridge:'<path d="M4 35H44M9 35V16M39 35V16M9 19Q24 41 39 19M15 35V27M21 35V30M27 35V30M33 35V27M6 16H12M36 16H42M4 38H44"/>',
@@ -128,21 +130,23 @@ function selectConnection(key){view.connection=key;renderMap();document.querySel
 function clearConnection(){view.connection=null;renderMap();}
 function applyTransform(){
  cameraPainter?.cancel();
+ zoomController?.cancel();
  if(mapBounds)Object.assign(view,constrainCamera(view,$('#map-viewport').getBoundingClientRect(),mapBounds));
  paintCamera();
 }
 function paintCamera(){
- $('#world').style.transform=`translate(${view.x}px,${view.y}px) scale(${view.scale})`;
- const sky=$('#map-viewport');
- if(!sky.classList.contains('dragging')){
+ cameraWorld.style.transform=`translate(${view.x}px,${view.y}px) scale(${view.scale})`;
+ const sky=viewport;
+ if(!sky.classList.contains('dragging')&&!sky.classList.contains('zooming')){
  sky.style.setProperty('--far-x',Math.tanh(view.x/1100)*45+'px');
  sky.style.setProperty('--far-y',Math.tanh(view.y/1800)*45+'px');
  sky.style.setProperty('--near-x',Math.tanh(view.x/1100)*85+'px');
  sky.style.setProperty('--near-y',Math.tanh(view.y/1800)*85+'px');
  sky.style.setProperty('--sky-scale',1+(view.scale-1)*.07);
  }
- sky.classList.toggle('camera-travel',$('#world').classList.contains('navigation-motion'));
- $('#zoom-label').textContent=Math.round(view.scale*100)+'%';
+ const traveling=cameraWorld.classList.contains('navigation-motion');
+ if(sky.classList.contains('camera-travel')!==traveling)sky.classList.toggle('camera-travel',traveling);
+ const label=Math.round(view.scale*100)+'%';if(cameraLabel.textContent!==label)cameraLabel.textContent=label;
 }
 function fitMap({overview=false}={}){
  const r=$('#map-viewport').getBoundingClientRect();if(!r.width)return;lastViewport=r;
@@ -189,7 +193,13 @@ function travelToYear(year){
 }
 
 
-function zoom(factor,cx,cy,defer=false){stopMapTravel();const r=defer?lastViewport:$('#map-viewport').getBoundingClientRect();cx??=r.width/2;cy??=r.height/2;const next=Math.max(Math.min(.28,overviewCamera(r,mapBounds).scale),Math.min(1.8,view.scale*factor)),ratio=next/view.scale;view.x=cx-(cx-view.x)*ratio;view.y=cy-(cy-view.y)*ratio;view.scale=next;if(defer){Object.assign(view,constrainCamera(view,r,mapBounds));cameraPainter.schedule();}else applyTransform();}
+function zoom(factor,cx,cy,direct=false){
+ stopMapTravel();const r=lastViewport;cx??=r.width/2;cy??=r.height/2;
+ if(!direct){cameraPainter.cancel();zoomController.zoom(factor,cx,cy);return;}
+ zoomController.cancel();const next=Math.max(Math.min(.28,overviewCamera(r,mapBounds).scale),Math.min(1.8,view.scale*factor)),ratio=next/view.scale;
+ view.x=cx-(cx-view.x)*ratio;view.y=cy-(cy-view.y)*ratio;view.scale=next;
+ Object.assign(view,constrainCamera(view,r,mapBounds));cameraPainter.schedule();
+}
 function milestone(){const visible=progress.academicYear>=3&&!selected(progress);$('#commitment-banner').innerHTML=visible?'<div class="commitment-banner"><div><strong>Year III · Choose your calling</strong><p>Shared subjects stay available while you await acceptance.</p></div><button class="primary" data-action="confirm">Confirm specialization →</button></div>':'';}
 function journal(){
  const s=progressSummary(progress),branch=selected(progress),r=progress.specializationProgression;
@@ -233,7 +243,7 @@ function resetTestingProgress(){
   $('#reset-error').textContent='The reset could not be saved in this browser. Your current progress is unchanged. Try again after enabling browser storage.';
  }
 }
-function showPage(page){view.course=null;courseCard();view.page=page;document.querySelectorAll('main>.page').forEach(s=>s.classList.toggle('hidden',s.id!==page+'-page'));document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===page));$('#page-breadcrumb').textContent={map:'WORLD MAP',journal:'FIELD JOURNAL',gate:'CIVINCO GATE'}[page];if(page==='map')requestAnimationFrame(applyTransform);window.scrollTo({top:0});}
+function showPage(page){zoomController?.cancel();view.course=null;courseCard();view.page=page;document.querySelectorAll('main>.page').forEach(s=>s.classList.toggle('hidden',s.id!==page+'-page'));document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===page));$('#page-breadcrumb').textContent={map:'WORLD MAP',journal:'FIELD JOURNAL',gate:'CIVINCO GATE'}[page];if(page==='map')requestAnimationFrame(applyTransform);window.scrollTo({top:0});}
 document.addEventListener('click',e=>{
  const edge=e.target.closest('[data-connection]');if(edge){selectConnection(edge.dataset.connection);return;}
  const b=e.target.closest('button');if(!b)return;
@@ -310,11 +320,26 @@ $('#course-card').addEventListener('keydown',e=>{
  courseCard();$('#course-tab-'+view.section).focus({preventScroll:true});
 });
 const viewport=$('#map-viewport');
+const cameraWorld=$('#world'),cameraLabel=$('#zoom-label');
 const cameraPainter=createFramePainter(paintCamera,{requestFrame:fn=>window.requestAnimationFrame(fn),cancelFrame:id=>window.cancelAnimationFrame(id)});
+const zoomPreference=window.matchMedia?.('(prefers-reduced-motion: reduce)');
+zoomController=createSmoothZoom({
+ getCamera:()=>({x:view.x,y:view.y,scale:view.scale}),
+ onCamera:camera=>{Object.assign(view,camera);paintCamera();},
+ constrain:camera=>constrainCamera(camera,lastViewport,mapBounds),
+ getLimits:()=>({min:Math.min(.28,overviewCamera(lastViewport,mapBounds).scale),max:1.8}),
+ requestFrame:fn=>window.requestAnimationFrame(fn),cancelFrame:id=>window.cancelAnimationFrame(id),now:()=>window.performance.now(),
+ reducedMotion:()=>!!zoomPreference?.matches,
+ onActivity:active=>viewport.classList.toggle('zooming',active)
+});
+viewport.addEventListener('pointerdown',e=>{if(!e.target.closest('button:not(.course-node),a,input,select,textarea'))zoomController.cancel();});
+window.addEventListener('blur',()=>zoomController.cancel());
+document.addEventListener('visibilitychange',()=>{if(document.hidden)zoomController.cancel();});
+zoomPreference?.addEventListener('change',()=>{if(zoomPreference.matches)zoomController.finish();});
 const skyMotion=attachSkyMotion(viewport);
 constellationRotation=attachConstellationRotation(viewport,$('#rotate-sky'));
 attachMapPan(viewport,{onZoom:(factor,x,y)=>zoom(factor,x,y,true),getPosition:()=>{stopMapTravel();return {x:view.x,y:view.y};},onPan:position=>{Object.assign(view,constrainCamera({...view,...position},lastViewport,mapBounds));cameraPainter.schedule();return {x:view.x,y:view.y};},onEnd:()=>cameraPainter.flush()});
-viewport.addEventListener('wheel',e=>{e.preventDefault();const r=lastViewport;zoom(e.deltaY<0?1.09:1/1.09,e.clientX-r.left,e.clientY-r.top,true);},{passive:false});
+viewport.addEventListener('wheel',e=>{e.preventDefault();const r=lastViewport;zoom(wheelZoomFactor(e,r.height),e.clientX-r.left,e.clientY-r.top);},{passive:false});
 let lastViewport=viewport.getBoundingClientRect();
 function resizeMap(){
  if(view.page!=='map')return;

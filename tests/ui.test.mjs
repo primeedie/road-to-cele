@@ -84,7 +84,19 @@ test('actual website interactions keep exploration separate from academic progre
    assert.ok([...document.querySelectorAll('.course-node')].some(n=>{const sx=(parseFloat(n.style.left)+125)*camera.scale+camera.x,sy=(parseFloat(n.style.top)+176)*camera.scale+camera.y;return sx>-110&&sx<910&&sy>-80&&sy<650;}));
   }
   click('#fit-map');const fit=pose().scale;assert.ok(fit<.28);
-  click('#zoom-in');assert.ok(pose().scale>fit&&pose().scale<fit*1.3);
+  const originalFrame=w.requestAnimationFrame,originalCancel=w.cancelAnimationFrame,originalNow=w.performance.now;
+  let frame=null,clock=0;
+  w.requestAnimationFrame=fn=>{frame=fn;return 1;};w.cancelAnimationFrame=()=>{frame=null;};w.performance.now=()=>clock;
+  const step=()=>{clock+=1000/144;if(frame){const fn=frame;frame=null;fn(clock);}};
+  try{
+   click('#zoom-in');assert.equal(pose().scale,fit);assert.ok(viewport.classList.contains('zooming'));
+   step();assert.ok(pose().scale>fit&&pose().scale<fit*1.2);
+   for(let i=0;i<400&&frame;i++)step();
+   assert.ok(pose().scale>fit&&pose().scale<fit*1.3);assert.equal(viewport.classList.contains('zooming'),false);
+   const beforeWheel=pose();viewport.dispatchEvent(new w.WheelEvent('wheel',{deltaY:-2,clientX:300,clientY:200,bubbles:true,cancelable:true}));
+   assert.deepEqual(pose(),beforeWheel);step();assert.ok(pose().scale>beforeWheel.scale);
+   pointer('pointerdown',300,200);assert.equal(viewport.classList.contains('zooming'),false);assert.equal(frame,null);pointer('pointerup',300,200);
+  }finally{w.requestAnimationFrame=originalFrame;w.cancelAnimationFrame=originalCancel;w.performance.now=originalNow;}
   assert.equal(localStorage.getItem(STORAGE_KEY),null);assert.equal(captures.size,0);
   click('[data-year="1"]');
  });

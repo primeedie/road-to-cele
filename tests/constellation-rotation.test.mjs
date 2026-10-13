@@ -41,6 +41,8 @@ test('rotation updates visible and clickable paths together, pauses interaction,
   assert.ok(d.startsWith(`M ${parseFloat(node.style.left)+NODE_GROUND_X} ${parseFloat(node.style.top)+NODE_GROUND_Y}`));
   node.dispatchEvent(new win.Event('pointerover',{bubbles:true}));assert.equal(scheduled,null);assert.equal(node.style.left,before);viewport.dispatchEvent(new win.Event('pointerleave'));assert.ok(scheduled);
   viewport.dispatchEvent(new win.Event('pointerdown'));assert.equal(scheduled,null);win.dispatchEvent(new win.Event('pointerup'));assert.ok(scheduled);
+  viewport.classList.add('zooming');await Promise.resolve();assert.equal(scheduled,null);
+  viewport.classList.remove('zooming');await Promise.resolve();assert.ok(scheduled);
   button.click();assert.equal(scheduled,null);assert.equal(button.getAttribute('aria-pressed'),'false');button.click();assert.ok(scheduled);
   doc.querySelector('dialog').setAttribute('open','');await Promise.resolve();assert.equal(scheduled,null);doc.querySelector('dialog').removeAttribute('open');await Promise.resolve();assert.ok(scheduled);
   reduced=true;preference();assert.equal(scheduled,null);assert.equal(button.disabled,true);assert.equal(node.style.left,map.positions[a.id].x+'px');assert.equal(win.localStorage.length,0);

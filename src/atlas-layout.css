@@ -225,6 +225,8 @@ body.tree-expanded #course-card { z-index:41 }
 .world { contain:none;will-change:auto }
 .map-viewport.dragging .sky-backdrop,.map-viewport.dragging::before,.map-viewport.dragging::after { transition:none }
 .map-viewport.dragging .graph-lines .path-selected { animation-play-state:paused }
+.map-viewport.zooming .motion-stars i,.map-viewport.zooming::before,.map-viewport.zooming .graph-lines .path-selected { animation-play-state:paused }
+.map-viewport.zooming .world { transition:none }
 @media(max-width:760px) { .rail .nav-item { font-size:12px }.rail .brand-prefix { font-size:10px } }
 /* A single dropdown row; the current branch stays named on the map itself. */
 .atlas-sidebar #specialization-menu summary { display:flex;width:100%;flex-wrap:nowrap;justify-content:space-between;gap:12px;padding:13px 0;min-height:48px;font-size:14px;white-space:nowrap }

@@ -24,7 +24,7 @@ export function attachConstellationRotation(viewport,button,{requestFrame,cancel
  const clocks=new Map();
  function paintButton(){button.disabled=!!query?.matches;button.setAttribute('aria-pressed',String(enabled));button.setAttribute('aria-label',enabled?'Pause constellation rotation':'Start constellation rotation');button.title=query?.matches?'Rotation disabled by reduced-motion preference':enabled?'Pause constellation rotation':'Start constellation rotation';doc.body.classList.toggle('constellations-rotating',enabled&&!query?.matches);}
  function cancel(){if(frame!==null)cancelFrame(frame);frame=null;last=null;}
- function paused(){return !enabled||query?.matches||doc.hidden||blurred||pointerDown||hovered||viewport.classList.contains('dragging')||viewport.classList.contains('tracing-path')||!!doc.querySelector('dialog[open]')||!!doc.querySelector('#map-page.hidden');}
+ function paused(){return !enabled||query?.matches||doc.hidden||blurred||pointerDown||hovered||viewport.classList.contains('dragging')||viewport.classList.contains('zooming')||viewport.classList.contains('tracing-path')||!!doc.querySelector('dialog[open]')||!!doc.querySelector('#map-page.hidden');}
  function wake(){if(!paused()&&map&&frame===null)frame=requestFrame(tick);}
  function updateCluster(cluster){
   const clock=clocks.get(cluster.key),angle=constellationAngle(clock.time);

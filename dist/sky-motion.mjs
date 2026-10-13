@@ -20,7 +20,7 @@ export function attachSkyMotion(viewport,{requestFrame,cancelFrame}={}){
  const reset=()=>{next={x:0,y:0};viewport.style.setProperty('--look-x','0px');viewport.style.setProperty('--look-y','0px');};
  function paint(){frame=null;viewport.style.setProperty('--look-x',next.x+'px');viewport.style.setProperty('--look-y',next.y+'px');}
  function look(event){
-  if(reduced?.matches||coarse?.matches||event.pointerType==='touch'||event.buttons||viewport.classList.contains('dragging'))return;
+  if(reduced?.matches||coarse?.matches||event.pointerType==='touch'||event.buttons||viewport.classList.contains('dragging')||viewport.classList.contains('zooming'))return;
   next=pointerOffset(event,viewport.getBoundingClientRect());if(frame===null)frame=requestFrame(paint);
  }
  function cancelLook(){if(frame!==null)cancelFrame(frame);frame=null;reset();}
