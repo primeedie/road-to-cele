@@ -11,7 +11,7 @@ import {renderCoursePanel} from '../src/course-panel.mjs';
 import {newProgress} from '../src/progression.mjs';
 import {COURSES} from '../src/curriculum.mjs';
 
-test('nearby light follows incident edges only, fades before their midpoint and deduplicates shared edges',()=>{
+test('nearby light follows incident edges only, fades out at their midpoint and deduplicates shared edges',()=>{
  const chart={id:'Ori',vertices:[{x:0,y:0},{x:1000,y:0},{x:1200,y:200},{x:1500,y:300}],edges:[[0,1],[1,0],[1,2],[2,3]],paths:[[0,1,2,3]]};
  assert.deepEqual(localLightSegments(chart,[]),[]);
  assert.deepEqual(localLightSegments(chart,[{anchor:0,strength:.7}]),[{from:0,to:1,start:.7,end:0}]);
@@ -19,7 +19,7 @@ test('nearby light follows incident edges only, fades before their midpoint and 
  assert.equal(light.length,2);assert.equal(light[0].end,1);assert.equal(light[1].end,0);
  const dom=new JSDOM(drawConstellation(chart,{lights:[{anchor:0,strength:.7}],scope:'FNDMATH'})),doc=dom.window.document;
  assert.equal(doc.querySelectorAll('.local-light-segment').length,1);
- const stops=[...doc.querySelectorAll('stop')];assert.equal(+stops[1].getAttribute('offset'),.26);assert.equal(+stops[1].getAttribute('stop-opacity'),0);
+ const stops=[...doc.querySelectorAll('stop')];assert.equal(+stops[1].getAttribute('offset'),.5);assert.equal(+stops[1].getAttribute('stop-opacity'),0);assert.equal(+stops[2].getAttribute('offset'),.5);assert.equal(+stops[2].getAttribute('stop-opacity'),0);
  assert.notEqual(doc.querySelector('linearGradient').id,new JSDOM(drawConstellation(chart,{lights:[{anchor:0,strength:1}],scope:'STERQUA'})).window.document.querySelector('linearGradient').id);
  dom.window.close();
 });
@@ -44,6 +44,8 @@ test('overview hover and keyboard cards are readable, escaped, clamped, and disa
 test('CIVINCO portal occupies a bounded unused column and its actions only open the existing gate',()=>{
  for(const branch of [null,'STE','GTE','HWR','TRE','CTM']){
   const map=createOrbitLayout(createSkyMap(branch)),p=map.portal.bounds,b=orbitSceneBounds(map);
+  const finalTerm=map.charts.find(c=>c.term===11).chart.orbit.bounds;
+  assert.ok(map.portal.width>=1100&&map.portal.height>=750);assert.equal(p.minX-finalTerm.maxX,100);assert.equal(p.minY-finalTerm.minY,80);
   assert.ok(p.minX>=b.minX&&p.maxX<=b.maxX&&p.minY>=b.minY&&p.maxY<=b.maxY);
   for(const chart of [...map.charts.map(c=>c.chart),...(map.branchChart?[map.branchChart]:[])]){const c=chart.orbit.bounds;assert.ok(p.maxX<=c.minX||p.minX>=c.maxX||p.maxY<=c.minY||p.minY>=c.maxY);}
   for(const [gate,state] of [[{eligible:false,cleared:false},'locked'],[{eligible:true,cleared:false},'ready'],[{eligible:false,cleared:true},'cleared']]){

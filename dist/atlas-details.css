@@ -21,15 +21,29 @@
 .map-overview .course-node .skill-star { pointer-events:auto }
 /* An integration destination in the unused Year IV column. */
 .world .civinco-portal { position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:0;border:0;background:none;border-radius:0;color:#ead9b7;cursor:pointer }
-.civinco-portal svg { width:100%;height:75%;overflow:visible;opacity:.75;transition:opacity .2s }
-.civinco-portal strong { font-size:34px;letter-spacing:.14em }
-.civinco-portal>span { font-size:19px;color:#c1b69f }
+.civinco-portal svg { width:100%;height:75%;overflow:visible;opacity:.9;transition:opacity .2s;pointer-events:none }
+.civinco-portal strong { font-size:40px;letter-spacing:.14em }
+.civinco-portal>span { font-size:23px;color:#c1b69f }
 .civinco-portal .portal-seal { fill:#ecd5a1;font:800 40px var(--atlas-type) }
-.civinco-portal .portal-orbits { transform-origin:300px 200px;animation:portal-orbit 70s ease-in-out infinite alternate }
+.civinco-portal .portal-orbits { transform-origin:360px 225px;animation:portal-orbit 38s ease-in-out infinite alternate;fill:none;stroke:url(#portal-disk);stroke-width:2.5 }
+.civinco-portal .portal-disk-inner { opacity:.45;stroke-width:1 }
+.portal-stream,.portal-front-stream { fill:none;stroke:#f5d09a;stroke-width:3.5;stroke-linecap:round;stroke-dasharray:100 36 12 210;animation:portal-flow 12s linear infinite }
+.portal-front-stream { stroke:#ffedc8;animation-duration:9s }
+.portal-horizon { fill:none;stroke:#ffedc8;stroke-width:2.5;opacity:.85 }
+.portal-lens-texture { opacity:.18;transform-origin:360px 225px;animation:portal-lens 24s ease-in-out infinite alternate }
+.portal-lens-arcs { fill:none;stroke:#a2b6c4;stroke-width:1.5;opacity:.32;stroke-dasharray:45 150;animation:portal-flow 20s linear infinite }
+.portal-infall { transform-origin:0 0;fill:#fff0cc;stroke:#dfb775;stroke-width:1;opacity:0;animation:portal-infall 9.2s linear var(--stream-delay) infinite }
+.portal-infall path { fill:none }
 .civinco-portal:is(:hover,:focus-visible) svg,.civinco-portal.gate-ready svg,.civinco-portal.gate-cleared svg { opacity:1 }
 .civinco-portal:focus-visible { outline:2px solid #e4cb92;outline-offset:8px }
-.dragging .portal-orbits,.zooming .portal-orbits,.motion-paused .portal-orbits { animation-play-state:paused }
-@keyframes portal-orbit { to { transform:rotate(12deg) } }
+.dragging .civinco-portal :is(.portal-orbits,.portal-infall,.portal-stream,.portal-front-stream,.portal-lens-texture,.portal-lens-arcs),.zooming .civinco-portal :is(.portal-orbits,.portal-infall,.portal-stream,.portal-front-stream,.portal-lens-texture,.portal-lens-arcs),.motion-paused .civinco-portal :is(.portal-orbits,.portal-infall,.portal-stream,.portal-front-stream,.portal-lens-texture,.portal-lens-arcs) { animation-play-state:paused }
+@keyframes portal-orbit { to { transform:rotate(9deg) } }
+@keyframes portal-flow { to { stroke-dashoffset:-716 } }
+@keyframes portal-lens { to { transform:rotate(5deg) scale(1.06,1.025) } }
+@keyframes portal-infall { from { opacity:0;transform:rotate(var(--stream-angle)) scale(1) } 12% { opacity:.9 } 78% { opacity:.8 } to { opacity:0;transform:rotate(calc(var(--stream-angle) + 140deg)) scale(.35) } }
+/* Keyboard focus follows the curved connection itself, never its bounding rectangle. */
+.graph-lines .connection-hit:focus,.graph-lines .connection-hit:focus-visible { outline:none;stroke:transparent }
+.graph-lines .connection-line.connection-focused { stroke:#f3dec0;stroke-width:3;opacity:.95;stroke-dasharray:8 8 }
 /* One brief streak after a long quiet interval; no camera or scene animation. */
 .sky-comet { position:absolute;z-index:1;width:110px;height:1px;background:linear-gradient(90deg,transparent,#c6e2ec80);pointer-events:none;opacity:0;transform:rotate(24deg);animation:sky-comet var(--comet-duration,3.4s) linear forwards }
 .sky-comet::after { content:'';position:absolute;right:0;top:-1px;width:3px;height:3px;background:#edfaff;border-radius:50% }
@@ -37,4 +51,4 @@
 .dossier-reading .future-skill-scaffold { display:grid;gap:10px;padding:0;list-style:none;color:#ddd;text-align:left;font-size:12px }
 .future-skill-scaffold li { border-left:1px solid #ffffff30;padding-left:12px }
 .future-skill-scaffold span { display:block;color:#aaa;font-size:11px;margin-top:3px }
-@media(prefers-reduced-motion:reduce) { .civinco-portal .portal-orbits { animation:none }.sky-comet { display:none } }
+@media(prefers-reduced-motion:reduce) { .civinco-portal :is(.portal-orbits,.portal-infall,.portal-stream,.portal-front-stream,.portal-lens-texture,.portal-lens-arcs) { animation:none }.portal-infall { display:none }.portal-stream,.portal-front-stream,.portal-lens-arcs { stroke-dasharray:none }.sky-comet { display:none } }

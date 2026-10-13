@@ -114,7 +114,7 @@ function renderMap(reset=false){
   const state=trace?(edge.key===view.connection?'path-selected':trace.edges.has(edge.key)?'path-traced':'path-muted'):'';
   const specialist=COURSE_BY_ID[edge.to].specialization || COURSE_BY_ID[edge.from].specialization;
   shadows+=`<path d="${d}"/>`;
-  lines+=`<path class="connection-line ${edge.type==='C'?'coreq':''} ${specialist?'specialization-thread':''} ${state}" style="${specialist?skyAccent(BRANCH_CONSTELLATIONS[specialist]):''}" d="${d}"/>`;
+  lines+=`<path class="connection-line ${edge.type==='C'?'coreq':''} ${specialist?'specialization-thread':''} ${state}" data-edge="${edge.key}" style="${specialist?skyAccent(BRANCH_CONSTELLATIONS[specialist]):''}" d="${d}"/>`;
   hits+=`<path class="connection-hit" d="${d}" data-connection="${edge.key}" role="button" tabindex="0" aria-pressed="${edge.key===view.connection}" aria-label="${esc(COURSE_BY_ID[edge.from].title+' to '+COURSE_BY_ID[edge.to].title+', '+CONNECTION_TYPES[edge.type])}"/>`;
  });
  html+=`<svg class="graph-lines" viewBox="0 0 ${map.width} ${map.height}" aria-label="Course prerequisite connections"><g class="thread-shadows" transform="translate(10 24)">${shadows}</g>${lines}${hits}</svg>`;
@@ -331,6 +331,11 @@ $('#course-card').addEventListener('keydown',e=>{
  courseCard();$('#course-tab-'+view.section).focus({preventScroll:true});
 });
 const viewport=$('#map-viewport');
+viewport.addEventListener('focusin',e=>{
+ const key=e.target.dataset.connection;
+ for(const line of viewport.querySelectorAll('.connection-line'))line.classList.toggle('connection-focused',!!key&&line.dataset.edge===key);
+});
+viewport.addEventListener('focusout',e=>{if(e.target.dataset.connection)for(const line of viewport.querySelectorAll('.connection-focused'))line.classList.remove('connection-focused');});
 const cameraWorld=$('#world'),cameraLabel=$('#zoom-label');
 const overviewTooltip=attachOverviewTooltip(viewport,{getCourse:id=>COURSE_BY_ID[id],getScale:()=>view.scale});
 const cameraPainter=createFramePainter(paintCamera,{requestFrame:fn=>window.requestAnimationFrame(fn),cancelFrame:id=>window.cancelAnimationFrame(id)});

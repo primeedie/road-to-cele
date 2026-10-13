@@ -182,6 +182,9 @@ test('actual website interactions keep exploration separate from academic progre
  });
  await t.test('clicking a prerequisite traces connected courses, supports keyboard selection and never records progress',()=>{
   const selector='[data-connection="FNDMATH:CALENG1:H"]';
+  $(selector).focus();assert.equal(document.querySelectorAll('.connection-focused').length,1);
+  assert.equal($('.connection-focused').dataset.edge,'FNDMATH:CALENG1:H');
+  $('#fit-map').focus();assert.equal(document.querySelectorAll('.connection-focused').length,0);
   $(selector).dispatchEvent(new w.MouseEvent('click',{bubbles:true}));
   assert.equal($('#connection-card').hidden,false);
   assert.match($('#connection-card').textContent,/Hard prerequisite/);

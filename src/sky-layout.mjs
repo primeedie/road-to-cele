@@ -70,12 +70,13 @@ export function drawConstellation(chart,{activated=0,completed=0,total=0,width=W
  const points=chart.vertices;
  const lines=chart.paths.map(path=>`<polyline points="${path.map(i=>`${points[i].x},${points[i].y}`).join(' ')}"/>`).join('');
  const stars=points.map(p=>`<circle cx="${p.x}" cy="${p.y}" r="${p.degree>2?4:2.8}"/>`).join('');
- const lit=activated+completed>0,brightness=lit ? .42+.58*Math.min(1,(activated*.4+completed)/Math.max(1,total)) : .3;
+ // Progress illuminates only the local overlay; the rest of the chart stays faint.
+ const lit=activated+completed>0,brightness=.3;
  const box=bounds?`${bounds.minX} ${bounds.minY} ${bounds.maxX-bounds.minX} ${bounds.maxY-bounds.minY}`:`0 0 ${width} ${height}`;
  const placement=bounds?`;inset:auto;left:${bounds.minX}px;top:${bounds.minY}px;width:${bounds.maxX-bounds.minX}px;height:${bounds.maxY-bounds.minY}px`:'';
  let gradients='',nearby='';
  localLightSegments(chart,lights).forEach(({from,to,start,end},i)=>{
-  const a=points[from],b=points[to],falloff=Math.min(.45,260/Math.max(1,Math.hypot(a.x-b.x,a.y-b.y))),id='near-'+String(scope).replace(/[^a-z0-9_-]/gi,'')+'-'+i;
+  const a=points[from],b=points[to],falloff=.5,id='near-'+String(scope).replace(/[^a-z0-9_-]/gi,'')+'-'+i;
   gradients+=`<linearGradient class="local-light-gradient" id="${id}" gradientUnits="userSpaceOnUse" data-light-from="${from}" data-light-to="${to}" x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}"><stop offset="0" stop-opacity="${start}"/><stop offset="${falloff}" stop-opacity="0"/><stop offset="${1-falloff}" stop-opacity="0"/><stop offset="1" stop-opacity="${end}"/></linearGradient>`;
   nearby+=`<line class="local-light-segment" data-light-from="${from}" data-light-to="${to}" x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="url(#${id})"/>`;
  });

@@ -41,8 +41,9 @@ export function createOrbitLayout(source){
  }
  const groups=[...charts.map(c=>c.chart),...(branchChart?[branchChart]:[])];
  // Year IV has two shared terms; its third column holds the integration gate.
- const portalWidth=Math.min(720,widths[2]),portalHeight=Math.min(520,heights[3]);
- const portal={x:columns[2]+(widths[2]-portalWidth)/2,y:rows[3]+heights[3]-portalHeight,width:portalWidth,height:portalHeight};
+ const portalWidth=Math.min(1180,widths[2]),portalHeight=Math.min(800,heights[3]-80);
+ const finalTerm=charts.find(c=>c.term===11).chart.orbit.bounds;
+ const portal={x:finalTerm.maxX+100,y:rows[3]+80,width:portalWidth,height:portalHeight};
  portal.bounds={minX:portal.x,minY:portal.y,maxX:portal.x+portal.width,maxY:portal.y+portal.height};
  const width=Math.max(portal.bounds.maxX,...groups.map(c=>c.orbit.bounds.maxX))+100,height=Math.max(portal.bounds.maxY,...groups.map(c=>c.orbit.bounds.maxY))+100;
  return {...source,charts,positions,branchChart,branchLabel,portal,width,height};
