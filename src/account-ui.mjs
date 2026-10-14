@@ -1,10 +1,12 @@
 import {accountName} from './username-account.mjs';
 import {profileForm} from './student-profile.mjs';
+import {normalizeProfilePhoto} from './profile-photo.mjs';
 const escape = value => String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-export function accountMarkup(s) {
+export function accountMarkup(s,{photo=null}={}) {
+ photo=s.user?normalizeProfilePhoto(photo):null;
  const status={connecting:'Connecting…',loading:'Loading journey…',guest:'Saved on this device',saving:'Saving…',saved:'Cloud saved',pending:'Save pending',offline:'Offline · saved on device',choice:'Choose your save','local-error':'Export a backup'}[s.phase]||s.phase;
  const honestStatus=s.phase==='offline'&&s.deviceSaved===false?'Session only · export backup':status;
- return `<div class="account-identity"><span class="account-light ${s.phase==='saved'?'synced':''}"></span><strong>${escape(accountName(s.user))}</strong></div><span class="account-status" role="status">${escape(honestStatus)}</span>${s.message?`<p class="account-message">${escape(s.message)}</p>`:''}${s.user?`<div class="account-actions"><button data-account="open">Account</button>${s.phase==='offline'?'<button data-account="retry">Retry save</button>':''}</div>`:s.configured?'<button class="account-login" data-account="open" aria-label="Sign in or create an account">Sign in</button>':'<button data-account="open">Guest account</button><span class="account-status account-setup-state">Cloud login awaiting setup</span>'}`;
+ return `<div class="account-identity">${photo?`<span class="account-photo"><img src="${photo}" alt="" width="32" height="32" decoding="async"><span class="account-light ${s.phase==='saved'?'synced':''}"></span></span>`:`<span class="account-light ${s.phase==='saved'?'synced':''}"></span>`}<strong>${escape(accountName(s.user))}</strong></div><span class="account-status" role="status">${escape(honestStatus)}</span>${s.message?`<p class="account-message">${escape(s.message)}</p>`:''}${s.user?`<div class="account-actions"><button data-account="open">Account</button>${s.phase==='offline'?'<button data-account="retry">Retry save</button>':''}</div>`:s.configured?'<button class="account-login" data-account="open" aria-label="Sign in or create an account">Sign in</button>':'<button data-account="open">Guest account</button><span class="account-status account-setup-state">Cloud login awaiting setup</span>'}`;
 }
 export function accountDialogMarkup(s,choices) {
  const count=p=>Object.values(p?.academicRecords||{}).filter(r=>r.status==='COMPLETED').length;

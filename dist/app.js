@@ -51,7 +51,7 @@ const icon=key=>`<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stro
 }[key] || ''}</svg>`;
 const terrain='';
 function toast(message){$('#toast').textContent=message;$('#toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').classList.remove('show'),4500);}
-const account=setupAccount({storage:localStorage,document,onError:toast,onIdentity:user=>{const owner=user?.id||'guest';if(owner!==gradeDraftOwner){studentGradeDrafts.clear();adminGradeDrafts.clear();gradeDraftOwner=owner;}if(adminWorkspace){adminWorkspace.setUser(user).catch(toast);renderAdminControls();}},onProgress:next=>{
+const account=setupAccount({storage:localStorage,document,onError:toast,onProfilePhotoChange:next=>{if(!adminWorkspace?.active())progress=next;},onIdentity:user=>{const owner=user?.id||'guest';if(owner!==gradeDraftOwner){studentGradeDrafts.clear();adminGradeDrafts.clear();gradeDraftOwner=owner;}if(adminWorkspace){adminWorkspace.setUser(user).catch(toast);renderAdminControls();}},onProgress:next=>{
  progress=adminWorkspace?.active()?adminWorkspace.progress():next;view.course=null;view.reward=null;view.connection=null;view.preview=false;view.branch=selected(next);sharedCamera=null;lastRenderedBranch=null;
  renderAll();requestAnimationFrame(()=>view.branch?focusBranch():fitMap());
 }});

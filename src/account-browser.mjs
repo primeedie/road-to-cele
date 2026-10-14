@@ -6,9 +6,10 @@ import { attachBackdropDismiss } from './dialog-dismiss.mjs';
 import { usernameForm, usernameCredentials, usernameAuthError, USERNAME_DOMAIN, accountName } from './username-account.mjs';
 import { recoveryMarkup, recoveryInput, recoveryRequest, downloadRecoveryCodes } from './recovery-account.mjs';
 import {studentBatch,parseBatchId} from './student-profile.mjs';
+import {createProfilePhotoEditor} from './profile-photo.mjs';
 
-export function setupAccount({storage,document,onProgress,onIdentity=()=>{},onError=()=>{},config=cloudConfig,clientFactory=null,settingsFetcher=null,recoveryFetcher=null}) {
- let client=null,model,error='',starting=false,busy=false,confirmSignout=false,usernameMode='signin';
+export function setupAccount({storage,document,onProgress,onIdentity=()=>{},onProfilePhotoChange=()=>{},onError=()=>{},config=cloudConfig,clientFactory=null,settingsFetcher=null,recoveryFetcher=null,photoProcessor}) {
+ let client=null,model,photoEditor,error='',starting=false,busy=false,confirmSignout=false,usernameMode='signin';
  const configured=!!config.url;
  const service=configured?{
   read:id=>cloudService(client).read(id),
@@ -22,7 +23,8 @@ export function setupAccount({storage,document,onProgress,onIdentity=()=>{},onEr
  function paint(s) {
   const ownerChanged=paintedUser!==s.user?.id;
   if(ownerChanged){clearRecovery();paintedUser=s.user?.id;profileSaved=false;}
-  document.querySelector('#account-panel').innerHTML=accountMarkup(s);
+  photoEditor?.sync();
+  document.querySelector('#account-panel').innerHTML=accountMarkup(s,{photo:model.progress().profilePhoto});
   onIdentity(s.user);
   if(s.choice&&!dialog.open){document.querySelectorAll('dialog[open]').forEach(d=>d.close());dialog.showModal();}
   if(s.user&&s.ready&&!s.choice&&studentBatch(s.user)===null&&!batchPrompted.has(s.user.id)){
@@ -37,9 +39,11 @@ export function setupAccount({storage,document,onProgress,onIdentity=()=>{},onEr
    const form=dialog.querySelector('[data-username-form],[data-recovery-form]');if(form){if(form.elements.namedItem('username'))form.elements.namedItem('username').value=name;form.querySelector('[type="submit"]').disabled=busy;}
    const batchField=dialog.querySelector('[name="batchId"]');if(batchField&&batch&&!(profileSaved&&s.user))batchField.value=batch;
    const profile=dialog.querySelector('[data-profile-form]');if(profile){profile.querySelector('[type="submit"]').disabled=busy;if(profileSaved)profile.insertAdjacentHTML('beforeend','<p class="profile-save-state" role="status">Batch saved to your account.</p>');}
+   if(s.user&&!s.choice&&!recoveryScreen&&!confirmSignout){const profile=dialog.querySelector('[data-profile-form]');if(profile)profile.insertAdjacentHTML('beforebegin',photoEditor?.markup()||'');}
   }
  }
  model=createAccountProgress({storage,service,onProgress,onState:paint});
+ photoEditor=createProfilePhotoEditor({document,getState:model.state,getProgress:model.progress,save:model.save,flush:model.flush,onSaved:onProfilePhotoChange,processor:photoProcessor});
  async function start() {
   if(!configured||starting)return;
   error='';
@@ -64,7 +68,7 @@ export function setupAccount({storage,document,onProgress,onIdentity=()=>{},onEr
   const button=event.target.closest('[data-account]'),action=button?.dataset.account;if(!action||busy)return;
   error='';
   try {
-   if(action==='close'){clearRecovery();dialog.close();return;}
+   if(action==='close'){clearRecovery();photoEditor.reset();dialog.close();return;}
    if(action==='recover'||action==='recovery-codes'){
     clearRecovery();const epoch=recoveryEpoch;recoveryScreen=action==='recover'?'recover':'issue';recoveryAvailable=false;paint(model.state());
     try{const result=await requestRecovery();if(epoch===recoveryEpoch){recoveryAvailable=result.available===true;paint(model.state());}}catch{if(epoch===recoveryEpoch)paint(model.state());}
@@ -147,7 +151,7 @@ export function setupAccount({storage,document,onProgress,onIdentity=()=>{},onEr
  document.defaultView.addEventListener('online',()=>{if(model.state().user&&model.state().phase==='offline')model.retry().catch(onError);});
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&model.state().user&&model.state().ready&&!model.state().dirty)model.retry().catch(onError);});
  document.addEventListener('change',event=>{if(event.target.matches('[data-recovery-saved]'))dialog.querySelector('[data-account="finish-codes"]').disabled=!event.target.checked;});
- dialog.addEventListener('close',clearRecovery);dialog.addEventListener('cancel',clearRecovery);
+ dialog.addEventListener('close',()=>{clearRecovery();photoEditor.reset();});dialog.addEventListener('cancel',()=>{clearRecovery();photoEditor.reset();});
  attachBackdropDismiss(dialog,()=>{clearRecovery();dialog.close();});
  paint(model.state());
  return {model,start,getAccessToken:async()=>client?(await client.auth.getSession()).data?.session?.access_token:null};
