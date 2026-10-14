@@ -7,7 +7,7 @@ import { usernameForm, usernameCredentials, usernameAuthError, USERNAME_DOMAIN, 
 import { recoveryMarkup, recoveryInput, recoveryRequest, downloadRecoveryCodes } from './recovery-account.mjs';
 import {studentBatch,parseBatchId} from './student-profile.mjs';
 
-export function setupAccount({storage,document,onProgress,onError=()=>{},config=cloudConfig,clientFactory=null,settingsFetcher=null,recoveryFetcher=null}) {
+export function setupAccount({storage,document,onProgress,onIdentity=()=>{},onError=()=>{},config=cloudConfig,clientFactory=null,settingsFetcher=null,recoveryFetcher=null}) {
  let client=null,model,error='',starting=false,busy=false,confirmSignout=false,usernameMode='signin';
  const configured=!!config.url;
  const service=configured?{
@@ -23,6 +23,7 @@ export function setupAccount({storage,document,onProgress,onError=()=>{},config=
   const ownerChanged=paintedUser!==s.user?.id;
   if(ownerChanged){clearRecovery();paintedUser=s.user?.id;profileSaved=false;}
   document.querySelector('#account-panel').innerHTML=accountMarkup(s);
+  onIdentity(s.user);
   if(s.choice&&!dialog.open){document.querySelectorAll('dialog[open]').forEach(d=>d.close());dialog.showModal();}
   if(s.user&&s.ready&&!s.choice&&studentBatch(s.user)===null&&!batchPrompted.has(s.user.id)){
    batchPrompted.add(s.user.id);document.querySelectorAll('dialog[open]').forEach(d=>{if(d!==dialog)d.close();});if(!dialog.open)dialog.showModal();
@@ -149,5 +150,5 @@ export function setupAccount({storage,document,onProgress,onError=()=>{},config=
  dialog.addEventListener('close',clearRecovery);dialog.addEventListener('cancel',clearRecovery);
  attachBackdropDismiss(dialog,()=>{clearRecovery();dialog.close();});
  paint(model.state());
- return {model,start};
+ return {model,start,getAccessToken:async()=>client?(await client.auth.getSession()).data?.session?.access_token:null};
 }

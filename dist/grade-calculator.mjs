@@ -1,3 +1,4 @@
+import {isQuizComponent,quizRows,quizEntries,averageQuizEntries} from './quiz-scores.mjs';
 import {SYLLABUS_GRADING} from './syllabus-data.mjs';
 export const COURSE_GRADING_SCHEMES=Object.freeze(SYLLABUS_GRADING);
 const esc=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -38,7 +39,7 @@ export function gradeForecast(scheme,scores={},targetId,{requirements={}}={}){
  validateGradingScheme(scheme);
  const target=scheme.components.find(c=>c.id===targetId);if(!target)throw Error('Choose an assessment to calculate its required score.');
  const missing=[];
- for(const c of scheme.components){const score=scores[c.id];if(unknown(score)){missing.push(c.id);continue;}if(typeof score!=='number'||!Number.isFinite(score)||score<0||score>c.max)throw Error(`Enter ${c.label} between 0 and ${c.max}.`);}
+ for(const c of scheme.components){const score=scores[c.id];if(unknown(score)){missing.push(c.id);continue;}if(typeof score!=='number'||!Number.isFinite(score)||score<0||(!c.allowBonus&&score>c.max))throw Error(`Enter ${c.label} between 0 and ${c.max}.`);}
  const weights=weightsFor(scheme,scores),recordedWeight=weights?scheme.components.reduce((sum,c)=>sum+(unknown(scores[c.id])?0:weights[c.id]),0):0;
  const total=contribution(scheme,scores),currentAverage=recordedWeight?total/recordedWeight*100:null,currentTotal=missing.length?null:total;
  const states=(scheme.requirements||[]).map(r=>requirements[r.id]);
@@ -50,8 +51,8 @@ export function gradeForecast(scheme,scores={},targetId,{requirements={}}={}){
  let raw;
  if(scheme.mode==='weighted-percentage'){const other=totalAt(0);raw=(scheme.passingPercentage-other)/target.weight*target.max;}
  else{
-  if(bestTotal+1e-9<scheme.passingPercentage)return {...result,possible:false,bestTotal};
-  let low=0,high=target.max;if(totalAt(0)+1e-9>=scheme.passingPercentage)high=0;
+  if(bestTotal+1e-9<scheme.passingPercentage&&!target.allowBonus)return {...result,possible:false,bestTotal};
+  let low=0,high=target.max;if(target.allowBonus)while(totalAt(high)<scheme.passingPercentage)high*=2;if(totalAt(0)+1e-9>=scheme.passingPercentage)high=0;
   else for(let i=0;i<70;i++){const mid=(low+high)/2;if(totalAt(mid)>=scheme.passingPercentage)high=mid;else low=mid;}
   raw=high;
  }
@@ -63,26 +64,40 @@ export function gradeForecastText(result){
  const average=currentTotal!==null?`Calculated numeric total: ${currentTotal.toFixed(2)}% — ${currentTotal+1e-9>=passingPercentage?'meets':'below'} the ${passingPercentage}% passing target.`:currentAverage!==null?`Recorded assessments: ${currentAverage.toFixed(2)}% — ${currentAverage+1e-9>=passingPercentage?'above':'below'} the ${passingPercentage}% target so far.`:'Enter your recorded scores to estimate your grade.';
  const conditions=result.eligibility==='not-met'?' You marked an additional syllabus requirement as unmet; this can override a passing numeric score.':result.eligibility==='unknown'?' Additional syllabus requirements are unconfirmed; this is a numeric estimate only.':'';
  if(missingOther.length)return average+' Enter the other assessment scores before calculating an exact required score.'+conditions;
+ if(!possible&&target.allowBonus&&needed!==null)return average+` Reaching the target would need ${needed}/${target.max} in ${target.label}, including ${(needed-target.max).toFixed(2)} points above the perfect score. Those bonus points must actually be awarded.`+conditions;
  if(!possible)return average+` Even ${target.max}/${target.max} in ${target.label} would give ${result.bestTotal.toFixed(2)}%, below the passing target.`+conditions;
  return average+` You need at least ${needed}/${target.max} in ${target.label} to reach the numeric ${passingPercentage}% target.`+conditions;
 }
 export function gradeFormValues(form,scheme){
  const scores={},draft={},target=form.elements.namedItem('gradeTarget').value,requirements={};
+ for(const field of form.querySelectorAll('input[name],select[name]'))draft[field.name]=field.value;
  const components=scheme.components.map(c=>{
-  const input=form.elements.namedItem(c.id),raw=input.value;draft[c.id]=raw;scores[c.id]=raw===''?null:Number(raw);
-  const maxInput=form.elements.namedItem(c.id+'_max'),max=maxInput?Number(maxInput.value):c.max;if(maxInput)draft[c.id+'_max']=maxInput.value;
-  input.max=max;
-  return {...c,max,scoreStep:c.id===target?Number(form.elements.namedItem('gradeStep').value):c.scoreStep};
+  if(isQuizComponent(c)){
+   const entries=quizEntries(form,c.id),average=averageQuizEntries(entries);scores[c.id]=average;
+   const output=form.elements.namedItem(c.id);output.value=average===null?'Awaiting quiz scores':average.toFixed(2)+'%';
+   form.querySelectorAll('[data-quiz-rows="'+c.id+'"] [data-quiz-row]').forEach((row,i)=>{const e=entries[i],bonus=e.score!==''&&e.max!==''?Number(e.score)-Number(e.max):0;row.querySelector('[data-quiz-bonus]').textContent=bonus>0?'+'+bonus+' bonus points':'';});
+   return {...c,max:100,allowBonus:true,scoreStep:c.id===target?Number(form.elements.namedItem('gradeStep').value):c.scoreStep};
+  }
+  const raw=form.elements.namedItem(c.id).value;scores[c.id]=raw===''?null:Number(raw);
+  const max=c.id==='final'?Number(form.elements.namedItem('final_max').value):100;
+  if(c.id==='final')form.querySelector('[data-final-percentage]').textContent=raw!==''&&max>0&&Number.isFinite(Number(raw)/max)?(Number(raw)/max*100).toFixed(2)+'%':'Awaiting exam scores';
+  return {...c,max,allowBonus:c.id==='final',scoreStep:c.id===target?Number(form.elements.namedItem('gradeStep').value):c.scoreStep};
  });
- for(const r of scheme.requirements||[]){const name='req_'+r.id;requirements[r.id]=form.elements.namedItem(name).value;draft[name]=requirements[r.id];}
- draft.gradeTarget=target;draft.gradeStep=form.elements.namedItem('gradeStep').value;
+ for(const r of scheme.requirements||[])requirements[r.id]=form.elements.namedItem('req_'+r.id).value;
  return {scheme:{...scheme,components},scores,target,requirements,draft};
 }
-export function renderGradeCalculator(course,scheme=COURSE_GRADING_SCHEMES[course.id]){
- if(!scheme)return `<div class="dossier-placeholder grade-pending"><span class="dossier-small-star" aria-hidden="true">✦</span><h4>Awaiting ${course.courseKind==='LAB'?'laboratory':'course'} grading scheme</h4><p>Upload the syllabus to use its assessment weights and passing rules. Then enter your scores to see your standing and the score needed on a remaining assessment, such as an exam out of 50.</p>${course.courseKind==='LAB'?'<p class="grade-scope-note">This lab will use its own grading breakdown.</p>':''}</div>`;
+export function renderGradeCalculator(course,scheme=COURSE_GRADING_SCHEMES[course.id],{draft={}}={}){
+ if(!scheme)return '<div class="dossier-placeholder grade-pending"><h4>Awaiting '+(course.courseKind==='LAB'?'laboratory':'course')+' grading scheme</h4><p>Upload the syllabus to use its assessment weights and passing rules.</p></div>';
  validateGradingScheme(scheme);
  const compared=id=>scheme.comparison?.ids.includes(id),target=scheme.defaultTarget||scheme.components.at(-1).id;
- const rows=scheme.components.map(c=>`<label class="grade-row"><span>${esc(c.label)}<small>${compared(c.id)?'35% or 50%':c.weight+'%'} of final grade</small></span><span class="grade-score"><input type="number" name="${esc(c.id)}" min="0" max="${c.max}" step="any" inputmode="decimal" aria-label="${esc(c.label)} score" placeholder="—"><span aria-hidden="true">/</span>${c.raw?`<input class="grade-max" type="number" name="${esc(c.id)}_max" value="${c.max}" min="0.01" step="any" inputmode="decimal" aria-label="${esc(c.label)} maximum score">`:`<small>${c.max}${c.aggregate?'%':''}</small>`}</span></label>`).join('');
- const required=(scheme.requirements||[]).map(r=>`<label class="grade-requirement"><span>${esc(r.label)}</span><select name="req_${esc(r.id)}" aria-label="${esc(r.label)}"><option value="">Not checked</option><option value="met">Met</option><option value="not-met">Not met</option></select></label>`).join('');
- return `<form class="grade-form" data-grade-course="${esc(course.id)}"><p class="grade-source">Numeric passing target: <strong>${scheme.passingPercentage}%</strong></p><p class="grade-scope-note">Use percentages for category averages. For a single assessment, change the total to match your exam (for example, 32 / 50). Leave unknown scores blank.</p><fieldset class="grade-assessments"><legend>Recorded scores</legend>${rows}</fieldset><fieldset class="grade-planning"><legend>Plan a remaining assessment</legend><label class="grade-target">Calculate the score needed on<select name="gradeTarget">${scheme.components.map(c=>`<option value="${esc(c.id)}" ${c.id===target?'selected':''}>${esc(c.label)}</option>`).join('')}</select></label><label class="grade-target">Score precision<select name="gradeStep"><option value="1">Whole points / percentage points</option><option value="0.5">Half points</option><option value="0.1">Tenths</option><option value="0.01">Hundredths</option></select></label></fieldset>${required?'<details class="grade-requirements" open><summary>Other passing requirements</summary><p class="grade-scope-note">Self-reported checks; your instructor handles exceptions and final eligibility.</p>'+required+'</details>':''}<output class="grade-result" aria-live="polite">Enter your recorded scores to estimate your grade.</output><details class="course-source"><summary>Grading notes</summary>${scheme.note?'<p class="grade-policy">'+esc(scheme.note)+'</p>':''}<p>Use your instructor’s aggregation method and adjusted scores. Required-score rounding is a planning choice. Bonuses, penalties and official rounding are not applied automatically.</p><p>Your instructor determines the official grade. This estimate never records course completion.</p></details></form>`;
+ const rows=scheme.components.map(c=>{
+  const weight=(compared(c.id)?'35% or 50%':c.weight+'%')+' of final grade';
+  if(isQuizComponent(c)){
+   const count=Math.max(0,Math.min(50,Number(draft['quiz_count_'+c.id])||0)),entries=Array.from({length:count},(_,i)=>({score:draft['quiz_'+c.id+'_'+i+'_score']??'',max:draft['quiz_'+c.id+'_'+i+'_max']??''}));
+   return '<section class="grade-quiz-category"><h4>'+esc(c.label)+'</h4><small>'+weight+'</small><input type="hidden" name="quiz_count_'+c.id+'" value="'+count+'"><div data-quiz-rows="'+c.id+'">'+quizRows(c,entries)+'</div><button type="button" class="grade-add-quiz" data-add-quiz="'+c.id+'">+ Add quiz</button><div class="grade-quiz-average"><span>Quiz average</span><output name="'+c.id+'">Awaiting quiz scores</output></div></section>';
+  }
+  return '<label class="grade-row"><span>'+esc(c.id==='final'?'Final Exam':c.label)+'<small>'+weight+'</small></span><span class="grade-score"><input type="number" name="'+c.id+'" min="0" '+(c.id==='final'?'':'max="100"')+' step="any" inputmode="decimal" aria-label="'+esc(c.label)+' score" placeholder="Score"><span aria-hidden="true">/</span>'+(c.id==='final'?'<input class="grade-max" type="number" name="final_max" value="100" min="0.01" step="any" inputmode="decimal" aria-label="Final examination perfect score">':'<small>100</small>')+'</span>'+(c.id==='final'?'<output class="grade-fe-average" data-final-percentage>Awaiting exam scores</output>':'')+'</label>';
+ }).join('');
+ const required=(scheme.requirements||[]).map(r=>'<label class="grade-requirement"><span>'+esc(r.label)+'</span><select name="req_'+r.id+'" aria-label="'+esc(r.label)+'"><option value="">Not checked</option><option value="met">Met</option><option value="not-met">Not met</option></select></label>').join('');
+ return '<form class="grade-form" data-grade-course="'+course.id+'"><p class="grade-source">Numeric passing target: <strong>'+scheme.passingPercentage+'%</strong></p><p class="grade-scope-note">Add each quiz with its earned and perfect scores. Quiz percentages are averaged equally. Final Exam uses earned / perfect points; other requirements use your computed average / 100. Awarded bonus points above the perfect score are included.</p><fieldset class="grade-assessments"><legend>Recorded scores</legend>'+rows+'</fieldset><fieldset class="grade-planning"><legend>Plan a remaining assessment</legend><label class="grade-target">Calculate the score needed on<select name="gradeTarget">'+scheme.components.map(c=>'<option value="'+c.id+'" '+(c.id===target?'selected':'')+'>'+esc(c.label)+'</option>').join('')+'</select></label><label class="grade-target">Score precision<select name="gradeStep"><option value="1">Whole points / percentage points</option><option value="0.5">Half points</option><option value="0.1">Tenths</option><option value="0.01">Hundredths</option></select></label></fieldset>'+(required?'<details class="grade-requirements" open><summary>Other passing requirements</summary><p class="grade-scope-note">Self-reported checks; your instructor handles exceptions and final eligibility.</p>'+required+'</details>':'')+'<output class="grade-result" aria-live="polite">Enter your recorded scores to estimate your grade.</output><details class="course-source"><summary>Grading notes</summary>'+(scheme.note?'<p class="grade-policy">'+esc(scheme.note)+'</p>':'')+'<p>Use adjusted scores. Bonus points are counted only when entered; no bonus award is assumed. Score precision is a planning choice. Your instructor determines the official grade.</p><p>This estimate never records course completion.</p></details></form>';
 }

@@ -1,3 +1,5 @@
+import {createAdminWorkspace,verifyAdminAccess,adminAcademicProgress,adminViewMarkup} from './admin-mode.mjs';
+import {changeQuizRows} from './quiz-scores.mjs';
 // milch pogiman made this, so u cant steal this lol
 import { installAuthorMark } from './author-mark.mjs';
 import { courseConnections, traceConnection, CONNECTION_TYPES } from './connections.mjs';
@@ -28,7 +30,7 @@ import { avatarBadge, wardrobeMarkup, equipCosmetic, unlockedFrames } from './co
 const $=s=>document.querySelector(s);
 installAuthorMark(document);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let progress,storageOK=true;
+let progress,storageOK=true,adminWorkspace;
 try{progress=loadProgress(localStorage);}catch{progress=newProgress();storageOK=false;setTimeout(()=>toast('Existing storage could not be read. This session will remain unsaved.'),500);}
 const view={year:1,branch:selected(progress),preview:false,course:null,connection:null,reward:null,section:0,page:'map',scale:1,x:0,y:0};
 const initialAcademic=progressSummary(progress).academic;
@@ -37,7 +39,7 @@ let constellationRotation;
 let zoomController;
 let mobileSky;
 let lastSkyScale=null;
-const gradeDrafts=new Map();
+const studentGradeDrafts=new Map(),adminGradeDrafts=new Map();let gradeDrafts=studentGradeDrafts,gradeDraftOwner=null;
 let transferMode=false,toastTimer,shownMap,mapBounds,previousAcademicFill=100*initialAcademic.complete/initialAcademic.total,sharedCamera=null,lastRenderedBranch=null;
 const icon=key=>`<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${{
  bridge:'<path d="M4 35H44M9 35V16M39 35V16M9 19Q24 41 39 19M15 35V27M21 35V30M27 35V30M33 35V27M6 16H12M36 16H42M4 38H44"/>',
@@ -48,16 +50,24 @@ const icon=key=>`<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stro
 }[key] || ''}</svg>`;
 const terrain='';
 function toast(message){$('#toast').textContent=message;$('#toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').classList.remove('show'),4500);}
-const account=setupAccount({storage:localStorage,document,onError:toast,onProgress:next=>{
- gradeDrafts.clear();progress=next;view.course=null;view.reward=null;view.connection=null;view.preview=false;view.branch=selected(next);sharedCamera=null;lastRenderedBranch=null;
+const account=setupAccount({storage:localStorage,document,onError:toast,onIdentity:user=>{const owner=user?.id||'guest';if(owner!==gradeDraftOwner){studentGradeDrafts.clear();adminGradeDrafts.clear();gradeDraftOwner=owner;}if(adminWorkspace){adminWorkspace.setUser(user).catch(toast);renderAdminControls();}},onProgress:next=>{
+ progress=adminWorkspace?.active()?adminWorkspace.progress():next;view.course=null;view.reward=null;view.connection=null;view.preview=false;view.branch=selected(next);sharedCamera=null;lastRenderedBranch=null;
  renderAll();requestAnimationFrame(()=>view.branch?focusBranch():fitMap());
 }});
+adminWorkspace=createAdminWorkspace({storage:localStorage,authorize:user=>verifyAdminAccess(user,account.getAccessToken),onError:toast,onChange:()=>{progress=adminWorkspace.active()?adminWorkspace.progress():account.model.progress();gradeDrafts=adminWorkspace.active()?adminGradeDrafts:studentGradeDrafts;view.branch=selected(progress);sharedCamera=null;lastRenderedBranch=null;view.course=null;view.connection=null;view.preview=false;view.reward=null;renderAll();}});
+function renderAdminControls(){
+ if(!adminWorkspace)return;
+ let controls=$('#admin-controls');if(!controls){$('.atlas-sidebar').insertAdjacentHTML('afterbegin','<div id="admin-controls"></div>');controls=$('#admin-controls');}
+ controls.innerHTML=adminViewMarkup(adminWorkspace);controls.hidden=!controls.innerHTML;
+ $('#reset-progress').hidden=!adminWorkspace.active();
+}
+const appGateStatus=()=>adminWorkspace?.active()?{...gateStatus(progress),eligible:true,hardmodeUnlocked:true}:gateStatus(progress);
 function commit(next,message){
  if(!account.model.state().ready){toast('Finish loading or choosing your account journey first.');return;}
- account.model.save(next);progress=next;
+ if(adminWorkspace.active())adminWorkspace.save(next);else account.model.save(next);progress=next;
  storageOK=account.model.state().phase!=='local-error';renderAll();if(message)toast(message);
 }
-function isPreview(c){return view.preview || (!!c.specialization && selected(progress)!==c.specialization);}
+function isPreview(c){if(adminWorkspace?.active())return false;return view.preview || (!!c.specialization && selected(progress)!==c.specialization);}
 function pathCard(){
  const branch=selected(progress),s=progressSummary(progress),a=s.academic,fill=100*a.complete/a.total;
  $('#path-card').innerHTML=`<div class="path-summary"><div class="path-identity"><span class="path-dot"></span><strong>${branch?branch+' · Confirmed, self-reported':'Undecided'}</strong><span class="path-scope">${branch?'Shared + '+branch:'Shared curriculum · provisional'}</span></div>${branch?'<button class="path-link" data-action="change">Change specialization</button>':progress.academicYear>=3?'<button class="primary" data-action="confirm">Confirm specialization</button>':''}</div><div class="journey-progress ${fill>previousAcademicFill?'journey-earned':''} ${a.complete===0?'journey-empty':''}"><div class="journey-label"><span>Academic journey</span><strong>${a.complete}<span> / ${a.total} courses</span></strong><b>${a.percent}%</b></div><div id="academic-progress" class="journey-track" role="progressbar" aria-label="Required academic courses completed" aria-valuemin="0" aria-valuemax="${a.total}" aria-valuenow="${a.complete}" aria-valuetext="${a.complete} of ${a.total} required courses completed${s.provisional?', provisional shared curriculum':''}"><div class="journey-fill" style="width:${previousAcademicFill}%"><span aria-hidden="true">✦</span></div></div></div>`;
@@ -71,15 +81,15 @@ function courseCard(){
  const dialog=$('#course-card'),c=COURSE_BY_ID[view.course];
  $('.workspace').classList.toggle('inspector-open',!!c);
  if(!c){if(dialog.open)dialog.close();dialog.innerHTML='';return;}
- if(!courseSectionsUnlocked(progress,c))view.section=0;
- dialog.innerHTML=renderCoursePanel(progress,c,{preview:isPreview(c),section:view.section,reward:view.reward});
- const gradeForm=dialog.querySelector('[data-grade-course]');if(gradeForm){const draft=gradeDrafts.get(c.id);if(draft)for(const [key,value] of Object.entries(draft))gradeForm.elements.namedItem(key).value=value;updateGradeCalculator(gradeForm);}
+ if(!adminWorkspace.active()&&!courseSectionsUnlocked(progress,c))view.section=0;
+ dialog.innerHTML=renderCoursePanel(progress,c,{preview:isPreview(c),section:view.section,reward:view.reward,admin:adminWorkspace.active(),gradeDraft:gradeDrafts.get(c.id)});
+ const gradeForm=dialog.querySelector('[data-grade-course]');if(gradeForm){const draft=gradeDrafts.get(c.id);if(draft)for(const [key,value] of Object.entries(draft)){const field=gradeForm.elements.namedItem(key);if(field)field.value=value;}updateGradeCalculator(gradeForm);}
  if(!dialog.open)showCourseDossier(dialog);
 }
 function updateGradeCalculator(form){
  const scheme=COURSE_GRADING_SCHEMES[form.dataset.gradeCourse];if(!scheme)return;
- try{const values=gradeFormValues(form,scheme);gradeDrafts.set(form.dataset.gradeCourse,values.draft);form.querySelector('output').textContent=gradeForecastText(gradeForecast(values.scheme,values.scores,values.target,{requirements:values.requirements}));}
- catch(failure){form.querySelector('output').textContent=failure.message;}
+ try{const values=gradeFormValues(form,scheme);gradeDrafts.set(form.dataset.gradeCourse,values.draft);form.querySelector('.grade-result').textContent=gradeForecastText(gradeForecast(values.scheme,values.scores,values.target,{requirements:values.requirements}));}
+ catch(failure){form.querySelector('.grade-result').textContent=failure.message;}
 }
 for(const event of ['input','change'])document.addEventListener(event,e=>{const form=e.target.closest('[data-grade-course]');if(form)updateGradeCalculator(form);});
 document.addEventListener('submit',e=>{if(e.target.matches('[data-grade-course]'))e.preventDefault();});
@@ -95,7 +105,7 @@ function branchCards(){
  $('#branch-cards').innerHTML=Object.entries(SPECIALIZATIONS).map(([id,b])=>`<button class="branch-card ${selected(progress)===id?'current':''} ${view.branch===id?'viewing':''}" style="${skyAccent(BRANCH_CONSTELLATIONS[id])}" data-branch="${id}" aria-pressed="${view.branch===id}" title="${esc((view.branch===id?'Hide ':'Show ')+b.name+' on the shared sky')}"><span class="branch-check" aria-hidden="true">${view.branch===id?'✓':'+'}</span><span class="branch-symbol">${icon(b.icon)}</span><strong>${id}</strong><span class="branch-name">${SKY_NAMES[BRANCH_CONSTELLATIONS[id]]}</span><small>${selected(progress)===id?'Active path':'Preview'}</small></button>`).join('');
 }
 function courseState(c){
- const preview=isPreview(c),r=progress.academicRecords[c.id],access=courseAccess(progress,c.id);
+ const preview=isPreview(c),r=progress.academicRecords[c.id],access=adminWorkspace.active()?{allowed:true}:courseAccess(progress,c.id);
  return preview?'preview':r?.status==='COMPLETED'?'completed':r?.status==='ACTIVE'?'active-course':access.allowed?'available':'locked';
 }
 function courseButton(c,p,trace=null){
@@ -136,12 +146,12 @@ function renderMap(reset=false){
  });
  html+=`<svg class="graph-lines" viewBox="0 0 ${map.width} ${map.height}" aria-label="Course prerequisite connections"><g class="thread-shadows" transform="translate(10 24)">${shadows}</g>${lines}${hits}</svg>`;
  html+=courses.map(c=>courseButton(c,positions[c.id],trace)).join('');
- html+=civincoPortalMarkup(map.portal,gateStatus(progress));
+ html+=civincoPortalMarkup(map.portal,appGateStatus());
  $('#map-viewport').classList.toggle('tracing-path',!!trace);
  renderConnectionCard(trace);
  $('#world').innerHTML=html;$('#world').style.width=map.width+'px';$('#world').style.height=map.height+'px';
  constellationRotation?.setMap(map);
- if(mobileSky?.active)mobileSky.setScene(createMobileScene(map,{getState:courseState,selectedCourse:view.course,connectionKey:view.connection,gateLabel:gateStatus(progress).cleared?'CELE Hardmode unlocked':gateStatus(progress).eligible?'Ready for integration':'View gate requirements'}));
+ if(mobileSky?.active)mobileSky.setScene(createMobileScene(map,{getState:courseState,selectedCourse:view.course,connectionKey:view.connection,gateLabel:appGateStatus().cleared?'CELE Hardmode unlocked':appGateStatus().eligible?'Ready for integration':'View gate requirements'}));
  if(reset)fitMap();else applyTransform();
  $('.explore-button').setAttribute('aria-pressed',String(view.preview));
  document.querySelectorAll('[data-year]').forEach(b=>{b.classList.toggle('active',+b.dataset.year===view.year);b.setAttribute('aria-pressed',String(+b.dataset.year===view.year));});
@@ -245,14 +255,14 @@ function milestone(){const visible=progress.academicYear>=3&&!selected(progress)
 function journal(){
  const s=progressSummary(progress),branch=selected(progress),r=progress.specializationProgression;
  const records=Object.entries(progress.academicRecords);
- $('#journal-page').innerHTML=`<div class="eyebrow">EVERY STEP LEAVES A TRACE</div><h1>Your field <em>journal.</em></h1><p>A record of your foundations, your chosen path, and every chapter before it.</p><div class="journal-layout"><div class="paper-card"><div class="card-eyebrow">ACADEMIC STANDING</div><h2>Where are you today?</h2><p>Your academic year is self-reported. Browsing another year on the map does not change this setting.</p><label class="field-label" for="academic-year">My academic year</label><select class="year-select" id="academic-year">${[1,2,3,4].map(y=>`<option value="${y}" ${progress.academicYear===y?'selected':''}>Year ${y}</option>`).join('')}</select><label class="field-label" for="academic-term">My current term</label><select class="year-select" id="academic-term">${[1,2,3].map(t=>{const absolute=(progress.academicYear-1)*3+t;return `<option value="${absolute}" ${currentAcademicTerm(progress)===absolute?'selected':''}>Term ${t}</option>`;}).join('')}</select><p class="card-note">New activations record this term. A lab requires its lecture in this term or an earlier term. Year 3 introduces specialization commitment. Prerequisites still apply to course activation.</p></div><div class="paper-card"><div class="card-eyebrow">YOUR CHOSEN SPECIALIZATION</div><h2>${branch?esc(SPECIALIZATIONS[branch].region):'Still discovering'}</h2><p>${branch?esc(SPECIALIZATIONS[branch].name):'Explore every specialization. There is no selection required during your first two years.'}</p><div class="path-state">${r.specializationStatus} ${branch?'· SELF_REPORTED':''}</div>${branch?`<p class="card-note">Confirmed ${esc(new Date(r.confirmedAt).toLocaleDateString())}. Selection is self-reported, not university-verified.</p><button class="secondary full" data-action="change">Change specialization</button>`:progress.academicYear>=3?'<button class="primary full" data-action="confirm">Confirm my accepted specialization →</button>':''}</div><div class="paper-card"><div class="card-eyebrow">ACTIVE PATH PROGRESS</div><h2>${s.academic.percent}% of the academic journey</h2><p>${s.academic.complete} / ${s.academic.total} required technical courses complete${s.provisional?' · provisional shared scope':''}.</p><div class="progress-track"><div style="width:${s.academic.percent}%"></div></div><p>${s.mastery.complete} / ${s.mastery.total} required mastery nodes. Quizzes are reserved for a later phase.</p><p class="card-note">Shared technical courses plus your confirmed specialization. Labs remain academic requirements and are excluded from the configured mastery scope. General education, PE, NSTP and OJT are outside this app’s technical scope.</p></div><div class="paper-card"><div class="card-eyebrow">YOUR RECORDS BELONG TO YOU</div><h2>Keep a trail.</h2><p>${account.model.state().user?'Your account journey saves to the cloud, with a separate copy on this device.':'Guest progress stays in this browser. Sign in with Google after cloud setup to save across devices.'} Export a copy to keep your course records, specialization history and future quiz attempts safe.</p><button class="secondary full" data-action="export">Export progress backup ↓</button><button class="reset-progress-button journal-reset" data-action="reset-progress">Reset progress</button><p class="card-note">${storageOK?'Browser storage is available.':'Browser storage is unavailable. Export before leaving this session.'} Changing specialization never removes historical records.</p></div></div><div class="journal-records"><h2>Academic records <em>(${records.length})</em></h2>${records.length?`<table class="records-table"><thead><tr><th>COURSE</th><th>SUBJECT</th><th>RECORD</th><th>PATH</th></tr></thead><tbody>${records.map(([id,r])=>{const c=COURSE_BY_ID[id];return `<tr><td>${esc(id)}</td><td>${esc(c?.title || id)}</td><td>${r.status==='COMPLETED'?'Completed':'Active'}</td><td>${c?.specialization?c.specialization+(c.specialization!==branch?' · historical':' · current'):'Shared'}</td></tr>`;}).join('')}</tbody></table>`:'<div class="journal-empty">Your first field note is waiting. Activate an available shared course on the World map.</div>'}</div><div class="journal-records"><h2>Previous specialization history</h2>${r.previousSpecializationHistory.length?r.previousSpecializationHistory.map(h=>`<div class="history-row"><strong>${esc(h.selectedSpecialization)} → ${esc(h.changedTo)}</strong> · ${esc(new Date(h.changedAt).toLocaleDateString())}<br>${esc(h.reason)}<br><span class="muted">Academic records and quiz attempts retained.</span></div>`).join(''):'<p>No transfers or corrections recorded.</p>'}</div><div class="journal-records"><h2>Assessment history</h2><p>${progress.quizAttempts.length} quiz attempts · ${progress.integrationAssessments.length} integration assessment attempts. Assessments are reserved for a later chapter.</p></div>`;
+ $('#journal-page').innerHTML=`<div class="eyebrow">EVERY STEP LEAVES A TRACE</div><h1>Your field <em>journal.</em></h1><p>A record of your foundations, your chosen path, and every chapter before it.</p><div class="journal-layout"><div class="paper-card"><div class="card-eyebrow">ACADEMIC STANDING</div><h2>Where are you today?</h2><p>Your academic year is self-reported. Browsing another year on the map does not change this setting.</p><label class="field-label" for="academic-year">My academic year</label><select class="year-select" id="academic-year">${[1,2,3,4].map(y=>`<option value="${y}" ${progress.academicYear===y?'selected':''}>Year ${y}</option>`).join('')}</select><label class="field-label" for="academic-term">My current term</label><select class="year-select" id="academic-term">${[1,2,3].map(t=>{const absolute=(progress.academicYear-1)*3+t;return `<option value="${absolute}" ${currentAcademicTerm(progress)===absolute?'selected':''}>Term ${t}</option>`;}).join('')}</select><p class="card-note">New activations record this term. A lab requires its lecture in this term or an earlier term. Year 3 introduces specialization commitment. Prerequisites still apply to course activation.</p></div><div class="paper-card"><div class="card-eyebrow">YOUR CHOSEN SPECIALIZATION</div><h2>${branch?esc(SPECIALIZATIONS[branch].region):'Still discovering'}</h2><p>${branch?esc(SPECIALIZATIONS[branch].name):'Explore every specialization. There is no selection required during your first two years.'}</p><div class="path-state">${r.specializationStatus} ${branch?'· SELF_REPORTED':''}</div>${branch?`<p class="card-note">Confirmed ${esc(new Date(r.confirmedAt).toLocaleDateString())}. Selection is self-reported, not university-verified.</p><button class="secondary full" data-action="change">Change specialization</button>`:progress.academicYear>=3?'<button class="primary full" data-action="confirm">Confirm my accepted specialization →</button>':''}</div><div class="paper-card"><div class="card-eyebrow">ACTIVE PATH PROGRESS</div><h2>${s.academic.percent}% of the academic journey</h2><p>${s.academic.complete} / ${s.academic.total} required technical courses complete${s.provisional?' · provisional shared scope':''}.</p><div class="progress-track"><div style="width:${s.academic.percent}%"></div></div><p>${s.mastery.complete} / ${s.mastery.total} required mastery nodes. Quizzes are reserved for a later phase.</p><p class="card-note">Shared technical courses plus your confirmed specialization. Labs remain academic requirements and are excluded from the configured mastery scope. General education, PE, NSTP and OJT are outside this app’s technical scope.</p></div><div class="paper-card"><div class="card-eyebrow">YOUR RECORDS BELONG TO YOU</div><h2>Keep a trail.</h2><p>${account.model.state().user?'Your account journey saves to the cloud, with a separate copy on this device.':'Guest progress stays in this browser. Sign in with Google after cloud setup to save across devices.'} Export a copy to keep your course records, specialization history and future quiz attempts safe.</p><button class="secondary full" data-action="export">Export progress backup ↓</button>${adminWorkspace.active()?'<button class="reset-progress-button journal-reset" data-action="reset-progress">Reset admin workspace</button>':''}<p class="card-note">${storageOK?'Browser storage is available.':'Browser storage is unavailable. Export before leaving this session.'} Changing specialization never removes historical records.</p></div></div><div class="journal-records"><h2>Academic records <em>(${records.length})</em></h2>${records.length?`<table class="records-table"><thead><tr><th>COURSE</th><th>SUBJECT</th><th>RECORD</th><th>PATH</th></tr></thead><tbody>${records.map(([id,r])=>{const c=COURSE_BY_ID[id];return `<tr><td>${esc(id)}</td><td>${esc(c?.title || id)}</td><td>${r.status==='COMPLETED'?'Completed':'Active'}</td><td>${c?.specialization?c.specialization+(c.specialization!==branch?' · historical':' · current'):'Shared'}</td></tr>`;}).join('')}</tbody></table>`:'<div class="journal-empty">Your first field note is waiting. Activate an available shared course on the World map.</div>'}</div><div class="journal-records"><h2>Previous specialization history</h2>${r.previousSpecializationHistory.length?r.previousSpecializationHistory.map(h=>`<div class="history-row"><strong>${esc(h.selectedSpecialization)} → ${esc(h.changedTo)}</strong> · ${esc(new Date(h.changedAt).toLocaleDateString())}<br>${esc(h.reason)}<br><span class="muted">Academic records and quiz attempts retained.</span></div>`).join(''):'<p>No transfers or corrections recorded.</p>'}</div><div class="journal-records"><h2>Assessment history</h2><p>${progress.quizAttempts.length} quiz attempts · ${progress.integrationAssessments.length} integration assessment attempts. Assessments are reserved for a later chapter.</p></div>`;
 }
-function gate(){const g=gateStatus(progress);$('#gate-page').innerHTML=`<div class="eyebrow">THE SHARED SUMMIT</div><h1>One final <em>integration.</em></h1><p>Five specializations lead to the same Civil Engineering integration assessment.</p><div class="gate-layout"><div class="gate-illustration"><svg viewBox="0 0 240 190" aria-hidden="true"><path d="M20 166H221M39 164V57H83V164M157 164V57H201V164M49 57V37H60V49H69V37H79V57M162 57V37H173V49H182V37H193V57M83 78Q120 21 157 78M82 105Q121 49 157 105M94 165V113Q120 78 146 113V165M104 162V117Q120 92 136 117V162M55 76H67V92H55ZM173 76H185V92H173ZM60 121V134M179 121V134M31 170L14 177M215 170L230 178M114 140H127M120 103V165"/><path d="M114 25L120 12L126 25L120 39Z"/></svg><h2>The CIVINCO Gate</h2><div class="path-state">${g.cleared?'CLEARED':g.eligible?'READY FOR ASSESSMENT':'THE JOURNEY CONTINUES'}</div><p>Complete your required academic path and Normal Mode mastery, then clear the common integration assessment.</p><button class="primary full" disabled>Integration assessment · coming later</button><p class="card-note">Quizzes are paused for this skeleton phase.</p></div><div class="paper-card"><div class="card-eyebrow">GATE REQUIREMENTS</div>${[[!!selected(progress),'Confirmed academic path',selected(progress)?selected(progress)+' · self-reported':'Confirm your accepted specialization from Year 3'],[g.summary.academic.complete===g.summary.academic.total,'Required academic completion',g.summary.academic.complete+' / '+g.summary.academic.total+' shared + selected-path courses'],[g.summary.mastery.complete===g.summary.mastery.total,'Required Normal Mode mastery',g.summary.mastery.complete+' / '+g.summary.mastery.total+' configured mastery nodes'],[g.cleared,'Common integration assessment',g.cleared?'Passed · CELE Hardmode unlocked':'A common CIVINCO assessment for all students']].map(([ok,title,note])=>`<div class="gate-check"><span>${ok?'✓':'◇'}</span><div><strong>${title}</strong><small>${esc(note)}</small></div></div>`).join('')}<p class="card-note">Unselected specialization branches never block this gate. A passed CIVINCO assessment is retained through a specialization transfer.</p></div></div><div class="section-heading"><h2>Beyond the gate: <em>CELE Hardmode.</em></h2><span>${g.hardmodeUnlocked?'UNLOCKED':'LOCKED UNTIL CIVINCO IS CLEARED'}</span></div><div class="domains">${CELE_DOMAINS.map((d,i)=>`<div class="domain"><small>EXAMINATION DOMAIN ${String(i+1).padStart(2,'0')}</small><h3>${esc(d)}</h3><p>${g.hardmodeUnlocked?'Unlocked for shared review. Assessment content is coming in a later phase.':'Unlocks after the common integration assessment. Shared by all specializations.'}</p></div>`).join('')}</div><p class="card-note">Specialist knowledge remains accessible as optional review through the world map. Examination domain labels are configurable app groupings.</p>`;}
-function renderAll(reset=false){renderCompanion();pathCard();courseCard();branchCards();milestone();renderMap(reset);journal();gate();$('#traveler-year').textContent='Year '+progress.academicYear+' · '+(selected(progress)||'Explorer');$('.local-label').innerHTML=`<i></i>${storageOK?'Saved on this browser':'Session only · export backup'}`;}
+function gate(){const g=appGateStatus();$('#gate-page').innerHTML=`<div class="eyebrow">THE SHARED SUMMIT</div><h1>One final <em>integration.</em></h1><p>Five specializations lead to the same Civil Engineering integration assessment.</p><div class="gate-layout"><div class="gate-illustration"><svg viewBox="0 0 240 190" aria-hidden="true"><path d="M20 166H221M39 164V57H83V164M157 164V57H201V164M49 57V37H60V49H69V37H79V57M162 57V37H173V49H182V37H193V57M83 78Q120 21 157 78M82 105Q121 49 157 105M94 165V113Q120 78 146 113V165M104 162V117Q120 92 136 117V162M55 76H67V92H55ZM173 76H185V92H173ZM60 121V134M179 121V134M31 170L14 177M215 170L230 178M114 140H127M120 103V165"/><path d="M114 25L120 12L126 25L120 39Z"/></svg><h2>The CIVINCO Gate</h2><div class="path-state">${g.cleared?'CLEARED':g.eligible?'READY FOR ASSESSMENT':'THE JOURNEY CONTINUES'}</div><p>Complete your required academic path and Normal Mode mastery, then clear the common integration assessment.</p><button class="primary full" disabled>Integration assessment · coming later</button><p class="card-note">Quizzes are paused for this skeleton phase.</p></div><div class="paper-card"><div class="card-eyebrow">GATE REQUIREMENTS</div>${[[!!selected(progress),'Confirmed academic path',selected(progress)?selected(progress)+' · self-reported':'Confirm your accepted specialization from Year 3'],[g.summary.academic.complete===g.summary.academic.total,'Required academic completion',g.summary.academic.complete+' / '+g.summary.academic.total+' shared + selected-path courses'],[g.summary.mastery.complete===g.summary.mastery.total,'Required Normal Mode mastery',g.summary.mastery.complete+' / '+g.summary.mastery.total+' configured mastery nodes'],[g.cleared,'Common integration assessment',g.cleared?'Passed · CELE Hardmode unlocked':'A common CIVINCO assessment for all students']].map(([ok,title,note])=>`<div class="gate-check"><span>${ok?'✓':'◇'}</span><div><strong>${title}</strong><small>${esc(note)}</small></div></div>`).join('')}<p class="card-note">Unselected specialization branches never block this gate. A passed CIVINCO assessment is retained through a specialization transfer.</p></div></div><div class="section-heading"><h2>Beyond the gate: <em>CELE Hardmode.</em></h2><span>${g.hardmodeUnlocked?'UNLOCKED':'LOCKED UNTIL CIVINCO IS CLEARED'}</span></div><div class="domains">${CELE_DOMAINS.map((d,i)=>`<div class="domain"><small>EXAMINATION DOMAIN ${String(i+1).padStart(2,'0')}</small><h3>${esc(d)}</h3><p>${g.hardmodeUnlocked?'Unlocked for shared review. Assessment content is coming in a later phase.':'Unlocks after the common integration assessment. Shared by all specializations.'}</p></div>`).join('')}</div><p class="card-note">Specialist knowledge remains accessible as optional review through the world map. Examination domain labels are configurable app groupings.</p>`;}
+function renderAll(reset=false){renderAdminControls();renderCompanion();pathCard();courseCard();branchCards();milestone();renderMap(reset);journal();gate();$('#traveler-year').textContent='Year '+progress.academicYear+' · '+(selected(progress)||'Explorer');$('.local-label').innerHTML=`<i></i>${storageOK?'Saved on this browser':'Session only · export backup'}`;}
 function renderCompanion(){
- $('#companion-portrait').innerHTML=avatarBadge(progress);
+ $('#companion-portrait').innerHTML=avatarBadge(progress,{unrestricted:adminWorkspace.active()});
  const dialog=$('#wardrobe-dialog');
- if(dialog.open)dialog.innerHTML='<button class="account-dialog-close" data-action="close-wardrobe" aria-label="Close wardrobe">×</button>'+wardrobeMarkup(progress);
+ if(dialog.open)dialog.innerHTML='<button class="account-dialog-close" data-action="close-wardrobe" aria-label="Close wardrobe">×</button>'+wardrobeMarkup(progress,{unrestricted:adminWorkspace.active()});
 }
 function openPathDialog(change=false){
  transferMode=change;$('#path-form').reset();$('#dialog-error').textContent='';$('#dialog-eyebrow').textContent=change?'A TRANSFER. A CORRECTION. A NEW CHAPTER.':'YEAR III · A NEW CHAPTER';$('#dialog-title').innerHTML=change?'Change your <em>path.</em>':'Choose your <em>calling.</em>';
@@ -262,24 +272,24 @@ function openPathDialog(change=false){
  $('#confirm-path').textContent=change?'Confirm change of specialization →':'Confirm my specialization →';$('#path-dialog').showModal();
 }
 function openResetDialog(origin){
+ if(!adminWorkspace.active())return;
  if(!account.model.state().ready){toast('Finish loading or choosing your account save before resetting.');return;}
- $('#reset-description').textContent='Start again in Year 1 with no selected specialization. This clears course completion, mastery, quiz attempts, specialization history, and CIVINCO / Hardmode progress '+(account.model.state().user?'for this account, including its cloud save.':'saved in this browser.');
+ $('#reset-description').textContent='Clear this admin workspace on this device. Your student journey and cloud save are retained.';
  resetOrigin=origin;$('#reset-error').textContent='';$('#reset-dialog').showModal();$('#cancel-reset').focus();
 }
 function cancelReset(){
  $('#reset-dialog').close();resetOrigin?.focus({preventScroll:true});
 }
 function resetTestingProgress(){
- if(!$('#reset-dialog').open)return;
+ if(!adminWorkspace.active()||!$('#reset-dialog').open)return;
  try{
-  const clean=account.model.state().user?newProgress():account.model.resetGuest();
-  account.model.save(clean);
+  const clean=adminWorkspace.reset();
   stopMapTravel();progress=clean;storageOK=true;transferMode=false;
   Object.assign(view,{year:1,branch:null,preview:false,course:null,connection:null,reward:null,section:0,scale:1,x:0,y:0});
   sharedCamera=null;lastRenderedBranch=null;previousAcademicFill=0;
   document.querySelectorAll('dialog[open]').forEach(dialog=>dialog.close());
   renderAll();showPage('map');fitMap();$('#reset-progress').focus({preventScroll:true});
-  toast('Progress reset. Your journey starts again in Year 1.');
+  gradeDrafts.clear();toast('Admin workspace reset. Your student progress is retained.');
  }catch{
   $('#reset-error').textContent='The reset could not be saved in this browser. Your current progress is unchanged. Try again after enabling browser storage.';
  }
@@ -288,18 +298,20 @@ function showPage(page){zoomController?.cancel();view.course=null;courseCard();v
 document.addEventListener('click',e=>{
  const edge=e.target.closest('[data-connection]');if(edge){selectConnection(edge.dataset.connection);return;}
  const b=e.target.closest('button');if(!b)return;
+ if(b.dataset.addQuiz||b.dataset.removeQuiz){const form=b.closest('[data-grade-course]'),id=b.dataset.addQuiz||b.dataset.removeQuiz,c=COURSE_GRADING_SCHEMES[form.dataset.gradeCourse].components.find(c=>c.id===id);try{changeQuizRows(form,c,b.dataset.removeQuiz?Number(b.dataset.quizIndex):undefined);updateGradeCalculator(form);[...form.querySelectorAll('[data-quiz-rows="'+id+'"] input')].at(-2)?.focus();}catch(error){toast(error.message);}return;}
+ if(b.dataset.adminView){try{adminWorkspace.switchView(b.dataset.adminView);}catch(error){toast(error.message);}return;}
  if((b.dataset.academic||['confirm','change','reset-progress'].includes(b.dataset.action))&&!account.model.state().ready){toast('Finish loading or choosing your account journey first.');return;}
  if(b.dataset.action==='wardrobe'){$('#wardrobe-dialog').showModal();renderCompanion();return;}
  if(b.dataset.action==='close-wardrobe'){$('#wardrobe-dialog').close();$('#companion-button').focus();return;}
- if(b.dataset.avatar||b.dataset.frame){try{commit(equipCosmetic(progress,b.dataset.avatar?'avatar':'frame',b.dataset.avatar||b.dataset.frame),'Companion updated.');$('#wardrobe-dialog [data-'+(b.dataset.avatar?'avatar':'frame')+'="'+(b.dataset.avatar||b.dataset.frame)+'"]')?.focus();}catch(error){toast(error.message);}return;}
+ if(b.dataset.avatar||b.dataset.frame){try{commit(equipCosmetic(progress,b.dataset.avatar?'avatar':'frame',b.dataset.avatar||b.dataset.frame,{unrestricted:adminWorkspace.active()}),'Companion updated.');$('#wardrobe-dialog [data-'+(b.dataset.avatar?'avatar':'frame')+'="'+(b.dataset.avatar||b.dataset.frame)+'"]')?.focus();}catch(error){toast(error.message);}return;}
  if(b.dataset.page){setMapExpanded(false);showPage(b.dataset.page);return;}
  if(b.dataset.year){travelToYear(+b.dataset.year);return;}
  if(b.dataset.branch){revealBranch(b.dataset.branch);return;}
  if(b.dataset.course){const course=COURSE_BY_ID[b.dataset.course];view.reward=null;view.section=0;view.course=course.id;view.year=course.year;renderAll();animateMapTravel(()=>focusCourse(course.id));return;}
  if(b.dataset.courseLink){view.connection=null;view.reward=null;const c=COURSE_BY_ID[b.dataset.courseLink];if(c.specialization)view.branch=c.specialization;view.year=c.year;view.section=0;view.course=c.id;renderAll();return;}
- if(b.dataset.courseSection!==undefined){if(b.disabled||(+b.dataset.courseSection>0&&!courseSectionsUnlocked(progress,COURSE_BY_ID[view.course])))return;view.section=+b.dataset.courseSection;courseCard();$('#course-tab-'+view.section).focus({preventScroll:true});return;}
+ if(b.dataset.courseSection!==undefined){if(b.disabled||(+b.dataset.courseSection>0&&!adminWorkspace.active()&&!courseSectionsUnlocked(progress,COURSE_BY_ID[view.course])))return;view.section=+b.dataset.courseSection;courseCard();$('#course-tab-'+view.section).focus({preventScroll:true});return;}
  if(b.dataset.academic){try{
-  const next=recordAcademicProgress(progress,view.course,b.dataset.academic,{preview:isPreview(COURSE_BY_ID[view.course])});
+  const next=adminWorkspace.active()?adminAcademicProgress(progress,view.course,b.dataset.academic):recordAcademicProgress(progress,view.course,b.dataset.academic,{preview:isPreview(COURSE_BY_ID[view.course])});
   const beforeFrames=unlockedFrames(progress);view.reward=completionMoment(progress,next,view.course);
   const earned=unlockedFrames(next).filter(f=>!beforeFrames.some(old=>old.id===f.id));
   if(earned.length)setTimeout(()=>toast(earned.map(f=>f.name).join(', ')+' frame unlocked. Open My companion to equip it.'),900);
@@ -357,7 +369,7 @@ $('#course-card').addEventListener('keydown',e=>{
  const tab=e.target.closest('[data-course-section]');if(!tab)return;
  const offsets={ArrowDown:1,ArrowRight:1,ArrowUp:-1,ArrowLeft:-1};
  if(!(e.key in offsets)&&e.key!=='Home'&&e.key!=='End')return;
- const c=COURSE_BY_ID[view.course],count=courseSectionsUnlocked(progress,c)?courseSections(c).length:1;
+ const c=COURSE_BY_ID[view.course],count=(adminWorkspace.active()||courseSectionsUnlocked(progress,c))?courseSections(c).length:1;
  e.preventDefault();view.section=e.key==='Home'?0:e.key==='End'?count-1:(view.section+offsets[e.key]+count)%count;
  courseCard();$('#course-tab-'+view.section).focus({preventScroll:true});
 });

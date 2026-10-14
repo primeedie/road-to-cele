@@ -80,6 +80,26 @@
 #course-card .grade-requirement { font:14px/1.6 var(--reading-type);gap:8px;margin:18px 0 }
 #course-card .grade-requirement small { font:12px/1.5 var(--reading-type);color:#aaa }
 #course-card .grade-policy { font:13px/1.65 var(--reading-type);color:#bbb }
+#course-card .grade-quiz-category { border-bottom:1px solid #ffffff20;padding-bottom:18px }
+#course-card .grade-quiz-category h4 { font:600 14px/1.6 var(--reading-type);margin:0 0 4px }
+#course-card .grade-quiz-category>small { display:block;color:#bbb;font:12px/1.5 var(--reading-type);margin-bottom:14px }
+#course-card .grade-quiz-entry { display:grid;grid-template-columns:44px 1fr 28px;gap:10px;align-items:start;padding:12px 0;border-top:1px solid #ffffff18 }
+#course-card .grade-quiz-entry>strong { font:12px/1.5 var(--reading-type);padding-top:12px }
+#course-card .grade-quiz-entry .grade-score { max-width:none;gap:6px }
+#course-card .grade-quiz-entry input { width:100%;min-width:0 }
+#course-card .grade-quiz-entry button { min-height:44px;padding:0;background:none;border:0;color:#aaa;font:20px var(--reading-type) }
+#course-card [data-quiz-bonus] { display:block;font:11px/1.5 var(--reading-type);color:#c8d6b1;margin-top:4px }
+#course-card .grade-add-quiz { min-height:44px;padding:10px 14px;background:#0b0b0b;border:1px solid #ffffff30;border-radius:4px;color:#eee;font:13px var(--reading-type);margin:8px 0 14px }
+#course-card .grade-quiz-average { display:flex;gap:12px;justify-content:space-between;font:12px/1.6 var(--reading-type);color:#aaa }
+#course-card .grade-quiz-average output { color:#eee;text-align:right }
+#reset-progress[hidden],[data-action="reset-progress"][hidden] { display:none!important }
+.admin-view-switch { display:flex;gap:8px;flex-wrap:wrap;margin-top:8px }
+.admin-view-switch button { min-height:40px;font:12px var(--atlas-type) }
+.admin-view-switch button[aria-pressed="true"] { border-color:#bbb;background:#171717 }
+.admin-view-note,.admin-setup-note { font:10px/1.6 var(--atlas-type);color:#aaa;max-width:260px;margin:6px 0 0 }
+.atlas-sidebar .admin-view-switch button { flex:1;min-width:0;padding:9px 5px;font-size:11px }
+#admin-controls { padding-bottom:16px }
+#admin-controls[hidden] { display:none }
 /* One native scroll surface lets the header leave naturally, without a resize
    listener or scroll-position compensation. The code and tabs remain sticky. */
 #course-card .dossier-scroll { padding:0;min-height:0;flex:1;overflow-y:auto;scroll-padding-top:120px }

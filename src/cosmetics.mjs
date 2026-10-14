@@ -18,19 +18,19 @@ export function hydrateCosmetics(raw) {
 }
 export function completedCount(p){return Object.entries(p.academicRecords).filter(([id,r])=>COURSE_BY_ID[id]&&r.status==='COMPLETED').length;}
 export function unlockedFrames(p){const count=completedCount(p);return FRAMES.filter(f=>count>=f.need);}
-export function equippedCosmetics(p){const c=hydrateCosmetics(p.cosmetics);return {...c,frame:unlockedFrames(p).some(f=>f.id===c.frame)?c.frame:'wanderer'};}
-export function equipCosmetic(p,type,id){
+export function equippedCosmetics(p,{unrestricted=false}={}){const c=hydrateCosmetics(p.cosmetics);return {...c,frame:unrestricted||unlockedFrames(p).some(f=>f.id===c.frame)?c.frame:'wanderer'};}
+export function equipCosmetic(p,type,id,{unrestricted=false}={}){
  if(type==='avatar'&&!AVATARS.some(a=>a.id===id))throw Error('Unknown avatar');
- if(type==='frame'&&!unlockedFrames(p).some(f=>f.id===id))throw Error('Complete more courses to earn this frame.');
+ if(type==='frame'&&(!FRAMES.some(f=>f.id===id)||(!unrestricted&&!unlockedFrames(p).some(f=>f.id===id))))throw Error('Complete more courses to earn this frame.');
  if(!['avatar','frame'].includes(type))throw Error('Unknown cosmetic type');
- return {...structuredClone(p),cosmetics:{...equippedCosmetics(p),[type]:id}};
+ return {...structuredClone(p),cosmetics:{...equippedCosmetics(p,{unrestricted}),[type]:id}};
 }
-export function avatarBadge(p,{avatar,frame}={}){
- const current=equippedCosmetics(p),a=AVATARS.find(a=>a.id===(avatar||current.avatar))||AVATARS[0],f=FRAMES.find(f=>f.id===(frame||current.frame))||FRAMES[0];
+export function avatarBadge(p,{avatar,frame,unrestricted=false}={}){
+ const current=equippedCosmetics(p,{unrestricted}),a=AVATARS.find(a=>a.id===(avatar||current.avatar))||AVATARS[0],f=FRAMES.find(f=>f.id===(frame||current.frame))||FRAMES[0];
  const wreath=f.id==='laurel'?'<path d="M18 66Q9 46 22 29M82 66Q91 46 78 29"/><path d="M16 54L9 47M16 45L10 37M19 37L14 28M84 54L91 47M84 45L90 37M81 37L86 28"/>':'';
  return `<span class="avatar-badge frame-${f.id}" style="--portrait-color:${a.color};--frame-color:${f.color}"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" fill="#121211"/>${a.art}<g fill="none" stroke="${f.color}" stroke-width="1.5"><circle cx="50" cy="50" r="45"/>${wreath}</g>${f.id!=='wanderer'?'<path d="M50 1L53 7L50 13L47 7Z" fill="'+f.color+'"/>':''}${f.id==='starbound'?'<path d="M7 50L10 55L7 60L4 55ZM93 50L96 55L93 60L90 55ZM50 87L53 93L50 99L47 93Z" fill="'+f.color+'"/>':''}</svg></span>`;
 }
-export function wardrobeMarkup(p){
- const c=equippedCosmetics(p),count=completedCount(p);
- return `<div class="wardrobe-heading"><span class="wardrobe-kicker">A LITTLE PIECE OF YOUR JOURNEY</span><h2 id="wardrobe-title">Your sky companion</h2><p>Choose a companion. Earn a frame as your course stars light up.</p></div><div class="wardrobe-preview">${avatarBadge(p)}<span>${AVATARS.find(a=>a.id===c.avatar).name}<small>${FRAMES.find(f=>f.id===c.frame).name} frame</small></span></div><section class="wardrobe-section" aria-label="Avatars"><h3>Companions</h3><div class="cosmetic-grid">${AVATARS.map(a=>`<button class="cosmetic-option ${c.avatar===a.id?'equipped':''}" data-avatar="${a.id}" aria-pressed="${c.avatar===a.id}">${avatarBadge(p,{avatar:a.id,frame:'wanderer'})}<strong>${a.name}</strong><small>${c.avatar===a.id?'Equipped':'Available'}</small></button>`).join('')}</div></section><section class="wardrobe-section" aria-label="Avatar frames"><h3>Frames <span>${count} courses completed</span></h3><div class="cosmetic-grid">${FRAMES.map(f=>{const unlocked=count>=f.need;return `<button class="cosmetic-option ${c.frame===f.id?'equipped':''} ${unlocked?'':'cosmetic-locked'}" data-frame="${f.id}" aria-pressed="${c.frame===f.id}" ${unlocked?'':'disabled'}>${avatarBadge(p,{frame:f.id})}<strong>${f.name}</strong><small>${c.frame===f.id?'Equipped':unlocked?'Unlocked':`${count} / ${f.need} courses`}</small></button>`;}).join('')}</div></section><p class="wardrobe-footnote">Cosmetic rewards never change academic completion, mastery or gate requirements.</p>`;
+export function wardrobeMarkup(p,{unrestricted=false}={}){
+ const c=equippedCosmetics(p,{unrestricted}),count=completedCount(p);
+ return `<div class="wardrobe-heading"><span class="wardrobe-kicker">A LITTLE PIECE OF YOUR JOURNEY</span><h2 id="wardrobe-title">Your sky companion</h2><p>Choose a companion. Earn a frame as your course stars light up.</p></div><div class="wardrobe-preview">${avatarBadge(p,{unrestricted})}<span>${AVATARS.find(a=>a.id===c.avatar).name}<small>${FRAMES.find(f=>f.id===c.frame).name} frame</small></span></div><section class="wardrobe-section" aria-label="Avatars"><h3>Companions</h3><div class="cosmetic-grid">${AVATARS.map(a=>`<button class="cosmetic-option ${c.avatar===a.id?'equipped':''}" data-avatar="${a.id}" aria-pressed="${c.avatar===a.id}">${avatarBadge(p,{avatar:a.id,frame:'wanderer'})}<strong>${a.name}</strong><small>${c.avatar===a.id?'Equipped':'Available'}</small></button>`).join('')}</div></section><section class="wardrobe-section" aria-label="Avatar frames"><h3>Frames <span>${count} courses completed</span></h3><div class="cosmetic-grid">${FRAMES.map(f=>{const unlocked=unrestricted||count>=f.need;return `<button class="cosmetic-option ${c.frame===f.id?'equipped':''} ${unlocked?'':'cosmetic-locked'}" data-frame="${f.id}" aria-pressed="${c.frame===f.id}" ${unlocked?'':'disabled'}>${avatarBadge(p,{frame:f.id})}<strong>${f.name}</strong><small>${c.frame===f.id?'Equipped':unlocked?'Unlocked':`${count} / ${f.need} courses`}</small></button>`;}).join('')}</div></section><p class="wardrobe-footnote">Cosmetic rewards never change academic completion, mastery or gate requirements.</p>`;
 }

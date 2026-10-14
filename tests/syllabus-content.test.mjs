@@ -1,3 +1,4 @@
+import {changeQuizRows} from '../src/quiz-scores.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {JSDOM} from 'jsdom';
@@ -21,7 +22,8 @@ test('19 supplied courses have compact sourced content, valid grading and suppor
 test('reviewed math and CE passing targets differ and raw-score inputs do not guess exam maxima',()=>{
  assert.equal(SYLLABUS_GRADING.FNDMATH.passingPercentage,55);assert.equal(SYLLABUS_GRADING.CALENG3.passingPercentage,55);assert.equal(SYLLABUS_GRADING.CERCDES.passingPercentage,60);
  const dom=new JSDOM(renderGradeCalculator(COURSE_BY_ID.FNDMATH)),form=dom.window.document.querySelector('form');
- for(const [id,value] of Object.entries({quizzes:55,activities:70,teacher:80,final:0,final_max:50}))form.elements.namedItem(id).value=value;
+ changeQuizRows(form,SYLLABUS_GRADING.FNDMATH.components[0]);
+ for(const [id,value] of Object.entries({quiz_quizzes_0_score:55,quiz_quizzes_0_max:100,activities:70,teacher:80,final:0,final_max:50}))form.elements.namedItem(id).value=value;
  const values=gradeFormValues(form,SYLLABUS_GRADING.FNDMATH),result=gradeForecast(values.scheme,values.scores,values.target);
  assert.equal(result.needed,22);assert.equal(result.target.max,50);assert.match(gradeForecastText(result),/22\/50/);
  assert.ok(gradeForecast(values.scheme,{...values.scores,final:22},'final').currentTotal>=55);assert.ok(gradeForecast(values.scheme,{...values.scores,final:21},'final').currentTotal<55);

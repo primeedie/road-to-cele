@@ -30,7 +30,7 @@ Descriptions are paraphrased; topic rundowns contain five to seven groups. Lectu
 | CERCDES | 60% | Quiz category grade 60%; Final examination 30%; Fourth-hour activity category 5%; Teacher’s evaluation 5% | Term 2 AY 2025–2026 / updated December 2025 |
 | LBYCV4B | 60% | Laboratory-report category average: adjusted individual grades 50%; QS forum synopsis 10%; Term-end project 40% | Updated May 2026 |
 
-Category grades must follow the instructor’s aggregation method, including peer evaluation, penalties and confirmed bonuses. Assessment maxima are not assumed to be out of 50: students can enter the actual total. Required-score rounding is a planning choice, not an official grading-rounding rule. Numeric results do not record academic completion.
+Quiz percentages are averaged equally from individual earned/perfect entries. Final Exam uses a single earned/perfect pair and accepts awarded bonus points. Other category averages are entered out of 100 after instructor-confirmed adjustments. Assessment maxima are not assumed to be out of 50: students can enter the actual total. Required-score rounding is a planning choice, not an official grading-rounding rule. Numeric results do not record academic completion.
 
 ## Limited upload
 

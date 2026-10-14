@@ -249,11 +249,11 @@ test('actual website interactions keep exploration separate from academic progre
  });
  await t.test('syllabus calculator updates raw-score forecasts, restores drafts and never records academic progress',()=>{
   const before=localStorage.getItem(STORAGE_KEY);click('[data-course="FNDMATH"]');click('[data-course-section="3"]');
-  let form=$('#course-card [data-grade-course]');assert.ok(form);
-  for(const [id,value] of Object.entries({quizzes:55,activities:70,teacher:80,final_max:50,final:0})){form.elements.namedItem(id).value=value;form.elements.namedItem(id).dispatchEvent(new w.Event('input',{bubbles:true}));}
-  assert.match(form.querySelector('output').textContent,/below.*55%.*22\/50/);
-  click('[data-course-section="1"]');click('[data-course-section="3"]');form=$('#course-card [data-grade-course]');assert.equal(form.elements.namedItem('final_max').value,'50');assert.equal(form.elements.namedItem('quizzes').value,'55');assert.match(form.querySelector('output').textContent,/22\/50/);
-  form.elements.namedItem('final').value=22;form.elements.namedItem('final').dispatchEvent(new w.Event('input',{bubbles:true}));assert.match(form.querySelector('output').textContent,/meets the 55%/);
+  let form=$('#course-card [data-grade-course]');assert.ok(form);click('[data-add-quiz="quizzes"]');click('[data-add-quiz="quizzes"]');
+  for(const [id,value] of Object.entries({quiz_quizzes_0_score:50,quiz_quizzes_0_max:100,quiz_quizzes_1_score:60,quiz_quizzes_1_max:100,activities:70,teacher:80,final_max:50,final:0})){form.elements.namedItem(id).value=value;form.elements.namedItem(id).dispatchEvent(new w.Event('input',{bubbles:true}));}
+  assert.match(form.querySelector('.grade-result').textContent,/below.*55%.*22\/50/);
+  click('[data-course-section="1"]');click('[data-course-section="3"]');form=$('#course-card [data-grade-course]');assert.equal(form.elements.namedItem('final_max').value,'50');assert.equal(form.elements.namedItem('quizzes').value,'55.00%');assert.match(form.querySelector('.grade-result').textContent,/22\/50/);
+  form.elements.namedItem('final').value=22;form.elements.namedItem('final').dispatchEvent(new w.Event('input',{bubbles:true}));assert.match(form.querySelector('.grade-result').textContent,/meets the 55%/);
   assert.equal(localStorage.getItem(STORAGE_KEY),before);click('[data-action="close-inspector"]');
  });
  await t.test('completed course chapters stay unlocked with keyboard navigation and preserve progress',()=>{
@@ -311,36 +311,11 @@ test('actual website interactions keep exploration separate from academic progre
   const a=progressSummary(saved()).academic;assert.equal($('#academic-progress').getAttribute('aria-valuenow'),String(a.complete));assert.equal($('#academic-progress').getAttribute('aria-valuemax'),String(a.total));
   click('[data-page="gate"]');assert.match($('#gate-page').textContent,/Unselected specialization branches never block/);assert.ok($('#gate-page button').disabled);assert.match($('#gate-page').textContent,/LOCKED UNTIL CIVINCO/);
  });
- await t.test('reset requires confirmation, preserves progress when canceled, and clears only the app record',()=>{
-  const before=localStorage.getItem(STORAGE_KEY);
-  localStorage.setItem('other-app.setting','keep this');
-  click('[data-page="map"]');click('#reset-progress');
-  assert.equal($('#reset-dialog').open,true);
-  assert.equal(document.activeElement,$('#cancel-reset'));
-  assert.equal(localStorage.getItem(STORAGE_KEY),before);
-  click('#cancel-reset');assert.equal($('#reset-dialog').open,false);
-  assert.equal(localStorage.getItem(STORAGE_KEY),before);
-  assert.equal(document.activeElement,$('#reset-progress'));
-  click('[data-page="journal"]');click('#journal-page [data-action="reset-progress"]');
-  $('#reset-dialog').dispatchEvent(new w.Event('cancel',{cancelable:true}));
-  assert.equal($('#reset-dialog').open,false);assert.equal(localStorage.getItem(STORAGE_KEY),before);
-  click('#journal-page [data-action="reset-progress"]');click('[data-action="confirm-reset"]');
-  assert.deepEqual(saved(),newProgress());
-  assert.equal(localStorage.getItem('other-app.setting'),'keep this');
-  assert.equal($('#reset-dialog').open,false);
-  assert.equal($('#map-page').classList.contains('hidden'),false);
-  assert.equal($('#academic-progress').getAttribute('aria-valuenow'),'0');
-  assert.equal($('.journey-fill').style.width,'0%');
-  assert.equal($('#explore-toggle').getAttribute('aria-pressed'),'false');
-  assert.equal(document.querySelectorAll('.specialization-node').length,0);
-  assert.equal(document.querySelectorAll('.branch-card.current').length,0);
-  assert.equal($('#course-card').open,false);
-  assert.equal($('#connection-card').hidden,true);
-  assert.equal($('#commitment-banner').textContent,'');
-  assert.equal(document.querySelectorAll('.constellation-lit').length,0);
-  assert.match($('#traveler-year').textContent,/Year 1/);
-  assert.match($('#gate-page').textContent,/LOCKED UNTIL CIVINCO/);
-  assert.equal(document.activeElement,$('#reset-progress'));
+ await t.test('students have no reset action and a programmatic reset attempt cannot clear progress',()=>{
+  const before=localStorage.getItem(STORAGE_KEY);click('[data-page="map"]');assert.equal($('#reset-progress').hidden,true);$('#reset-progress').click();assert.equal($('#reset-dialog').open,false);
+  $('#reset-dialog').open=true;click('[data-action="confirm-reset"]');assert.equal(localStorage.getItem(STORAGE_KEY),before);$('#reset-dialog').close();
+  click('[data-page="journal"]');assert.equal($('#journal-page [data-action="reset-progress"]'),null);assert.equal(localStorage.getItem(STORAGE_KEY),before);
  });
+
  dom.window.close();
 });

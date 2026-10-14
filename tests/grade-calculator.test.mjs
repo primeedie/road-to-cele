@@ -28,7 +28,7 @@ test('unsupported syllabus policies and incomplete or malformed schemes fail ins
  assert.throws(()=>gradeForecast(scheme,{work:55},'unknown'));
  assert.equal(Object.keys(COURSE_GRADING_SCHEMES).length,19);
  const pending=renderGradeCalculator(COURSE_BY_ID.CEORIEN);assert.match(pending,/Awaiting course grading scheme/);assert.ok(!pending.includes('<input'));
- const dom=new JSDOM(renderGradeCalculator(COURSE_BY_ID.FNDMATH,{...scheme,source:'<script>bad</script>'}));assert.equal(dom.window.document.querySelector('script'),null);assert.equal(dom.window.document.querySelector('[name="exam"]').max,'50');dom.window.close();
+ const dom=new JSDOM(renderGradeCalculator(COURSE_BY_ID.FNDMATH,{...scheme,source:'<script>bad</script>'}));assert.equal(dom.window.document.querySelector('script'),null);assert.equal(dom.window.document.querySelector('[name="exam"]').max,'100');dom.window.close();
 });
 
 test('lectures put grade calculator fourth and mastery fifth; labs end at their own fourth tab without granting progress',()=>{
