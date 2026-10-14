@@ -8,4 +8,4 @@ Node brightness has three levels: faint and reflective before activation, bright
 
 Lectures have Grade calculator at tab IV and Mastery quiz at V. Labs have four tabs ending at Grade calculator, with no mastery quiz. Populate grading schemes only from supplied syllabi; verify weights, passing thresholds, rounding and additional passing conditions. See GRADING_SETUP.md. Batch ID 119–128 is self-reported account profile metadata and does not change academic standing or the ID122 curriculum rules.
 
-Use the site's uploaded font throughout the course panel. Show descriptions before activation; tabs II–V unlock only when that course's academic record is ACTIVE or COMPLETED. Omit source citations from the student panel while retaining provenance internally.
+Use the self-hosted IBM Plex Mono font in the course panel to match the owner's monospaced reference; justify its paragraphs. Scroll the title and metadata away while keeping the course code and tabs pinned. Show descriptions before activation; tabs II–V unlock only when that course's academic record is ACTIVE or COMPLETED. Omit source citations from the student panel while retaining provenance internally.

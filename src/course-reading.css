@@ -1,12 +1,14 @@
 /* The course file reads like a page: quiet metadata, labelled navigation,
    comfortable body text, and supporting material available on demand. */
-#course-card { --reading-type:var(--atlas-type) }
+@font-face { font-family:'CELE Plex Mono';src:url('assets/fonts/ibm-plex-mono/IBMPlexMono-Regular.ttf') format('truetype');font-style:normal;font-weight:400;font-display:swap }
+@font-face { font-family:'CELE Plex Mono';src:url('assets/fonts/ibm-plex-mono/IBMPlexMono-SemiBold.ttf') format('truetype');font-style:normal;font-weight:600;font-display:swap }
+#course-card { --reading-type:'CELE Plex Mono','SFMono-Regular',Consolas,monospace;font-family:var(--reading-type) }
 #course-card.course-dossier { background:#000 }
 #course-card .dossier-identity { padding:20px 24px 18px }
 #course-card .dossier-path { font:11px/1.5 var(--reading-type);letter-spacing:.06em;color:#aaa }
 #course-card .dossier-heading { padding-top:10px }
 #course-card .dossier-heading .course-code { padding-right:44px;font-size:14px }
-#course-card .dossier-heading h2 { font-size:23px;line-height:1.3;margin:8px 0 12px;max-width:none;overflow-wrap:break-word }
+#course-card .dossier-heading h2 { font:600 21px/1.4 var(--reading-type);margin:8px 0 12px;max-width:none;overflow-wrap:break-word }
 #course-card .course-meta { font:13px/1.5 var(--reading-type);flex-wrap:wrap;gap:6px 14px }
 #course-card .course-status { font:12px/1.4 var(--reading-type);margin-top:10px;background:none;border:0;padding:0;color:#d1d1d1 }
 #course-card .dossier-close { min-width:44px;min-height:44px;right:12px;top:10px;border:0;border-radius:4px }
@@ -22,7 +24,7 @@
 #course-card .dossier-reading { padding:20px 24px 16px }
 #course-card .dossier-section-heading { border:0;padding:0 0 16px }
 #course-card .dossier-section-heading>span { display:none }
-#course-card .dossier-section-heading h3 { font-size:18px;line-height:1.4 }
+#course-card .dossier-section-heading h3 { font:600 17px/1.5 var(--reading-type) }
 #course-card .dossier-scroll { padding:0 5px 20px 0;scrollbar-color:#555 transparent;scroll-padding-top:12px }
 #course-card #course-section { font:15px/1.65 var(--reading-type);overflow-wrap:break-word }
 #course-card .course-content { font:15px/1.65 var(--reading-type);color:#ddd }
@@ -80,9 +82,25 @@
 #course-card .grade-requirement { font:14px/1.6 var(--reading-type);gap:8px;margin:18px 0 }
 #course-card .grade-requirement small { font:12px/1.5 var(--reading-type);color:#aaa }
 #course-card .grade-policy { font:13px/1.65 var(--reading-type);color:#bbb }
+/* One native scroll surface lets the header leave naturally, without a resize
+   listener or scroll-position compensation. The code and tabs remain sticky. */
+#course-card .dossier-scroll { padding:0;min-height:0;flex:1;overflow-y:auto;scroll-padding-top:120px }
+#course-card .dossier-code-bar { position:sticky;top:0;z-index:2;height:48px;display:flex;align-items:center;padding:0 64px 0 24px;background:#000 }
+#course-card .dossier-code-bar .course-code { font:600 14px/1.5 var(--reading-type);letter-spacing:.04em;color:#eee }
+#course-card .dossier-close { top:2px;z-index:3;font-family:var(--reading-type);background:#000 }
+#course-card .dossier-identity { padding:4px 24px 18px }
+#course-card .dossier-heading { padding-top:2px }
+#course-card .dossier-tabs { position:sticky;top:48px;z-index:2;background:#000 }
+#course-card .dossier-reading { display:block;flex:none;min-height:auto;padding:20px 24px 28px }
+#course-card .dossier-footer { padding:14px 24px 16px;background:#000 }
+#course-card :is(h4,.reward-return) { font-family:var(--reading-type) }
+#course-card .completion-reward p { font:13px/1.6 var(--reading-type) }
+#course-card p,#course-card .course-topic-list span,#course-card .dossier-key dd,#course-card .grade-result { text-align:justify;text-align-last:left;hyphens:auto }
 @media(max-width:760px) {
  #course-card.course-dossier,body.tree-expanded #course-card { height:85dvh }
- #course-card .dossier-identity { padding:18px 20px 14px }
- #course-card .dossier-heading h2 { font-size:21px;margin:7px 0 10px }
- #course-card .dossier-reading { padding:18px 20px max(16px,env(safe-area-inset-bottom)) }
+ #course-card .dossier-code-bar { padding-left:20px }
+ #course-card .dossier-identity { padding:4px 20px 14px }
+ #course-card .dossier-heading h2 { font-size:19px;margin:7px 0 10px }
+ #course-card .dossier-reading { padding:18px 20px 24px }
+ #course-card .dossier-footer { padding:14px 20px max(16px,env(safe-area-inset-bottom)) }
 }
