@@ -18,13 +18,13 @@ export function connectionCurve(start,end){
 }
 export function attachConstellationRotation(viewport,button,{requestFrame,cancelFrame}={}){
  const doc=viewport.ownerDocument,win=doc.defaultView,query=win.matchMedia?.('(prefers-reduced-motion: reduce)');
- const frameInterval=win.matchMedia?.('(pointer: coarse)')?.matches?100:50;
+ const mobile=win.matchMedia?.('(max-width: 760px), (pointer: coarse)'),frameInterval=50;
  requestFrame??=fn=>win.requestAnimationFrame(fn);cancelFrame??=id=>win.cancelAnimationFrame(id);
  let enabled=!!query&&!query.matches,frame=null,last=null,painted=0,map=null,clusters=[],links=[],nodes=new Map(),positions={},hovered=null,pointerDown=false,blurred=false;
  const clocks=new Map();
- function paintButton(){button.disabled=!!query?.matches;button.setAttribute('aria-pressed',String(enabled));button.setAttribute('aria-label',enabled?'Pause constellation rotation':'Start constellation rotation');button.title=query?.matches?'Rotation disabled by reduced-motion preference':enabled?'Pause constellation rotation':'Start constellation rotation';doc.body.classList.toggle('constellations-rotating',enabled&&!query?.matches);}
+ function paintButton(){const running=enabled&&!query?.matches&&!mobile?.matches;button.hidden=!!mobile?.matches;button.disabled=!!query?.matches||!!mobile?.matches;button.setAttribute('aria-pressed',String(running));button.setAttribute('aria-label',running?'Pause constellation rotation':'Start constellation rotation');button.title=mobile?.matches?'Rotation disabled on mobile':query?.matches?'Rotation disabled by reduced-motion preference':running?'Pause constellation rotation':'Start constellation rotation';doc.body.classList.toggle('constellations-rotating',running);}
  function cancel(){if(frame!==null)cancelFrame(frame);frame=null;last=null;}
- function paused(){return !enabled||query?.matches||doc.hidden||blurred||pointerDown||hovered||viewport.classList.contains('dragging')||viewport.classList.contains('zooming')||viewport.classList.contains('tracing-path')||!!doc.querySelector('dialog[open]')||!!doc.querySelector('#map-page.hidden');}
+ function paused(){return mobile?.matches||!enabled||query?.matches||doc.hidden||blurred||pointerDown||hovered||viewport.classList.contains('dragging')||viewport.classList.contains('zooming')||viewport.classList.contains('tracing-path')||!!doc.querySelector('dialog[open]')||!!doc.querySelector('#map-page.hidden');}
  function wake(){if(!paused()&&map&&frame===null)frame=requestFrame(tick);}
  function updateCluster(cluster){
   const clock=clocks.get(cluster.key),angle=constellationAngle(clock.time);
@@ -49,7 +49,9 @@ export function attachConstellationRotation(viewport,button,{requestFrame,cancel
   wake();
  }
  function setMap(next){
-  map=next;positions={...map.positions};nodes=new Map([...viewport.querySelectorAll('.course-node')].map(n=>[n.dataset.course,n]));
+  map=next;positions={...map.positions};
+  if(mobile?.matches){cancel();clusters=[];links=[];nodes.clear();return;}
+  nodes=new Map([...viewport.querySelectorAll('.course-node')].map(n=>[n.dataset.course,n]));
   const outlines=[...viewport.querySelectorAll('.sky-outline')];
   const source=[...map.charts.map(({chart,term,label})=>({chart,label,key:'term-'+term,courses:map.courses.filter(c=>!c.specialization&&c.term===term),heading:viewport.querySelector('[data-term="'+term+'"]')})),...(map.branchChart?[{chart:map.branchChart,label:map.branchLabel,key:'branch-'+map.courses.find(c=>c.specialization)?.specialization,courses:map.courses.filter(c=>c.specialization),heading:viewport.querySelector('.specialization-heading')}]:[])];
   clusters=source.map((c,index)=>({...c,index,svg:outlines[index],trails:[...outlines[index].querySelectorAll('.sky-trails polyline,.sky-plane-shadow polyline')],stars:[...outlines[index].querySelectorAll('.catalog-stars circle,.sky-plane-shadow circle')],localLights:[...outlines[index].querySelectorAll('.local-light-segment,.local-light-gradient')]}));
@@ -59,7 +61,8 @@ export function attachConstellationRotation(viewport,button,{requestFrame,cancel
   if(enabled&&!query?.matches)draw();wake();
  }
  function state(){if(paused())cancel();else wake();}
- function toggle(){enabled=!enabled;paintButton();state();}
+ function toggle(){if(mobile?.matches||query?.matches)return;enabled=!enabled;paintButton();state();}
+ function device(){cancel();if(mobile.matches&&map){for(const clock of clocks.values())clock.time=0;draw();}paintButton();if(map)setMap(map);state();}
  function preference(){if(query.matches){enabled=false;paintButton();cancel();if(map){for(const clock of clocks.values())clock.time=0;draw();}}else{paintButton();state();}}
  function hover(event){
   const node=event.target.closest?.('.course-node'),path=event.target.closest?.('[data-connection]');
@@ -73,7 +76,7 @@ export function attachConstellationRotation(viewport,button,{requestFrame,cancel
  observer?.observe(viewport,{attributes:true,attributeFilter:['class']});
  for(const target of doc.querySelectorAll('dialog,#map-page'))observer?.observe(target,{attributes:true,attributeFilter:['open','class']});
  button.addEventListener('click',toggle);viewport.addEventListener('pointerover',hover);viewport.addEventListener('focusin',hover);viewport.addEventListener('pointerleave',leave);viewport.addEventListener('focusout',leave);viewport.addEventListener('pointerdown',down);
- win.addEventListener('pointerup',up);win.addEventListener('pointercancel',up);win.addEventListener('blur',blur);win.addEventListener('focus',focus);doc.addEventListener('visibilitychange',state);query?.addEventListener('change',preference);
+ win.addEventListener('pointerup',up);win.addEventListener('pointercancel',up);win.addEventListener('blur',blur);win.addEventListener('focus',focus);doc.addEventListener('visibilitychange',state);query?.addEventListener('change',preference);mobile?.addEventListener('change',device);
  paintButton();
- return {setMap,getPosition:id=>positions[id]?{...positions[id]}:null,destroy(){cancel();observer?.disconnect();button.removeEventListener('click',toggle);viewport.removeEventListener('pointerover',hover);viewport.removeEventListener('focusin',hover);viewport.removeEventListener('pointerleave',leave);viewport.removeEventListener('focusout',leave);viewport.removeEventListener('pointerdown',down);win.removeEventListener('pointerup',up);win.removeEventListener('pointercancel',up);win.removeEventListener('blur',blur);win.removeEventListener('focus',focus);doc.removeEventListener('visibilitychange',state);query?.removeEventListener('change',preference);doc.body.classList.remove('constellations-rotating');}};
+ return {setMap,getPosition:id=>positions[id]?{...positions[id]}:null,destroy(){cancel();observer?.disconnect();button.removeEventListener('click',toggle);viewport.removeEventListener('pointerover',hover);viewport.removeEventListener('focusin',hover);viewport.removeEventListener('pointerleave',leave);viewport.removeEventListener('focusout',leave);viewport.removeEventListener('pointerdown',down);win.removeEventListener('pointerup',up);win.removeEventListener('pointercancel',up);win.removeEventListener('blur',blur);win.removeEventListener('focus',focus);doc.removeEventListener('visibilitychange',state);query?.removeEventListener('change',preference);mobile?.removeEventListener('change',device);doc.body.classList.remove('constellations-rotating');}};
 }

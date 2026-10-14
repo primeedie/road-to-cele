@@ -28,7 +28,7 @@ test('rotation keeps courses on catalog anchors in every shared and specialist c
 test('rotation updates visible and clickable paths together, pauses interaction, and honors reduced motion',async()=>{
  const map=createSkyMap(),cluster=map.charts[0],courses=map.courses.filter(c=>c.term===1),nodes=courses.map(c=>`<button class="course-node" data-course="${c.id}" style="left:${map.positions[c.id].x}px;top:${map.positions[c.id].y}px"></button>`).join('');
  const dom=new JSDOM(`<button id="rotate"></button><section id="map-page"><div id="map">${drawConstellation(cluster.chart,{lights:[{anchor:map.positions[courses[0].id].anchorIndex,strength:1}],scope:courses[0].id})}<div data-term="1"></div>${nodes}<svg class="graph-lines"></svg></div></section><dialog></dialog>`,{pretendToBeVisual:true,url:'https://road.test/'}),win=dom.window,doc=win.document,viewport=doc.querySelector('#map'),button=doc.querySelector('#rotate');
- let reduced=false,preference;win.matchMedia=()=>({get matches(){return reduced;},addEventListener:(event,fn)=>{preference=fn;},removeEventListener:()=>{}});
+ let reduced=false,preference;win.matchMedia=media=>({get matches(){return media.includes('prefers-reduced-motion')&&reduced;},addEventListener:(event,fn)=>{if(media.includes('prefers-reduced-motion'))preference=fn;},removeEventListener:()=>{}});
  let scheduled=null;const rotation=attachConstellationRotation(viewport,button,{requestFrame:fn=>{scheduled=fn;return 1;},cancelFrame:()=>{scheduled=null;}});
  // Keep a small graph with a dependency joining these two stars for this runtime test.
  const [a,b]=courses.slice(0,2);const localMap={...map,courses:[{...a,hardPrerequisites:[],softPrerequisites:[],corequisites:[]},{...b,hardPrerequisites:[a.id],softPrerequisites:[],corequisites:[]}],charts:[cluster]};
@@ -48,5 +48,36 @@ test('rotation updates visible and clickable paths together, pauses interaction,
   button.click();assert.equal(scheduled,null);assert.equal(button.getAttribute('aria-pressed'),'false');button.click();assert.ok(scheduled);
   doc.querySelector('dialog').setAttribute('open','');await Promise.resolve();assert.equal(scheduled,null);doc.querySelector('dialog').removeAttribute('open');await Promise.resolve();assert.ok(scheduled);
   reduced=true;preference();assert.equal(scheduled,null);assert.equal(button.disabled,true);assert.equal(node.style.left,map.positions[a.id].x+'px');assert.equal(win.localStorage.length,0);
+ }finally{rotation.destroy();win.close();}
+});
+
+test('mobile maps have no rotation frames or animated body state, including after rebuilding the map',()=>{
+ const dom=new JSDOM('<button id="rotate"></button><section id="map-page"><div id="map"><button class="course-node" data-course="TEST" style="left:20px;top:40px"></button></div></section>',{pretendToBeVisual:true,url:'https://road.test/'}),win=dom.window,doc=win.document,viewport=doc.querySelector('#map'),button=doc.querySelector('#rotate');
+ win.matchMedia=media=>({matches:media==='(max-width: 760px), (pointer: coarse)',addEventListener(){},removeEventListener(){}});
+ let frames=0,scans=0;const original=viewport.querySelectorAll;viewport.querySelectorAll=function(...args){scans++;return original.apply(this,args);};
+ const rotation=attachConstellationRotation(viewport,button,{requestFrame:()=>{frames++;return 1;},cancelFrame(){}});
+ try{
+  rotation.setMap({positions:{TEST:{x:20,y:40}}});
+  assert.equal(button.hidden,true);assert.equal(button.disabled,true);assert.equal(button.getAttribute('aria-pressed'),'false');assert.equal(doc.body.classList.contains('constellations-rotating'),false);
+  button.dispatchEvent(new win.Event('click'));win.dispatchEvent(new win.Event('focus'));win.dispatchEvent(new win.Event('pointerup'));
+  rotation.setMap({positions:{TEST:{x:30,y:50}}});
+  assert.deepEqual(rotation.getPosition('TEST'),{x:30,y:50});assert.equal(frames,0);assert.equal(scans,0);assert.equal(win.localStorage.length,0);
+ }finally{rotation.destroy();win.close();}
+});
+
+test('switching to mobile cancels desktop rotation and restores aligned static anchors; returning to desktop restores the user choice',()=>{
+ const map=createSkyMap(),cluster=map.charts[0],courses=map.courses.filter(c=>c.term===1),localMap={...map,courses,charts:[cluster]};
+ const nodes=courses.map(c=>`<button class="course-node" data-course="${c.id}" style="left:${map.positions[c.id].x}px;top:${map.positions[c.id].y}px"></button>`).join('');
+ const dom=new JSDOM(`<button id="rotate"></button><section id="map-page"><div id="map">${drawConstellation(cluster.chart)}${nodes}<svg class="graph-lines"></svg></div></section>`,{pretendToBeVisual:true}),win=dom.window,doc=win.document,viewport=doc.querySelector('#map'),button=doc.querySelector('#rotate');
+ let mobile=false,changed,scheduled=null;
+ win.matchMedia=media=>({get matches(){return !media.includes('prefers-reduced-motion')&&mobile;},addEventListener:(_,fn)=>{if(!media.includes('prefers-reduced-motion'))changed=fn;},removeEventListener(){}});
+ const rotation=attachConstellationRotation(viewport,button,{requestFrame:fn=>{scheduled=fn;return 1;},cancelFrame:()=>{scheduled=null;}});
+ const step=t=>{const fn=scheduled;scheduled=null;fn(t);},node=viewport.querySelector('.course-node');
+ try{
+  rotation.setMap(localMap);step(100);step(200);assert.notEqual(node.style.left,map.positions[courses[0].id].x+'px');
+  mobile=true;changed();assert.equal(scheduled,null);assert.equal(button.hidden,true);assert.equal(doc.body.classList.contains('constellations-rotating'),false);assert.equal(node.style.left,map.positions[courses[0].id].x+'px');
+  assert.equal(viewport.querySelector('.sky-trails polyline').getAttribute('points'),cluster.chart.paths[0].map(i=>`${cluster.chart.vertices[i].x},${cluster.chart.vertices[i].y}`).join(' '));
+  mobile=false;changed();assert.equal(button.hidden,false);assert.ok(scheduled);assert.equal(button.getAttribute('aria-pressed'),'true');
+  button.click();assert.equal(scheduled,null);mobile=true;changed();mobile=false;changed();assert.equal(scheduled,null);assert.equal(button.getAttribute('aria-pressed'),'false');
  }finally{rotation.destroy();win.close();}
 });

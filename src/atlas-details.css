@@ -78,4 +78,9 @@
  .sky-backdrop,.map-viewport::before,.map-viewport::after,.motion-stars { transform:none;transition:none }
  .motion-stars i { animation:none }
 }
+#rotate-sky[hidden] { display:none }
+@media(max-width:760px),(pointer:coarse) {
+ #rotate-sky { display:none }
+ .constellations-rotating .dossier-sky svg { animation:none }
+}
 @media(prefers-reduced-motion:reduce) { .civinco-portal :is(.portal-orbits,.portal-infall,.portal-stream,.portal-front-stream,.portal-lens-texture,.portal-lens-arcs) { animation:none }.portal-infall { display:none }.portal-stream,.portal-front-stream,.portal-lens-arcs { stroke-dasharray:none }.sky-comet { display:none } }
