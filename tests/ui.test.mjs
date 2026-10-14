@@ -108,6 +108,28 @@ test('actual website interactions keep exploration separate from academic progre
   assert.equal(localStorage.getItem(STORAGE_KEY),null);assert.equal(captures.size,0);
   click('[data-year="1"]');
  });
+ await t.test('mobile pinch paints the latest finger pair once and defers scene styling until release',()=>{
+  const viewport=$('#map-viewport'),world=$('#world'),before=localStorage.getItem(STORAGE_KEY);
+  click('#fit-map');
+  const originalFrame=w.requestAnimationFrame,originalCancel=w.cancelAnimationFrame,originalRect=viewport.getBoundingClientRect,originalSet=viewport.style.setProperty;
+  const frames=new Map();let next=0,reads=0,sceneStyles=0;
+  w.requestAnimationFrame=fn=>{frames.set(++next,fn);return next;};w.cancelAnimationFrame=id=>frames.delete(id);
+  viewport.getBoundingClientRect=()=>{reads++;return originalRect.call(viewport);};
+  viewport.style.setProperty=function(name,value){if(/^--(chart|local|active-star|completed-star|star-edge)/.test(name))sceneStyles++;return originalSet.call(this,name,value);};
+  const pointer=(type,id,x,y)=>{const event=new w.MouseEvent(type,{bubbles:true,cancelable:true,button:0,clientX:x,clientY:y});Object.defineProperties(event,{pointerId:{value:id},pointerType:{value:'touch'},isPrimary:{value:id===1}});viewport.dispatchEvent(event);};
+  try{
+   pointer('pointerdown',1,250,200);pointer('pointerdown',2,350,200);reads=0;sceneStyles=0;
+   const pose=world.style.transform;
+   for(let i=1;i<=200;i++){pointer('pointermove',1,250-i/8,200+i/20);pointer('pointermove',2,350+i/8,200+i/20);}
+   assert.equal(world.style.transform,pose);assert.equal(frames.size,1);assert.equal(reads,0);assert.equal(sceneStyles,0);
+   const callbacks=[...frames.values()];frames.clear();callbacks.forEach(fn=>fn(16));
+   assert.notEqual(world.style.transform,pose);assert.equal(frames.size,0);assert.equal(reads,0);assert.equal(sceneStyles,0);
+   pointer('pointerup',2,375,210);pointer('pointerup',1,225,210);
+   assert.equal(viewport.classList.contains('dragging'),false);assert.equal(frames.size,0);assert.ok(sceneStyles>0);
+   assert.equal(localStorage.getItem(STORAGE_KEY),before);
+  }finally{w.requestAnimationFrame=originalFrame;w.cancelAnimationFrame=originalCancel;viewport.getBoundingClientRect=originalRect;viewport.style.setProperty=originalSet;}
+  click('[data-year="1"]');
+ });
  await t.test('Roman numeral course chapters are inspectable placeholders with keyboard navigation',()=>{
   click('[data-course="FNDMATH"]');
   assert.equal($('#course-card').open,true);

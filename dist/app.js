@@ -6,7 +6,7 @@ import { attachBackdropDismiss } from './dialog-dismiss.mjs';
 import { BRANCH_CONSTELLATIONS, SKY_NAMES, NODE_GROUND_X, NODE_GROUND_Y, drawConstellation, starBadge } from './sky-layout.mjs';
 import { createSkyMap } from './map-curriculum.mjs';
 import { skyAccent } from './sky-palette.mjs';
-import { constrainCamera, overviewCamera, resizeCamera } from './map-camera.mjs';
+import { constrainCamera, overviewCamera, resizeCamera, pinchCamera } from './map-camera.mjs';
 import { courseSections, renderCoursePanel } from './course-panel.mjs';
 import { attachMapPan } from './map-pan.mjs';
 import { createFramePainter } from './frame-painter.mjs';
@@ -160,7 +160,10 @@ function applyTransform(){
 function paintCamera(){
  cameraWorld.style.transform=`translate(${view.x}px,${view.y}px) scale(${view.scale})`;
  const sky=viewport;
- if(lastSkyScale!==view.scale){
+ const moving=sky.classList.contains('dragging')||sky.classList.contains('zooming');
+ // Keep the scene's inherited SVG styles stable during a gesture. Only the
+ // camera transform changes; refresh sharpness once the fingers come to rest.
+ if(!moving&&lastSkyScale!==view.scale){
   const overview=Math.max(0,Math.min(1,(.4-view.scale)/.25));
   sky.style.setProperty('--chart-stroke',Math.max(1.8,.4/view.scale).toFixed(3)+'px');
   sky.style.setProperty('--chart-visibility',(.3-.06*overview).toFixed(3));
@@ -170,7 +173,7 @@ function paintCamera(){
   sky.style.setProperty('--star-edge',Math.max(1.2,.3/view.scale).toFixed(3)+'px');
   lastSkyScale=view.scale;
  }
- if(!sky.classList.contains('dragging')&&!sky.classList.contains('zooming')){
+ if(!moving){
  sky.style.setProperty('--far-x',Math.tanh(view.x/1100)*45+'px');
  sky.style.setProperty('--far-y',Math.tanh(view.y/1800)*45+'px');
  sky.style.setProperty('--near-x',Math.tanh(view.x/1100)*85+'px');
@@ -228,12 +231,9 @@ function travelToYear(year){
 }
 
 
-function zoom(factor,cx,cy,direct=false){
+function zoom(factor,cx,cy){
  stopMapTravel();const r=lastViewport;cx??=r.width/2;cy??=r.height/2;
- if(!direct){cameraPainter.cancel();zoomController.zoom(factor,cx,cy);return;}
- zoomController.cancel();const next=Math.max(Math.min(.28,overviewCamera(r,mapBounds).scale),Math.min(1.8,view.scale*factor)),ratio=next/view.scale;
- view.x=cx-(cx-view.x)*ratio;view.y=cy-(cy-view.y)*ratio;view.scale=next;
- Object.assign(view,constrainCamera(view,r,mapBounds));cameraPainter.schedule();
+ cameraPainter.cancel();zoomController.zoom(factor,cx,cy);
 }
 function milestone(){const visible=progress.academicYear>=3&&!selected(progress);$('#commitment-banner').innerHTML=visible?'<div class="commitment-banner"><div><strong>Year III · Choose your calling</strong><p>Shared subjects stay available while you await acceptance.</p></div><button class="primary" data-action="confirm">Confirm specialization →</button></div>':'';}
 function journal(){
@@ -381,7 +381,13 @@ zoomPreference?.addEventListener('change',()=>{if(zoomPreference.matches)zoomCon
 const skyMotion=attachSkyMotion(viewport);
 attachComets(viewport);
 constellationRotation=attachConstellationRotation(viewport,$('#rotate-sky'));
-attachMapPan(viewport,{onZoom:(factor,x,y)=>zoom(factor,x,y,true),getPosition:()=>{stopMapTravel();return {x:view.x,y:view.y};},onPan:position=>{Object.assign(view,constrainCamera({...view,...position},lastViewport,mapBounds));cameraPainter.schedule();return {x:view.x,y:view.y};},onEnd:()=>cameraPainter.flush()});
+attachMapPan(viewport,{
+ requestFrame:fn=>window.requestAnimationFrame(fn),cancelFrame:id=>window.cancelAnimationFrame(id),getViewport:()=>{lastViewport=viewport.getBoundingClientRect();return lastViewport;},
+ getPosition:()=>{stopMapTravel();return {x:view.x,y:view.y};},
+ onPan:position=>{Object.assign(view,constrainCamera({...view,...position},lastViewport,mapBounds));return {x:view.x,y:view.y};},
+ onPinch:gesture=>{const limits={min:Math.min(.28,overviewCamera(lastViewport,mapBounds).scale),max:1.8};Object.assign(view,constrainCamera(pinchCamera(view,gesture,limits),lastViewport,mapBounds));},
+ onFrame:()=>cameraPainter.flush(),onEnd:()=>cameraPainter.flush()
+});
 viewport.addEventListener('wheel',e=>{e.preventDefault();const r=lastViewport;zoom(wheelZoomFactor(e,r.height),e.clientX-r.left,e.clientY-r.top);},{passive:false});
 let lastViewport=viewport.getBoundingClientRect();
 function resizeMap(){

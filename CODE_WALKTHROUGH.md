@@ -59,6 +59,8 @@ The constellation outlines use attributed catalog geometry. Courses are assigned
 
 The map has world coordinates. Panning and zooming transform the world container, while the course identities and records stay the same. Pan limits use the populated map regions. Zoom uses `requestAnimationFrame` and elapsed-time easing; pointer anchoring keeps the location under the cursor steady.
 
+Touch gestures use the latest finger positions once per screen frame. Pinching changes scale and translation together so the sky point under the midpoint follows the fingers, even at a zoom limit. The gesture caches screen bounds at the start and flushes pending movement before release. Scale-dependent line/star styling updates when the gesture ends, while mobile background layers stay still to reduce rendering work.
+
 Rotation updates the outlines, nodes and prerequisite hit areas together through a bounded 45-degree loop. It pauses for interaction and reduced motion. The black hole uses small local SVG layers, curved trails and inward particles.
 
 For overview readability, line width increases as camera scale decreases: roughly `world stroke width = desired screen width / zoom scale`. Active/completed stars also gain a modest overview size boost. Completion is brightest, activation is intermediate, and unactivated stars stay faint. Activation illuminates only nearby line segments, fading out at their midpoint.

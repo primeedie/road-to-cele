@@ -1,5 +1,12 @@
 import {NODE_GROUND_X,NODE_GROUND_Y} from './sky-layout.mjs';
 
+// Zoom and translation are one operation: the point under the old midpoint
+// follows the new midpoint, including when the scale reaches its limit.
+export function pinchCamera(camera,{factor,from,to},{min,max}){
+ const scale=Math.max(min,Math.min(max,camera.scale*factor)),ratio=scale/camera.scale;
+ return {scale,x:to.x-(from.x-camera.x)*ratio,y:to.y-(from.y-camera.y)*ratio};
+}
+
 // Retain the same point in the sky when the available screen space changes.
 export function resizeCamera(camera,previous,next){
  if(!previous?.width||!previous.height||!next.width||!next.height)return {...camera};

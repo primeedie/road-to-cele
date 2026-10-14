@@ -9,7 +9,7 @@ export function attachOverviewTooltip(viewport,{getCourse,getScale,requestFrame,
  card.id='overview-course-tooltip';card.className='overview-tooltip';card.role='tooltip';card.hidden=true;viewport.append(card);
  requestFrame??=fn=>win.requestAnimationFrame(fn);cancelFrame??=id=>win.cancelAnimationFrame(id);
  let node=null,point=null,frame=null,dismissed=false;
- function hide(clear=false){card.hidden=true;if(node?.getAttribute('aria-describedby')===card.id)node.removeAttribute('aria-describedby');if(clear){node=null;point=null;dismissed=false;}}
+ function hide(clear=false){if(!card.hidden)card.hidden=true;if(node?.getAttribute('aria-describedby')===card.id)node.removeAttribute('aria-describedby');if(clear){node=null;point=null;dismissed=false;}}
  function position(){
   frame=null;if(card.hidden||!node)return;
   const r=viewport.getBoundingClientRect(),n=node.getBoundingClientRect(),p=point||{x:n.left+n.width/2,y:n.top+n.height/2};
@@ -28,6 +28,7 @@ export function attachOverviewTooltip(viewport,{getCourse,getScale,requestFrame,
   if(frame===null)frame=requestFrame(position);
  }
  function inspect(e){
+  if(e.pointerType==='touch'||e.buttons||viewport.matches('.dragging,.zooming')){hide(true);return;}
   const next=e.target.closest?.('.course-node');if(next!==node){hide(true);node=next;}
   if(!node)return;
   point=e.type==='focusin'?null:{x:e.clientX,y:e.clientY};refresh();
