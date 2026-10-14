@@ -19,6 +19,7 @@ import { attachOverviewTooltip } from './overview-tooltip.mjs';
 import { civincoPortalMarkup } from './civinco-portal.mjs';
 import { attachComets } from './comets.mjs';
 import {COURSE_GRADING_SCHEMES,gradeForecast,gradeForecastText} from './grade-calculator.mjs';
+import {attachMobileSky,createMobileScene} from './mobile-sky.mjs';
 import { COURSES, COURSE_BY_ID, SPECIALIZATIONS, CELE_DOMAINS } from './curriculum.mjs';
 import { newProgress, selected, courseAccess, setAcademicYear, setAcademicTerm, currentAcademicTerm, confirmSpecialization, changeSpecialization, recordAcademicProgress, progressSummary, gateStatus } from './progression.mjs';
 import { loadProgress } from './storage.mjs';
@@ -34,6 +35,7 @@ const initialAcademic=progressSummary(progress).academic;
 let resetOrigin;
 let constellationRotation;
 let zoomController;
+let mobileSky;
 let lastSkyScale=null;
 const gradeDrafts=new Map();
 let transferMode=false,toastTimer,shownMap,mapBounds,previousAcademicFill=100*initialAcademic.complete/initialAcademic.total,sharedCamera=null,lastRenderedBranch=null;
@@ -94,9 +96,12 @@ function branchCards(){
  $('#specialization-menu summary').setAttribute('aria-label','Specializations: '+$('#specialization-selection').textContent);
  $('#branch-cards').innerHTML=Object.entries(SPECIALIZATIONS).map(([id,b])=>`<button class="branch-card ${selected(progress)===id?'current':''} ${view.branch===id?'viewing':''}" style="${skyAccent(BRANCH_CONSTELLATIONS[id])}" data-branch="${id}" aria-pressed="${view.branch===id}" title="${esc((view.branch===id?'Hide ':'Show ')+b.name+' on the shared sky')}"><span class="branch-check" aria-hidden="true">${view.branch===id?'✓':'+'}</span><span class="branch-symbol">${icon(b.icon)}</span><strong>${id}</strong><span class="branch-name">${SKY_NAMES[BRANCH_CONSTELLATIONS[id]]}</span><small>${selected(progress)===id?'Active path':'Preview'}</small></button>`).join('');
 }
-function courseButton(c,p,trace=null){
+function courseState(c){
  const preview=isPreview(c),r=progress.academicRecords[c.id],access=courseAccess(progress,c.id);
- const state=preview?'preview':r?.status==='COMPLETED'?'completed':r?.status==='ACTIVE'?'active-course':access.allowed?'available':'locked';
+ return preview?'preview':r?.status==='COMPLETED'?'completed':r?.status==='ACTIVE'?'active-course':access.allowed?'available':'locked';
+}
+function courseButton(c,p,trace=null){
+ const state=courseState(c);
  return `<button class="course-node ${state} ${c.specialization?'specialization-node':''} ${view.course===c.id?'selected-node':''} ${trace?(trace.ids.has(c.id)?'path-member':'path-muted'):''} ${view.reward?.id===c.id?'just-completed':''}" style="left:${p.x}px;top:${p.y}px;--label-x:${p.labelX}px;--label-y:${p.labelY}px;--node-perspective:${p.perspective.toFixed(3)};${skyAccent(p.chart)}" data-course="${c.id}" data-specialization="${c.specialization||''}" data-constellation="${p.chart}" aria-label="${c.id}, ${esc(c.title)}, ${state}">${starBadge()}<span class="node-copy"><strong class="node-code">${c.id}</strong><span class="node-title" aria-hidden="true">${esc(c.title)}</span></span></button>`;
 }
 function renderMap(reset=false){
@@ -138,6 +143,7 @@ function renderMap(reset=false){
  renderConnectionCard(trace);
  $('#world').innerHTML=html;$('#world').style.width=map.width+'px';$('#world').style.height=map.height+'px';
  constellationRotation?.setMap(map);
+ if(mobileSky?.active)mobileSky.setScene(createMobileScene(map,{getState:courseState,selectedCourse:view.course,connectionKey:view.connection,gateLabel:gateStatus(progress).cleared?'CELE Hardmode unlocked':gateStatus(progress).eligible?'Ready for integration':'View gate requirements'}));
  if(reset)fitMap();else applyTransform();
  $('.explore-button').setAttribute('aria-pressed',String(view.preview));
  document.querySelectorAll('[data-year]').forEach(b=>{b.classList.toggle('active',+b.dataset.year===view.year);b.setAttribute('aria-pressed',String(+b.dataset.year===view.year));});
@@ -158,7 +164,8 @@ function applyTransform(){
  paintCamera();
 }
 function paintCamera(){
- cameraWorld.style.transform=`translate(${view.x}px,${view.y}px) scale(${view.scale})`;
+ if(!mobileSky?.active)cameraWorld.style.transform=`translate(${view.x}px,${view.y}px) scale(${view.scale})`;
+ mobileSky?.paint();
  const sky=viewport;
  const moving=sky.classList.contains('dragging')||sky.classList.contains('zooming');
  // Keep the scene's inherited SVG styles stable during a gesture. Only the
@@ -221,6 +228,7 @@ function stopMapTravel(){
  clearTimeout(travelTimer);world.classList.remove('navigation-motion');applyTransform();
 }
 function animateMapTravel(move){
+ if(mobileSky?.active){move();return;}
  void $('#world').offsetWidth;
  $('#world').classList.add('navigation-motion');move();
  travelTimer=setTimeout(()=>{$('#world').classList.remove('navigation-motion');$('#map-viewport').classList.remove('camera-travel');},700);
@@ -359,6 +367,8 @@ const viewport=$('#map-viewport');
 viewport.addEventListener('focusin',e=>{
  const key=e.target.dataset.connection;
  for(const line of viewport.querySelectorAll('.connection-line'))line.classList.toggle('connection-focused',!!key&&line.dataset.edge===key);
+ if(mobileSky?.active&&e.target.dataset.course)focusCourse(e.target.dataset.course);
+ mobileSky?.paint();
 });
 viewport.addEventListener('focusout',e=>{if(e.target.dataset.connection)for(const line of viewport.querySelectorAll('.connection-focused'))line.classList.remove('connection-focused');});
 const cameraWorld=$('#world'),cameraLabel=$('#zoom-label');
@@ -390,6 +400,14 @@ attachMapPan(viewport,{
 });
 viewport.addEventListener('wheel',e=>{e.preventDefault();const r=lastViewport;zoom(wheelZoomFactor(e,r.height),e.clientX-r.left,e.clientY-r.top);},{passive:false});
 let lastViewport=viewport.getBoundingClientRect();
+mobileSky=attachMobileSky(viewport,{getCamera:()=>view,getViewport:()=>lastViewport,onModeChange:()=>{stopMapTravel();renderMap();}});
+viewport.addEventListener('click',e=>{
+ if(!mobileSky.active||e.target.closest('button,a,[data-connection]'))return;
+ const r=viewport.getBoundingClientRect(),hit=mobileSky.pick({x:e.clientX-r.left,y:e.clientY-r.top});if(!hit)return;
+ e.stopPropagation();
+ const target=hit.kind==='course'?viewport.querySelector('[data-course="'+hit.id+'"]'):hit.kind==='connection'?viewport.querySelector('[data-connection="'+hit.id+'"]'):hit.kind==='hidebranch'?viewport.querySelector('[data-action="shared"]'):viewport.querySelector('.civinco-portal');
+ target?.dispatchEvent(new window.MouseEvent('click',{bubbles:true,cancelable:true,detail:0}));
+});
 function resizeMap(){
  if(view.page!=='map')return;
  const next=viewport.getBoundingClientRect();if(!next.width||!next.height)return;

@@ -79,6 +79,12 @@
  .motion-stars i { animation:none }
 }
 #rotate-sky[hidden] { display:none }
+/* A phone-sized paint surface, with original controls retained for keyboard
+   and screen-reader navigation in a clipped semantic layer. */
+.mobile-sky-canvas { position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none }
+.mobile-sky-canvas[hidden] { display:none }
+.canvas-sky-mode .world { width:1px!important;height:1px!important;overflow:hidden;opacity:0;pointer-events:none;transform:none!important;contain:strict }
+.canvas-sky-mode .world * { animation:none!important;transition:none!important;filter:none!important;backdrop-filter:none!important;pointer-events:none!important }
 @media(max-width:760px),(pointer:coarse) {
  #rotate-sky { display:none }
  .constellations-rotating .dossier-sky svg { animation:none }

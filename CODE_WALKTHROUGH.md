@@ -61,6 +61,8 @@ The map has world coordinates. Panning and zooming transform the world container
 
 Touch gestures use the latest finger positions once per screen frame. Pinching changes scale and translation together so the sky point under the midpoint follows the fingers, even at a zoom limit. The gesture caches screen bounds at the start and flushes pending movement before release. Scale-dependent line/star styling updates when the gesture ends, while mobile background layers stay still to reduce rendering work.
 
+On mobile, `mobile-sky.mjs` draws the visible portion of the map on a screen-sized Canvas 2D surface. It caches star artwork rather than repainting the full moving SVG scene. A bounded cache and capped pixel density limit memory use. Geometric tap picking routes back to the original course, connection and gate controls; those controls also remain available to keyboard and screen-reader users. Desktop retains SVG, and mobile falls back to static SVG if canvas support is missing. Canvas previews and native tests verify the renderer, while actual phone performance still needs a Safari device check.
+
 Rotation updates the outlines, nodes and prerequisite hit areas together through a bounded 45-degree loop. It pauses for interaction and reduced motion. The black hole uses small local SVG layers, curved trails and inward particles.
 
 For overview readability, line width increases as camera scale decreases: roughly `world stroke width = desired screen width / zoom scale`. Active/completed stars also gain a modest overview size boost. Completion is brightest, activation is intermediate, and unactivated stars stay faint. Activation illuminates only nearby line segments, fading out at their midpoint.
