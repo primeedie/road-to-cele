@@ -16,7 +16,7 @@ Official 85W product: https://www.hanyi.com.cn/productdetail?id=986
 
 ## Course panel: IBM Plex Mono
 
-The owner requested a monospaced reference style on October 14, 2026. The course panel uses self-hosted IBM Plex Mono Regular (400) and SemiBold (600) in `ibm-plex-mono/`. Other parts of the app retain the existing font.
+IBM Plex Mono Regular (400) and SemiBold (600) were added for a monospaced reference on October 14, 2026. The owner then restored Hanyi WenHei throughout the panel to match the rest of the UI. These archived font files in `ibm-plex-mono/` are no longer loaded by the panel.
 
 Source: https://github.com/google/fonts/tree/main/ofl/ibmplexmono
 

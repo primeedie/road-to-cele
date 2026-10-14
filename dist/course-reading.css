@@ -1,8 +1,6 @@
 /* The course file reads like a page: quiet metadata, labelled navigation,
    comfortable body text, and supporting material available on demand. */
-@font-face { font-family:'CELE Plex Mono';src:url('assets/fonts/ibm-plex-mono/IBMPlexMono-Regular.ttf') format('truetype');font-style:normal;font-weight:400;font-display:swap }
-@font-face { font-family:'CELE Plex Mono';src:url('assets/fonts/ibm-plex-mono/IBMPlexMono-SemiBold.ttf') format('truetype');font-style:normal;font-weight:600;font-display:swap }
-#course-card { --reading-type:'CELE Plex Mono','SFMono-Regular',Consolas,monospace;font-family:var(--reading-type) }
+#course-card { --reading-type:var(--atlas-type);font-family:var(--reading-type) }
 #course-card.course-dossier { background:#000 }
 #course-card .dossier-identity { padding:20px 24px 18px }
 #course-card .dossier-path { font:11px/1.5 var(--reading-type);letter-spacing:.06em;color:#aaa }
