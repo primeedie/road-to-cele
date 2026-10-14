@@ -130,11 +130,20 @@ test('actual website interactions keep exploration separate from academic progre
   }finally{w.requestAnimationFrame=originalFrame;w.cancelAnimationFrame=originalCancel;viewport.getBoundingClientRect=originalRect;viewport.style.setProperty=originalSet;}
   click('[data-year="1"]');
  });
- await t.test('Roman numeral course chapters are inspectable placeholders with keyboard navigation',()=>{
+ await t.test('syllabus calculator updates raw-score forecasts, restores drafts and never records academic progress',()=>{
+  const before=localStorage.getItem(STORAGE_KEY);click('[data-course="FNDMATH"]');click('[data-course-section="3"]');
+  let form=$('#course-card [data-grade-course]');assert.ok(form);
+  for(const [id,value] of Object.entries({quizzes:55,activities:70,teacher:80,final_max:50,final:0})){form.elements.namedItem(id).value=value;form.elements.namedItem(id).dispatchEvent(new w.Event('input',{bubbles:true}));}
+  assert.match(form.querySelector('output').textContent,/below.*55%.*22\/50/);
+  click('[data-course-section="1"]');click('[data-course-section="3"]');form=$('#course-card [data-grade-course]');assert.equal(form.elements.namedItem('final_max').value,'50');assert.equal(form.elements.namedItem('quizzes').value,'55');assert.match(form.querySelector('output').textContent,/22\/50/);
+  form.elements.namedItem('final').value=22;form.elements.namedItem('final').dispatchEvent(new w.Event('input',{bubbles:true}));assert.match(form.querySelector('output').textContent,/meets the 55%/);
+  assert.equal(localStorage.getItem(STORAGE_KEY),before);click('[data-action="close-inspector"]');
+ });
+ await t.test('Roman numeral course chapters show sourced content and keep quiz placeholders with keyboard navigation',()=>{
   click('[data-course="FNDMATH"]');
   assert.equal($('#course-card').open,true);
   assert.equal(document.querySelectorAll('#course-card [role="tab"]').length,5);
-  assert.match($('#course-section').textContent,/official course description/);
+  assert.match($('#course-section').textContent,/algebra, trigonometry and analytic geometry/);
   for(const [section,title] of [[1,'Topic rundown'],[2,'Skills for the future'],[3,'Grade calculator'],[4,'Mastery quiz']]){
    click(`[data-course-section="${section}"]`);
    assert.equal($('#course-card [aria-selected="true"]').dataset.courseSection,String(section));

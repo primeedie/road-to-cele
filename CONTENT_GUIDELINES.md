@@ -6,6 +6,8 @@ Use supplied DLSU course files as the source. Do not invent syllabus coverage, s
 
 For each useful topic, identify a specific future course where it returns. Use wording such as: “This topic will be used and recalled in [course code — title].” Include a short reason for the connection. A prerequisite relationship alone does not prove that a particular topic is covered; check the course files.
 
+The owner permits provisional connections inferred from other supplied syllabi. Mark those connections as inferences, cite both source and destination descriptions/outlines, and distinguish them from an official coverage mapping. A course name or prerequisite alone is still insufficient. Do not label topics as CIVINCO or CELE coverage before the supporting sets arrive.
+
 Once all CIVINCO files arrive, review previous course nodes and backtrack the topics that appear in those files. Add the playful reminder: “This will also come back in CIVINCO, beware!” Only apply it to supported topic mappings, with a compact explanation of the connection.
 
 ## Laboratory: Skills for the future

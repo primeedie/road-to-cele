@@ -26,8 +26,8 @@ test('unknown scores are never treated as zero; zero is a real score; impossible
 test('unsupported syllabus policies and incomplete or malformed schemes fail instead of producing misleading passing predictions',()=>{
  for(const invalid of [{...scheme,source:''},{...scheme,passingPercentage:null},{...scheme,transmutation:true},{...scheme,extraPassingConditions:['minimum final exam']},{...scheme,components:[scheme.components[0]]},{...scheme,components:[scheme.components[0],scheme.components[0]]}])assert.throws(()=>validateGradingScheme(invalid));
  assert.throws(()=>gradeForecast(scheme,{work:55},'unknown'));
- assert.deepEqual(COURSE_GRADING_SCHEMES,{});
- const pending=renderGradeCalculator(COURSE_BY_ID.FNDMATH);assert.match(pending,/Awaiting course grading scheme/);assert.ok(!pending.includes('<input'));
+ assert.equal(Object.keys(COURSE_GRADING_SCHEMES).length,19);
+ const pending=renderGradeCalculator(COURSE_BY_ID.CEORIEN);assert.match(pending,/Awaiting course grading scheme/);assert.ok(!pending.includes('<input'));
  const dom=new JSDOM(renderGradeCalculator(COURSE_BY_ID.FNDMATH,{...scheme,source:'<script>bad</script>'}));assert.equal(dom.window.document.querySelector('script'),null);assert.equal(dom.window.document.querySelector('[name="exam"]').max,'50');dom.window.close();
 });
 
@@ -35,7 +35,7 @@ test('lectures put grade calculator fourth and mastery fifth; labs end at their 
  const progress=newProgress(),before=JSON.stringify(progress);
  for(const [id,count] of [['FNDMATH',5],['LBYPH1A',4]]){
   const c=COURSE_BY_ID[id],sections=courseSections(c);assert.equal(sections.length,count);assert.equal(sections[3].title,'Grade calculator');
-  const dom=new JSDOM(renderCoursePanel(progress,c,{section:3}));assert.equal(dom.window.document.querySelectorAll('[role="tab"]').length,count);assert.match(dom.window.document.querySelector('#course-section').textContent,/grading scheme/);
+  const dom=new JSDOM(renderCoursePanel(progress,c,{section:3}));assert.equal(dom.window.document.querySelectorAll('[role="tab"]').length,count);assert.match(dom.window.document.querySelector('#course-section').textContent,id==='FNDMATH'?/passing target: 55%/:/grading scheme/);
   assert.equal(!!dom.window.document.querySelector('#course-tab-4'),count===5);dom.window.close();
  }
  assert.equal(JSON.stringify(progress),before);
