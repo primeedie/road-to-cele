@@ -114,6 +114,66 @@
 #course-card :is(h4,.reward-return) { font-family:var(--reading-type) }
 #course-card .completion-reward p { font:13px/1.6 var(--reading-type) }
 #course-card p,#course-card .course-topic-list span,#course-card .dossier-key dd,#course-card .grade-result { text-align:justify;text-align-last:left;hyphens:auto }
+/* Constellation accents, warm prose, and semantic score colors share the black
+   surface. Color supports the written labels rather than replacing them. */
+#course-card .dossier-layout { --reading-accent:var(--sky-accent,#8ec9ef);--reading-gold:#e3ca96;--reading-green:#acd9ba;--reading-coral:#ebb599;--reading-blue:#aed8e9;--reading-prose:#ded9cb }
+#course-card .dossier-code-bar .course-code,#course-card .dossier-section-heading h3 { color:var(--reading-accent) }
+#course-card .dossier-heading h2 { color:#eee5ce }
+#course-card .dossier-path { color:color-mix(in srgb,var(--reading-accent) 60%,#bdb6a7) }
+#course-card .course-content,#course-card .course-description { color:var(--reading-prose) }
+#course-card .course-content-note,#course-card .grade-scope-note { color:#bfb7a4 }
+#course-card .course-content-note { padding-left:12px;border-left:2px solid color-mix(in srgb,var(--reading-accent) 35%,#111) }
+#course-card .course-content p strong { color:var(--reading-gold) }
+#course-card .course-meta span { color:#c7bb9e }
+#course-card .course-status { color:var(--reading-accent) }
+#course-card [data-course-state="active"] .course-status { color:var(--reading-gold) }
+#course-card [data-course-state="completed"] .course-status,#course-card [data-course-state="completed"] .dossier-readonly { color:var(--reading-green) }
+#course-card [data-course-state="locked"] .course-status { color:#b3aba0 }
+#course-card .dossier-tab[aria-selected="true"] { color:var(--reading-accent);border-bottom-color:var(--reading-accent);background:color-mix(in srgb,var(--reading-accent) 7%,#000) }
+#course-card .course-topic-list strong { color:var(--reading-gold) }
+#course-card .course-topic-list span { color:#c4bfaf }
+#course-card .course-topic-list li { border-bottom-color:color-mix(in srgb,var(--reading-accent) 14%,#0c0c0c) }
+#course-card .course-topic-list li::before { color:var(--reading-accent) }
+#course-card .course-skill-list h4 { color:var(--reading-green) }
+#course-card .course-skill-list article { border-bottom-color:color-mix(in srgb,var(--reading-green) 18%,#0c0c0c) }
+#course-card .course-skill-list article:last-child { margin-bottom:8px }
+#course-card .course-source summary,#course-card .dossier-relationships>summary,#course-card .grade-settings summary { color:var(--reading-gold) }
+#course-card .future-course-link { border-color:color-mix(in srgb,var(--reading-blue) 22%,transparent);background:color-mix(in srgb,var(--reading-blue) 4%,#000);color:#d0e2e5 }
+#course-card .future-course-link strong,#course-card .future-course-arrow,#course-card .dossier-prereq button strong { color:var(--reading-blue) }
+#course-card .dossier-connections h4 { color:var(--reading-accent) }
+#course-card .dossier-relation[data-relation-type="H"] .relation-type { color:var(--reading-coral) }
+#course-card .dossier-relation[data-relation-type="S"] .relation-type { color:var(--reading-gold) }
+#course-card .dossier-relation[data-relation-type="C"] .relation-type { color:var(--reading-blue) }
+#course-card .dossier-relation.is-met .relation-arrow { color:var(--reading-green) }
+#course-card .dossier-academic { background:color-mix(in srgb,var(--reading-accent) 75%,#e3e2d9);color:#0a1418 }
+#course-card .dossier-academic[data-academic="COMPLETED"] { background:var(--reading-green) }
+#course-card .dossier-academic:disabled { background:#161714;color:#a5a18f }
+#course-card .grade-source strong,#course-card .grade-quiz-category h4,#course-card .grade-form legend,#course-card .grade-row>span:first-child { color:var(--reading-gold) }
+#course-card .grade-form input { color:#d0e6d9 }
+#course-card .grade-form .grade-max,#course-card .grade-quiz-entry input:last-of-type { color:#ded0ac }
+#course-card .grade-form input:focus,#course-card .grade-form select:focus { border-color:var(--reading-accent) }
+#course-card .grade-form select { background:#090b0c;border-color:color-mix(in srgb,var(--reading-accent) 26%,#222);color:#d6e0df;border-radius:7px }
+#course-card .grade-quiz-entry>strong,#course-card .grade-quiz-average output,#course-card .grade-fe-average { color:var(--reading-green) }
+#course-card .grade-fe-average { font:13px/1.5 var(--reading-type) }
+#course-card .grade-add-quiz { color:var(--reading-accent);border-color:color-mix(in srgb,var(--reading-accent) 30%,#111);background:color-mix(in srgb,var(--reading-accent) 5%,#000) }
+#course-card .grade-planning { padding:16px;border:1px solid #ffffff15;background:#080909;border-radius:9px;gap:16px }
+#course-card .grade-planning legend { padding:0 7px;margin-bottom:4px;font-size:13px }
+#course-card .grade-target { font-size:13px;color:#c5bda7 }
+#course-card .grade-settings { font-size:12px;line-height:1.6 }
+#course-card .grade-settings summary { min-height:44px;padding:11px 0;cursor:pointer }
+#course-card .grade-result { display:block;padding:0;border:0;background:none;font-size:13px;line-height:1.6;text-align:left }
+#course-card .grade-result-grid { display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px }
+#course-card .grade-stat { display:flex;flex-direction:column;gap:10px;padding:16px 13px;min-width:0;background:#090b0a;border:1px solid #ffffff14;border-radius:9px;text-align:left;--stat-color:#b6b8b0 }
+#course-card .grade-stat[data-tone="positive"] { --stat-color:var(--reading-green);border-top-color:#acd9ba70 }
+#course-card .grade-stat[data-tone="warning"] { --stat-color:var(--reading-coral);border-top-color:#ebb59970 }
+#course-card .grade-stat[data-tone="accent"] { --stat-color:var(--reading-accent);border-top-color:color-mix(in srgb,var(--reading-accent) 50%,transparent) }
+#course-card .grade-stat-label { font-size:11px;line-height:1.5;color:#c3bba6 }
+#course-card .grade-stat-value { display:block;font:600 30px/1.2 var(--reading-type);color:var(--stat-color);overflow-wrap:anywhere;font-variant-numeric:tabular-nums }
+#course-card .grade-stat-value small { font-size:13px;color:#a8b5ae }
+#course-card .grade-stat-context { font-size:11px;line-height:1.6;color:#b7bdaf }
+#course-card .grade-result-note { display:block;margin-top:12px;padding:0 2px;color:#c3bca9;font-size:12px;line-height:1.65 }
+#course-card .grade-condition-note { display:block;margin-top:12px;padding:12px;background:#c1986c0b;border-left:2px solid #c1986c80;color:var(--reading-coral);font-size:12px }
+#course-card .grade-result[data-error="true"] { padding:14px;background:#c1986c0b;border-left:2px solid #c1986c80;color:var(--reading-coral) }
 @media(max-width:760px) {
  #course-card.course-dossier,body.tree-expanded #course-card { height:85dvh }
  #course-card .dossier-code-bar { padding-left:20px }

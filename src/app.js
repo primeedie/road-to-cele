@@ -20,7 +20,7 @@ import { attachConstellationRotation } from './constellation-rotation.mjs';
 import { attachOverviewTooltip } from './overview-tooltip.mjs';
 import { civincoPortalMarkup } from './civinco-portal.mjs';
 import { attachComets } from './comets.mjs';
-import {COURSE_GRADING_SCHEMES,gradeForecast,gradeForecastText,gradeFormValues} from './grade-calculator.mjs';
+import {COURSE_GRADING_SCHEMES,gradeForecast,gradeForecastText,renderGradeForecast,gradeFormValues} from './grade-calculator.mjs';
 import {attachMobileSky,createMobileScene} from './mobile-sky.mjs';
 import { COURSES, COURSE_BY_ID, SPECIALIZATIONS, CELE_DOMAINS } from './curriculum.mjs';
 import { newProgress, selected, courseAccess, setAcademicYear, setAcademicTerm, currentAcademicTerm, confirmSpecialization, changeSpecialization, recordAcademicProgress, progressSummary, gateStatus } from './progression.mjs';
@@ -88,8 +88,8 @@ function courseCard(){
 }
 function updateGradeCalculator(form){
  const scheme=COURSE_GRADING_SCHEMES[form.dataset.gradeCourse];if(!scheme)return;
- try{const values=gradeFormValues(form,scheme);gradeDrafts.set(form.dataset.gradeCourse,values.draft);form.querySelector('.grade-result').textContent=gradeForecastText(gradeForecast(values.scheme,values.scores,values.target,{requirements:values.requirements}));}
- catch(failure){form.querySelector('.grade-result').textContent=failure.message;}
+ try{const values=gradeFormValues(form,scheme);gradeDrafts.set(form.dataset.gradeCourse,values.draft);const output=form.querySelector('.grade-result');const result=gradeForecast(values.scheme,values.scores,values.target,{requirements:values.requirements});delete output.dataset.error;output.innerHTML=renderGradeForecast(result);output.setAttribute('aria-label',gradeForecastText(result));}
+ catch(failure){const output=form.querySelector('.grade-result');output.dataset.error='true';output.textContent=failure.message;output.setAttribute('aria-label',failure.message);}
 }
 for(const event of ['input','change'])document.addEventListener(event,e=>{const form=e.target.closest('[data-grade-course]');if(form)updateGradeCalculator(form);});
 document.addEventListener('submit',e=>{if(e.target.matches('[data-grade-course]'))e.preventDefault();});

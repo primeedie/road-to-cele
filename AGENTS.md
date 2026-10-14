@@ -10,6 +10,8 @@ Lectures have Grade calculator at tab IV and Mastery quiz at V. Labs have four t
 
 Use the site's uploaded Hanyi WenHei font throughout the course panel, matching the rest of the UI; justify its paragraphs. Scroll the title and metadata away while keeping the course code and tabs pinned. Show descriptions before activation; tabs II–V unlock only when that course's academic record is ACTIVE or COMPLETED. Omit source citations from the student panel while retaining provenance internally.
 
+Keep the entire course panel visually distinct and readable with constellation-colored headings, warm topic labels and prose, and soft green skill accents on black. Grade summaries use compact numeric cards and written status labels alongside color; keep secondary options expandable.
+
 The verified owner account can switch Student view / Admin view. Admin experiments use a separate device workspace with unrestricted course access and cosmetic frames. Reset is available only in Admin view and never clears student progress. Roles come from server-verified Supabase identity; editable profile metadata and batch IDs do not grant permissions. See ADMIN_SETUP.md.
 
 Quiz calculator rows use the equally weighted average of each earned/perfect percentage. Accept actual awarded bonus scores above the perfect score. Final Exam has one earned/perfect pair; other requirements take a computed average out of 100. Do not change syllabus weights or academic completion based on calculator results.

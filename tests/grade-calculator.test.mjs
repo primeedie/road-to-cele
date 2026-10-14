@@ -1,12 +1,23 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {JSDOM} from 'jsdom';
-import {gradeForecast,gradeForecastText,validateGradingScheme,renderGradeCalculator,COURSE_GRADING_SCHEMES} from '../src/grade-calculator.mjs';
+import {gradeForecast,gradeForecastText,renderGradeForecast,validateGradingScheme,renderGradeCalculator,COURSE_GRADING_SCHEMES} from '../src/grade-calculator.mjs';
 import {courseSections,renderCoursePanel} from '../src/course-panel.mjs';
 import {COURSE_BY_ID} from '../src/curriculum.mjs';
 import {newProgress} from '../src/progression.mjs';
 // Hypothetical test data only, not a DLSU syllabus or an imported grading scheme.
 const scheme={mode:'weighted-percentage',source:'Synthetic test fixture',passingPercentage:60,components:[{id:'work',label:'Coursework',weight:60,max:100},{id:'exam',label:'Final exam',weight:40,max:50}]};
+
+test('score summaries distinguish provisional totals, unknown inputs, secured targets, and additional requirements',()=>{
+ const inspect=result=>new JSDOM('<output>'+renderGradeForecast(result)+'</output>');
+ let dom=inspect(gradeForecast(scheme,{work:55,exam:32},'exam')),doc=dom.window.document;
+ assert.equal(doc.querySelectorAll('.grade-stat').length,2);assert.match(doc.querySelector('.grade-stat-value').textContent,/58.60%/);assert.match(doc.querySelectorAll('.grade-stat-value')[1].textContent,/34\/50/);assert.match(doc.body.textContent,/below the 60%/);dom.window.close();
+ dom=inspect(gradeForecast(scheme,{},'exam'));assert.equal(dom.window.document.querySelectorAll('.grade-stat-value')[1].textContent,'—');assert.match(dom.window.document.body.textContent,/Fill in the other categories/);dom.window.close();
+ dom=inspect(gradeForecast(scheme,{work:100},'exam'));assert.match(dom.window.document.body.textContent,/Recorded average.*0\/50.*Complete any required assessments/);dom.window.close();
+ const checked={...scheme,requirements:[{id:'submission',label:'Required submission',source:'Synthetic test'}]},r=gradeForecast(checked,{work:100,exam:50},'exam',{requirements:{submission:'not-met'}});
+ dom=inspect(r);assert.match(dom.window.document.querySelector('.grade-condition-note').textContent,/requirement is unmet/);assert.equal(dom.window.document.querySelector('.grade-stat').dataset.tone,'warning');dom.window.close();
+ const escaped={...scheme,components:scheme.components.map(c=>({...c,label:c.id==='exam'?'<script>alert(1)</script>':c.label}))};dom=inspect(gradeForecast(escaped,{work:55},'exam'));assert.equal(dom.window.document.querySelector('script'),null);dom.window.close();
+});
 
 test('required raw score rounds up to the first attainable passing mark and recognizes below-target grades',()=>{
  const result=gradeForecast(scheme,{work:55,exam:32},'exam');assert.equal(result.needed,34);assert.equal(result.currentTotal,58.6);assert.equal(result.possible,true);assert.match(gradeForecastText(result),/below.*passing target.*34\/50/);
