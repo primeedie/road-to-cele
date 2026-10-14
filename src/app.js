@@ -7,7 +7,7 @@ import { BRANCH_CONSTELLATIONS, SKY_NAMES, NODE_GROUND_X, NODE_GROUND_Y, drawCon
 import { createSkyMap } from './map-curriculum.mjs';
 import { skyAccent } from './sky-palette.mjs';
 import { constrainCamera, overviewCamera, resizeCamera, pinchCamera } from './map-camera.mjs';
-import { courseSections, renderCoursePanel } from './course-panel.mjs';
+import { courseSections, courseSectionsUnlocked, renderCoursePanel } from './course-panel.mjs';
 import { attachMapPan } from './map-pan.mjs';
 import { createFramePainter } from './frame-painter.mjs';
 import { createSmoothZoom, wheelZoomFactor } from './smooth-zoom.mjs';
@@ -71,6 +71,7 @@ function courseCard(){
  const dialog=$('#course-card'),c=COURSE_BY_ID[view.course];
  $('.workspace').classList.toggle('inspector-open',!!c);
  if(!c){if(dialog.open)dialog.close();dialog.innerHTML='';return;}
+ if(!courseSectionsUnlocked(progress,c))view.section=0;
  dialog.innerHTML=renderCoursePanel(progress,c,{preview:isPreview(c),section:view.section,reward:view.reward});
  const gradeForm=dialog.querySelector('[data-grade-course]');if(gradeForm){const draft=gradeDrafts.get(c.id);if(draft)for(const [key,value] of Object.entries(draft))gradeForm.elements.namedItem(key).value=value;updateGradeCalculator(gradeForm);}
  if(!dialog.open)showCourseDossier(dialog);
@@ -296,7 +297,7 @@ document.addEventListener('click',e=>{
  if(b.dataset.branch){revealBranch(b.dataset.branch);return;}
  if(b.dataset.course){const course=COURSE_BY_ID[b.dataset.course];view.reward=null;view.section=0;view.course=course.id;view.year=course.year;renderAll();animateMapTravel(()=>focusCourse(course.id));return;}
  if(b.dataset.courseLink){view.connection=null;view.reward=null;const c=COURSE_BY_ID[b.dataset.courseLink];if(c.specialization)view.branch=c.specialization;view.year=c.year;view.section=0;view.course=c.id;renderAll();return;}
- if(b.dataset.courseSection!==undefined){view.section=+b.dataset.courseSection;courseCard();$('#course-tab-'+view.section).focus({preventScroll:true});return;}
+ if(b.dataset.courseSection!==undefined){if(b.disabled||(+b.dataset.courseSection>0&&!courseSectionsUnlocked(progress,COURSE_BY_ID[view.course])))return;view.section=+b.dataset.courseSection;courseCard();$('#course-tab-'+view.section).focus({preventScroll:true});return;}
  if(b.dataset.academic){try{
   const next=recordAcademicProgress(progress,view.course,b.dataset.academic,{preview:isPreview(COURSE_BY_ID[view.course])});
   const beforeFrames=unlockedFrames(progress);view.reward=completionMoment(progress,next,view.course);
@@ -356,7 +357,7 @@ $('#course-card').addEventListener('keydown',e=>{
  const tab=e.target.closest('[data-course-section]');if(!tab)return;
  const offsets={ArrowDown:1,ArrowRight:1,ArrowUp:-1,ArrowLeft:-1};
  if(!(e.key in offsets)&&e.key!=='Home'&&e.key!=='End')return;
- const count=courseSections(COURSE_BY_ID[view.course]).length;
+ const c=COURSE_BY_ID[view.course],count=courseSectionsUnlocked(progress,c)?courseSections(c).length:1;
  e.preventDefault();view.section=e.key==='Home'?0:e.key==='End'?count-1:(view.section+offsets[e.key]+count)%count;
  courseCard();$('#course-tab-'+view.section).focus({preventScroll:true});
 });

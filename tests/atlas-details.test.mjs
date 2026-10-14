@@ -72,7 +72,8 @@ test('comets are rare, singular, and stop for zoom, dialogs, background tabs and
 
 test('future skills prepare lab evidence and lecture callbacks without inventing course coverage',()=>{
  const lab=COURSES.find(c=>c.courseKind==='LAB'),lecture=COURSES.find(c=>c.courseKind!=='LAB');
- assert.match(renderCoursePanel(newProgress(),lab,{section:2}),/Evidence and resume wording/);
- assert.match(renderCoursePanel(newProgress(),lecture,{section:2}),/This topic will be used and recalled in/);
- assert.match(renderCoursePanel(newProgress(),lecture,{section:1}),/Syllabus-based overview/);
+ const p=newProgress();p.academicRecords[lab.id]={status:'ACTIVE'};p.academicRecords[lecture.id]={status:'ACTIVE'};
+ assert.match(renderCoursePanel(p,lab,{section:2}),/Evidence and resume wording/);
+ assert.match(renderCoursePanel(p,lecture,{section:2}),/This topic will be used and recalled in/);
+ assert.match(renderCoursePanel(p,lecture,{section:1}),/Syllabus-based overview/);
 });

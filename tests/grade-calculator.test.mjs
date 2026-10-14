@@ -32,7 +32,7 @@ test('unsupported syllabus policies and incomplete or malformed schemes fail ins
 });
 
 test('lectures put grade calculator fourth and mastery fifth; labs end at their own fourth tab without granting progress',()=>{
- const progress=newProgress(),before=JSON.stringify(progress);
+ const progress=newProgress();for(const id of ['FNDMATH','LBYPH1A'])progress.academicRecords[id]={status:'ACTIVE'};const before=JSON.stringify(progress);
  for(const [id,count] of [['FNDMATH',5],['LBYPH1A',4]]){
   const c=COURSE_BY_ID[id],sections=courseSections(c);assert.equal(sections.length,count);assert.equal(sections[3].title,'Grade calculator');
   const dom=new JSDOM(renderCoursePanel(progress,c,{section:3}));assert.equal(dom.window.document.querySelectorAll('[role="tab"]').length,count);assert.match(dom.window.document.querySelector('#course-section').textContent,id==='FNDMATH'?/passing target: 55%/:/grading scheme/);

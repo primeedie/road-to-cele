@@ -1,6 +1,6 @@
 /* The course file reads like a page: quiet metadata, labelled navigation,
    comfortable body text, and supporting material available on demand. */
-#course-card { --reading-type:Arial,Helvetica,sans-serif }
+#course-card { --reading-type:var(--atlas-type) }
 #course-card.course-dossier { background:#000 }
 #course-card .dossier-identity { padding:20px 24px 18px }
 #course-card .dossier-path { font:11px/1.5 var(--reading-type);letter-spacing:.06em;color:#aaa }
@@ -16,6 +16,9 @@
 #course-card .dossier-tab-name { display:block;font:600 12px/1.2 var(--reading-type) }
 #course-card .dossier-tab[aria-selected="true"] { color:#fff;background:#ffffff08;border-bottom-color:#eee }
 #course-card .dossier-tab:hover { background:#ffffff0d }
+#course-card .dossier-tab:disabled { opacity:1;color:#777;cursor:not-allowed;background:none }
+#course-card .dossier-tab:disabled .dossier-numeral::after { content:' · locked';font-size:9px }
+#course-card .dossier-unlock-note { margin:0;padding:11px 24px;border-bottom:1px solid #ffffff18;font:12px/1.6 var(--reading-type);color:#aaa;flex:none }
 #course-card .dossier-reading { padding:20px 24px 16px }
 #course-card .dossier-section-heading { border:0;padding:0 0 16px }
 #course-card .dossier-section-heading>span { display:none }

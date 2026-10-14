@@ -2,6 +2,8 @@
 
 Use supplied DLSU course files as the source. Do not invent syllabus coverage, software requirements, practical proficiency or CIVINCO topic mappings. Keep references to the file and section used for each mapping.
 
+Keep source filenames, editions and page references in the internal course data and coverage report. The owner requests that source information not appear in the student course panel.
+
 ## Lecture: Skills for the future
 
 For each useful topic, identify a specific future course where it returns. Use wording such as: “This topic will be used and recalled in [course code — title].” Include a short reason for the connection. A prerequisite relationship alone does not prove that a particular topic is covered; check the course files.

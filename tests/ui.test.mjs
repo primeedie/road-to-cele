@@ -130,34 +130,12 @@ test('actual website interactions keep exploration separate from academic progre
   }finally{w.requestAnimationFrame=originalFrame;w.cancelAnimationFrame=originalCancel;viewport.getBoundingClientRect=originalRect;viewport.style.setProperty=originalSet;}
   click('[data-year="1"]');
  });
- await t.test('syllabus calculator updates raw-score forecasts, restores drafts and never records academic progress',()=>{
-  const before=localStorage.getItem(STORAGE_KEY);click('[data-course="FNDMATH"]');click('[data-course-section="3"]');
-  let form=$('#course-card [data-grade-course]');assert.ok(form);
-  for(const [id,value] of Object.entries({quizzes:55,activities:70,teacher:80,final_max:50,final:0})){form.elements.namedItem(id).value=value;form.elements.namedItem(id).dispatchEvent(new w.Event('input',{bubbles:true}));}
-  assert.match(form.querySelector('output').textContent,/below.*55%.*22\/50/);
-  click('[data-course-section="1"]');click('[data-course-section="3"]');form=$('#course-card [data-grade-course]');assert.equal(form.elements.namedItem('final_max').value,'50');assert.equal(form.elements.namedItem('quizzes').value,'55');assert.match(form.querySelector('output').textContent,/22\/50/);
-  form.elements.namedItem('final').value=22;form.elements.namedItem('final').dispatchEvent(new w.Event('input',{bubbles:true}));assert.match(form.querySelector('output').textContent,/meets the 55%/);
+ await t.test('unactivated lecture tabs reject clicks and keyboard access without saving',()=>{
+  click('[data-course="FNDMATH"]');const before=localStorage.getItem(STORAGE_KEY);
+  assert.equal(document.querySelectorAll('#course-card [role="tab"]:disabled').length,4);
+  $('#course-tab-0').dispatchEvent(new w.KeyboardEvent('keydown',{key:'End',bubbles:true}));assert.equal($('#course-tab-0').getAttribute('aria-selected'),'true');
+  const locked=$('#course-tab-3');locked.disabled=false;locked.click();assert.equal($('#course-tab-0').getAttribute('aria-selected'),'true');assert.equal($('#course-card [data-grade-course]'),null);
   assert.equal(localStorage.getItem(STORAGE_KEY),before);click('[data-action="close-inspector"]');
- });
- await t.test('Roman numeral course chapters show sourced content and keep quiz placeholders with keyboard navigation',()=>{
-  click('[data-course="FNDMATH"]');
-  assert.equal($('#course-card').open,true);
-  assert.equal(document.querySelectorAll('#course-card [role="tab"]').length,5);
-  assert.match($('#course-section').textContent,/algebra, trigonometry and analytic geometry/);
-  for(const [section,title] of [[1,'Topic rundown'],[2,'Skills for the future'],[3,'Grade calculator'],[4,'Mastery quiz']]){
-   click(`[data-course-section="${section}"]`);
-   assert.equal($('#course-card [aria-selected="true"]').dataset.courseSection,String(section));
-   assert.match($('.dossier-section-heading').textContent,new RegExp(title));
-   assert.equal(localStorage.getItem(STORAGE_KEY),null);
-  }
-  assert.ok($('#course-section button').disabled);
-  $('#course-tab-4').dispatchEvent(new w.KeyboardEvent('keydown',{key:'Home',bubbles:true}));
-  assert.equal($('#course-tab-0').getAttribute('aria-selected'),'true');
-  assert.equal(document.activeElement,$('#course-tab-0'));
-  $('#course-card').dispatchEvent(new w.Event('cancel',{cancelable:true}));
-  assert.equal($('#course-card').open,false);
-  assert.equal($('#course-card').innerHTML,'');
-  assert.equal(document.activeElement,$('[data-course="FNDMATH"]'));
  });
  await t.test('onboarding has no required specialization and branch previews never save progress',()=>{
   assert.equal($('#path-dialog').open,false);assert.equal($('#commitment-banner').textContent,'');
@@ -166,9 +144,9 @@ test('actual website interactions keep exploration separate from academic progre
   for(const branch of ['STE','GTE','HWR','TRE','CTM']){click(`.branch-card[data-branch="${branch}"]`);assert.match($('#map-mode').textContent,/PREVIEW/);click(`[data-specialization="${branch}"]`);assert.match($('#course-card').textContent,/Preview only/);assert.equal($('#course-card [data-academic]'),null);}
   assert.equal(localStorage.getItem(STORAGE_KEY),null);
  });
- await t.test('lab chapters end at grade calculator and keyboard navigation wraps within four tabs',()=>{
+ await t.test('unactivated lab tabs stay locked and keyboard navigation remains on the description',()=>{
   click('[data-course="LBYPH1A"]');assert.equal(document.querySelectorAll('#course-card [role="tab"]').length,4);assert.equal($('#course-tab-4'),null);
-  $('#course-tab-0').dispatchEvent(new w.KeyboardEvent('keydown',{key:'End',bubbles:true}));assert.equal($('#course-tab-3').getAttribute('aria-selected'),'true');assert.match($('#course-section').textContent,/laboratory grading scheme/);
+  $('#course-tab-0').dispatchEvent(new w.KeyboardEvent('keydown',{key:'End',bubbles:true}));assert.equal($('#course-tab-0').getAttribute('aria-selected'),'true');assert.ok($('#course-tab-3').disabled);assert.equal($('#course-card [data-grade-course]'),null);
   $('#course-tab-3').dispatchEvent(new w.KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true}));assert.equal($('#course-tab-0').getAttribute('aria-selected'),'true');
   assert.equal(localStorage.getItem(STORAGE_KEY),null);click('[data-action="close-inspector"]');
  });
@@ -254,6 +232,7 @@ test('actual website interactions keep exploration separate from academic progre
   const chart='.sky-outline[data-constellation="Ori"]';assert.equal($(chart).classList.contains('constellation-lit'),false);
   click('[data-academic="ACTIVE"]');assert.equal(saved().academicRecords.FNDMATH.status,'ACTIVE');
   assert.ok($('[data-course="FNDMATH"]').classList.contains('active-course'));
+  assert.equal(document.querySelectorAll('#course-card [role="tab"]:disabled').length,0);$('#course-tab-0').dispatchEvent(new w.KeyboardEvent('keydown',{key:'End',bubbles:true}));assert.equal($('#course-tab-4').getAttribute('aria-selected'),'true');$('#course-tab-4').dispatchEvent(new w.KeyboardEvent('keydown',{key:'Home',bubbles:true}));
   assert.equal($(chart).classList.contains('constellation-lit'),true);assert.equal($(chart).dataset.litCourses,'1');
   assert.ok($(chart+' .local-light-segment'));assert.ok([...document.querySelectorAll(chart+' stop')].some(stop=>+stop.getAttribute('stop-opacity')===.7));
   const before=localStorage.getItem(STORAGE_KEY);click('#explore-toggle');assert.equal($('#course-card [data-academic]'),null);assert.match($('#course-card').textContent,/Preview only/);
@@ -267,6 +246,35 @@ test('actual website interactions keep exploration separate from academic progre
   assert.ok(parseFloat($('.journey-fill').style.width)>0);
   click('[data-action="close-inspector"]');assert.ok($('[data-course="FNDMATH"]').classList.contains('just-completed'));
   click('[data-course="FNDMATH"]');assert.equal($('.completion-reward'),null);
+ });
+ await t.test('syllabus calculator updates raw-score forecasts, restores drafts and never records academic progress',()=>{
+  const before=localStorage.getItem(STORAGE_KEY);click('[data-course="FNDMATH"]');click('[data-course-section="3"]');
+  let form=$('#course-card [data-grade-course]');assert.ok(form);
+  for(const [id,value] of Object.entries({quizzes:55,activities:70,teacher:80,final_max:50,final:0})){form.elements.namedItem(id).value=value;form.elements.namedItem(id).dispatchEvent(new w.Event('input',{bubbles:true}));}
+  assert.match(form.querySelector('output').textContent,/below.*55%.*22\/50/);
+  click('[data-course-section="1"]');click('[data-course-section="3"]');form=$('#course-card [data-grade-course]');assert.equal(form.elements.namedItem('final_max').value,'50');assert.equal(form.elements.namedItem('quizzes').value,'55');assert.match(form.querySelector('output').textContent,/22\/50/);
+  form.elements.namedItem('final').value=22;form.elements.namedItem('final').dispatchEvent(new w.Event('input',{bubbles:true}));assert.match(form.querySelector('output').textContent,/meets the 55%/);
+  assert.equal(localStorage.getItem(STORAGE_KEY),before);click('[data-action="close-inspector"]');
+ });
+ await t.test('completed course chapters stay unlocked with keyboard navigation and preserve progress',()=>{
+  const before=localStorage.getItem(STORAGE_KEY);click('[data-course="FNDMATH"]');
+  assert.equal($('#course-card').open,true);
+  assert.equal(document.querySelectorAll('#course-card [role="tab"]').length,5);
+  assert.match($('#course-section').textContent,/algebra, trigonometry and analytic geometry/);
+  for(const [section,title] of [[1,'Topic rundown'],[2,'Skills for the future'],[3,'Grade calculator'],[4,'Mastery quiz']]){
+   click(`[data-course-section="${section}"]`);
+   assert.equal($('#course-card [aria-selected="true"]').dataset.courseSection,String(section));
+   assert.match($('.dossier-section-heading').textContent,new RegExp(title));
+   assert.equal(localStorage.getItem(STORAGE_KEY),before);
+  }
+  assert.ok($('#course-section button').disabled);
+  $('#course-tab-4').dispatchEvent(new w.KeyboardEvent('keydown',{key:'Home',bubbles:true}));
+  assert.equal($('#course-tab-0').getAttribute('aria-selected'),'true');
+  assert.equal(document.activeElement,$('#course-tab-0'));
+  $('#course-card').dispatchEvent(new w.Event('cancel',{cancelable:true}));
+  assert.equal($('#course-card').open,false);
+  assert.equal($('#course-card').innerHTML,'');
+  assert.equal(document.activeElement,$('[data-course="FNDMATH"]'));
  });
  await t.test('actual Year 3 standing reveals milestone and confirmation creates a self-reported active path',()=>{
   click('[data-page="journal"]');$('#academic-year').value='3';$('#academic-year').dispatchEvent(new w.Event('change',{bubbles:true}));

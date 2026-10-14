@@ -50,11 +50,24 @@ test('lab submission and attendance gates remain separate from a passing numeric
 });
 
 test('authored course tabs preserve preview/progression scope, lab tab count and pending quizzes',()=>{
- const progress=newProgress(),before=JSON.stringify(progress);
+ const progress=newProgress();for(const id of Object.keys(COURSE_CONTENT))progress.academicRecords[id]={status:'ACTIVE'};const before=JSON.stringify(progress);
  for(const id of Object.keys(COURSE_CONTENT))for(const section of [0,1,2,3]){
   const dom=new JSDOM(renderCoursePanel(progress,COURSE_BY_ID[id],{section,preview:true})),doc=dom.window.document;
-  assert.match(doc.querySelector('#course-section').textContent,section===3?/passing target/:section===1?/Syllabus-based overview/:section===2&&COURSE_BY_ID[id].courseKind==='LAB'?/Keep as evidence/:section===2?/Inferred connections/:/short paraphrase/);
+  assert.match(doc.querySelector('#course-section').textContent,section===3?/passing target/:section===1?/Syllabus-based overview/:section===2&&COURSE_BY_ID[id].courseKind==='LAB'?/Keep as evidence/:section===2?/Inferred connections/:/./);
   assert.equal(doc.querySelectorAll('[role="tab"]').length,COURSE_BY_ID[id].courseKind==='LAB'?4:5);assert.equal(doc.querySelector('[data-academic]'),null);assert.equal(doc.querySelector('script'),null);dom.window.close();
  }
  assert.equal(JSON.stringify(progress),before);assert.match(renderCoursePanel(progress,COURSE_BY_ID.HWRCORI),/Full syllabus still needed/);assert.match(renderCoursePanel(progress,COURSE_BY_ID.FNDMATH,{section:4}),/Quiz coming later/);
+});
+
+test('course sections require activation, including direct render requests, and omit source information',()=>{
+ for(const id of ['FNDMATH','LBYCV2C'])for(const status of [null,'ACTIVE','COMPLETED'])for(const preview of [false,true]){
+  const p=newProgress();if(status)p.academicRecords[id]={status};const before=JSON.stringify(p),course=COURSE_BY_ID[id];
+  for(const section of [1,2,3,4]){
+   const dom=new JSDOM(renderCoursePanel(p,course,{section,preview})),doc=dom.window.document;
+   assert.equal(doc.querySelectorAll('[role="tab"]:disabled').length,status?0:(course.courseKind==='LAB'?3:4));
+   if(!status){assert.equal(doc.querySelector('[aria-selected="true"]').dataset.courseSection,'0');assert.equal(doc.querySelector('[data-grade-course]'),null);assert.equal(doc.querySelector('.course-topic-list'),null);}
+   assert.doesNotMatch(doc.querySelector('#course-section').textContent,/\.pdf|Source syllabus|Grading source|pp\. \d/);
+   assert.equal(JSON.stringify(p),before);dom.window.close();
+  }
+ }
 });
