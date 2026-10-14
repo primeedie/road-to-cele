@@ -13,7 +13,7 @@ test('score summaries distinguish provisional totals, unknown inputs, secured ta
  let dom=inspect(gradeForecast(scheme,{work:55,exam:32},'exam')),doc=dom.window.document;
  assert.equal(doc.querySelectorAll('.grade-stat').length,2);assert.match(doc.querySelector('.grade-stat-value').textContent,/58.60%/);assert.match(doc.querySelectorAll('.grade-stat-value')[1].textContent,/34\/50/);assert.match(doc.body.textContent,/below the 60%/);dom.window.close();
  dom=inspect(gradeForecast(scheme,{},'exam'));assert.equal(dom.window.document.querySelectorAll('.grade-stat-value')[1].textContent,'—');assert.match(dom.window.document.body.textContent,/Fill in the other categories/);dom.window.close();
- dom=inspect(gradeForecast(scheme,{work:100},'exam'));assert.match(dom.window.document.body.textContent,/Recorded average.*0\/50.*Complete any required assessments/);dom.window.close();
+ dom=inspect(gradeForecast(scheme,{work:100},'exam'));assert.match(dom.window.document.body.textContent,/Earned toward final grade.*0\/50.*Complete any required assessments/);dom.window.close();
  const checked={...scheme,requirements:[{id:'submission',label:'Required submission',source:'Synthetic test'}]},r=gradeForecast(checked,{work:100,exam:50},'exam',{requirements:{submission:'not-met'}});
  dom=inspect(r);assert.match(dom.window.document.querySelector('.grade-condition-note').textContent,/requirement is unmet/);assert.equal(dom.window.document.querySelector('.grade-stat').dataset.tone,'warning');dom.window.close();
  const escaped={...scheme,components:scheme.components.map(c=>({...c,label:c.id==='exam'?'<script>alert(1)</script>':c.label}))};dom=inspect(gradeForecast(escaped,{work:55},'exam'));assert.equal(dom.window.document.querySelector('script'),null);dom.window.close();

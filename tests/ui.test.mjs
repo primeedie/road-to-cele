@@ -317,5 +317,20 @@ test('actual website interactions keep exploration separate from academic progre
   click('[data-page="journal"]');assert.equal($('#journal-page [data-action="reset-progress"]'),null);assert.equal(localStorage.getItem(STORAGE_KEY),before);
  });
 
+ await t.test('confirmed grades persist by term, generate a failed node and later retake, and survive course-panel navigation',()=>{
+  click('[data-page="map"]');click('[data-course="BASCHEM"]');click('[data-academic="ACTIVE"]');click('[data-course-section="3"]');
+  let form=$('#course-card [data-grade-course]');const term=Number(form.dataset.gradeTerm);click('[data-add-quiz="exams"]');
+  const fill=values=>{for(const [id,value] of Object.entries(values)){form.elements.namedItem(id).value=value;form.elements.namedItem(id).dispatchEvent(new w.Event('input',{bubbles:true}));}};
+  fill({quiz_exams_0_score:40,quiz_exams_0_max:100,final:40,final_max:100,output:100,coursework:100});
+  assert.ok(form.querySelector('[data-save-grades]').disabled);form.elements.namedItem('gradeConfirmed').checked=true;form.elements.namedItem('gradeConfirmed').dispatchEvent(new w.Event('change',{bubbles:true}));click('[data-save-grades]');
+  assert.equal(saved().academicRecords.BASCHEM.status,'FAILED');assert.equal(saved().academicRecords.BASCHEM.gradeAttempts[0].term,term);assert.equal(saved().academicRecords.BASCHEM.gradeAttempts[0].grade,0);assert.ok($('[data-course="BASCHEM~'+term+'"]'));
+  click('[data-grade-retake]');assert.equal(saved().academicRecords.BASCHEM.takenInTerm,term+1);assert.equal(saved().academicRecords.BASCHEM.status,'ACTIVE');form=$('#course-card [data-grade-course]');assert.equal(form.querySelectorAll('[data-quiz-row]').length,0);assert.equal(form.elements.namedItem('final').value,'');
+  click('[data-add-quiz="exams"]');fill({quiz_exams_0_score:80,quiz_exams_0_max:100,final:80,final_max:100,output:90,coursework:85});
+  form.elements.namedItem('targetGrade').value='4';form.elements.namedItem('targetGrade').dispatchEvent(new w.Event('change',{bubbles:true}));assert.match(form.querySelector('.grade-course-outcome').textContent,/2.5/);
+  form.elements.namedItem('gradeConfirmed').checked=true;form.elements.namedItem('gradeConfirmed').dispatchEvent(new w.Event('change',{bubbles:true}));click('[data-save-grades]');
+  const grades=saved().academicRecords.BASCHEM.gradeAttempts;assert.equal(grades.length,2);assert.equal(grades[0].grade,0);assert.equal(grades[1].grade,2.5);assert.equal(grades[1].term,term+1);assert.equal(saved().academicRecords.BASCHEM.status,'COMPLETED');
+  click('[data-action="close-inspector"]');click('[data-course="BASCHEM~'+term+'"]');assert.equal($('.grade-saved-summary strong').textContent,'0.0');assert.equal($('#course-card [name="final"]').value,'40');assert.ok($('.grade-assessments').disabled);
+  click('[data-grade-history="'+(term+1)+'"]');assert.equal($('.grade-saved-summary strong').textContent,'2.5');assert.equal($('#course-card [name="final"]').value,'80');
+ });
  dom.window.close();
 });

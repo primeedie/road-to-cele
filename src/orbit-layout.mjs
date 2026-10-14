@@ -18,8 +18,9 @@ export function chartSweepBounds(chart){
 }
 export function createOrbitLayout(source){
  const sizes=source.charts.map(c=>chartSweepBounds(c.chart));
- const widths=[0,1,2].map(col=>Math.max(...sizes.filter((b,i)=>i%3===col).map(b=>b.maxX-b.minX)));
- const heights=[0,1,2,3].map(row=>Math.max(...sizes.slice(row*3,row*3+3).map(b=>b.maxY-b.minY)));
+ const widths=[0,1,2].map(col=>Math.max(1,...sizes.filter((b,i)=>(source.charts[i].term-1)%3===col).map(b=>b.maxX-b.minX)));
+ const rowCount=Math.max(4,...source.charts.map(c=>(c.layoutRow??Math.ceil(c.term/3)-1)+1));
+ const heights=Array.from({length:rowCount},(_,row)=>Math.max(1,...sizes.filter((b,i)=>(source.charts[i].layoutRow??Math.ceil(source.charts[i].term/3)-1)===row).map(b=>b.maxY-b.minY)));
  const offsets=(values,gap)=>values.map((_,i)=>120+values.slice(0,i).reduce((sum,v)=>sum+v+gap,0));
  const columns=offsets(widths,170),rows=offsets(heights,120);
  const positions={},charts=[];
@@ -31,7 +32,7 @@ export function createOrbitLayout(source){
   return {chart:moved,label:{x:left+160,y:top+12}};
  }
  for(const entry of source.charts){
-  const courses=source.courses.filter(c=>!c.specialization&&c.term===entry.term),col=(entry.term-1)%3,row=Math.ceil(entry.term/3)-1;
+  const courses=source.courses.filter(c=>entry.courseIds?entry.courseIds.includes(c.id):!c.specialization&&c.term===entry.term),col=(entry.term-1)%3,row=entry.layoutRow??Math.ceil(entry.term/3)-1;
   charts.push({...entry,...place(entry.chart,courses,columns[col],rows[row])});
  }
  let branchChart=null,branchLabel=null;
@@ -43,7 +44,7 @@ export function createOrbitLayout(source){
  // Year IV has two shared terms; its third column holds the integration gate.
  const portalWidth=Math.min(1920,widths[2]),portalHeight=1440;
  const precedingTerm=charts.find(c=>c.term===9).chart.orbit.bounds;
- const portal={x:columns[2]+80,y:precedingTerm.maxY+60,width:portalWidth,height:portalHeight};
+ const portal={x:columns[2]+80,y:(source.personalPlan?Math.max(...groups.map(c=>c.orbit.bounds.maxY)):precedingTerm.maxY)+60,width:portalWidth,height:portalHeight};
  // Bound the visible disk/particles and caption rather than the SVG's empty margins.
  portal.bounds={minX:portal.x+280,minY:portal.y+10,maxX:portal.x+portal.width-280,maxY:portal.y+1200};
  const width=Math.max(portal.bounds.maxX,...groups.map(c=>c.orbit.bounds.maxX))+100,height=Math.max(portal.bounds.maxY,...groups.map(c=>c.orbit.bounds.maxY))+100;

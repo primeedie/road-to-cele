@@ -1,5 +1,6 @@
 import { COURSES, COURSE_BY_ID, SPECIALIZATIONS, MASTERY_SCOPE } from './curriculum.mjs';
 import { defaultCosmetics } from './cosmetics.mjs';
+import {latestCourseGrade,courseGradeAttempts} from './grade-attempts.mjs';
 export function newProgress() {
  return { version:3, academicYear:1, specializationProgression:{ selectedSpecialization:null, specializationStatus:'UNDECIDED', confirmedAt:null, confirmationMethod:null, previousSpecializationHistory:[] }, academicRecords:{}, masteryRecords:{}, quizAttempts:[], integrationAssessments:[],cosmetics:defaultCosmetics() };
 }
@@ -11,7 +12,7 @@ export function previewBranch(p, branch) {
  if (!SPECIALIZATIONS[branch]) throw Error('Unknown specialization');
  return { branch, active:selected(p) === branch, mode:selected(p) === branch ? 'ACTIVE' : 'PREVIEW', courses:COURSES.filter(c=>c.specialization===branch) };
 }
-const begun=(p,id)=>['ACTIVE','COMPLETED'].includes(p.academicRecords[id]?.status);
+const begun=(p,id)=>['ACTIVE','COMPLETED','FAILED'].includes(p.academicRecords[id]?.status);
 // Lecture pairs are enrolled together. Labs retain a directional lecture-first rule.
 export function lectureGroup(id) {
  const ids=new Set([id]),pending=[id];
@@ -27,13 +28,14 @@ export function lectureGroup(id) {
 }
 export function dependencyMet(p,id,type,{lab=false}={}) {
  const record=p.academicRecords[id];
- if(type==='H')return record?.status==='COMPLETED';
+ if(type==='H')return record?.status==='COMPLETED'&&(!courseGradeAttempts(p,id).length||courseGradeAttempts(p,id).some(a=>a.outcome==='PASSED'));
  return begun(p,id)&&(!lab||!record.takenInTerm||record.takenInTerm<=currentAcademicTerm(p));
 }
 export const currentAcademicTerm=p=>p.academicTerm??(p.academicYear-1)*3+1;
 export function courseAccess(p,id,{preview=false}={}) {
  const c=COURSE_BY_ID[id]; if(!c) return {allowed:false,reason:'Unknown course'};
  if(preview) return {allowed:false,reason:'Preview Mode is for exploration only.'};
+ if(p.academicRecords[id]?.status==='FAILED')return {allowed:false,reason:'A failed term grade is recorded. Activate a retake in a later term from Grades.'};
  if(c.specialization && selected(p)!==c.specialization) return {allowed:false,reason:selected(p) ? 'This branch is preview-only. Your academic path is '+selected(p)+'.' : 'Confirm your accepted specialization from Year 3 before activating a specialist course.'};
  if(p.academicYear<c.year) return {allowed:false,reason:'This course opens in Year '+c.year+'. You can explore it now.'};
  const group=c.courseKind==='LAB'?[id]:lectureGroup(id);
@@ -41,6 +43,10 @@ export function courseAccess(p,id,{preview=false}={}) {
  for(const member of group){const partner=COURSE_BY_ID[member];
   if(partner.year>p.academicYear||(partner.specialization&&partner.specialization!==selected(p)))return {allowed:false,reason:'The lecture co-requisite is not available on your academic path yet.'};
   missingHard.push(...partner.hardPrerequisites.filter(id=>!dependencyMet(p,id,'H')));
+  if(!p.academicRecords[member]){
+   const sameTerm=partner.hardPrerequisites.filter(id=>{const passed=courseGradeAttempts(p,id).filter(a=>a.outcome==='PASSED');return passed.length&&Math.min(...passed.map(a=>a.term))>=currentAcademicTerm(p);});
+   if(sameTerm.length)return {allowed:false,reason:'The confirmed hard-prerequisite grade must be from an earlier term. Advance your journey term after finishing it.',missingHard:sameTerm};
+  }
   missingSoft.push(...partner.softPrerequisites.filter(id=>!dependencyMet(p,id,'S')));
   if(partner.courseKind==='LAB')missingCo.push(...partner.corequisites.filter(id=>!dependencyMet(p,id,'C',{lab:true})));
  }
@@ -50,7 +56,7 @@ export function courseAccess(p,id,{preview=false}={}) {
 }
 export function setAcademicYear(p,year) { if(![1,2,3,4].includes(year))throw Error('Invalid year');const n=clone(p); if(year!==p.academicYear)n.academicTerm=(year-1)*3+1;n.academicYear=year;return n; }
 export function setAcademicTerm(p,term) {
- if(!Number.isInteger(term)||Math.ceil(term/3)!==p.academicYear)throw Error('Choose a term in your current academic year');
+ if(!Number.isInteger(term)||term<1||term>60||(Math.min(4,Math.ceil(term/3))!==p.academicYear))throw Error('Choose a term in your current academic year');
  const n=clone(p);n.academicTerm=term;return n;
 }
 export function confirmSpecialization(p,branch,{confirmed=false,method='SELF_REPORTED',at=new Date().toISOString()}={}) {
@@ -72,6 +78,7 @@ export function changeSpecialization(p,branch,{confirmed=false,reason='',at=new 
 }
 export function recordAcademicProgress(p,id,status,{preview=false,at=new Date().toISOString()}={}) {
  if(!['ACTIVE','COMPLETED'].includes(status))throw Error('Invalid academic status');
+ if(latestCourseGrade(p,id)?.outcome==='FAILED'&&status==='COMPLETED')throw Error('Confirm a passing retake grade before recording completion.');
  const access=courseAccess(p,id,{preview});if(!access.allowed)throw Error(access.reason);
  if(p.academicRecords[id]?.status==='COMPLETED'&&status==='ACTIVE')throw Error('This course is already completed');
  const n=clone(p);
@@ -80,6 +87,18 @@ export function recordAcademicProgress(p,id,status,{preview=false,at=new Date().
   n.academicRecords[member]={...old,status:nextStatus,takenInTerm:old.takenInTerm??currentAcademicTerm(p),events:[...(old.events||[]),{status:nextStatus,at,term:currentAcademicTerm(p),method:'SELF_REPORTED',specialization:selected(p)}]};
  }
  return n;
+}
+export function startCourseRetake(p,id,term,{admin=false,preview=false,at=new Date().toISOString()}={}){
+ const latest=latestCourseGrade(p,id);if(p.academicRecords[id]?.status!=='FAILED'||!latest)throw Error('A failed attempt is required before activating a retake.');
+ if(!Number.isInteger(term)||term<=latest.term||term>60||term<currentAcademicTerm(p))throw Error('Choose a later term, at or after your current journey term.');
+ if(preview)throw Error('Preview courses cannot activate retakes.');
+ const next=clone(p);next.academicTerm=term;next.academicYear=Math.min(4,Math.ceil(term/3));
+ // Evaluate the ordinary prerequisites against the new term without the failed-status guard.
+ next.academicRecords[id]={...next.academicRecords[id],status:'ACTIVE',takenInTerm:term};
+ if(!admin){const access=courseAccess(next,id);if(!access.allowed)throw Error(access.reason);
+  for(const member of access.coactivate||[])next.academicRecords[member]={...(next.academicRecords[member]||{}),status:'ACTIVE',takenInTerm:term,events:[...(next.academicRecords[member]?.events||[]),{status:'ACTIVE',term,at,method:'SELF_REPORTED'}]};
+ }
+ next.academicRecords[id].events=[...(p.academicRecords[id].events||[]),{status:'ACTIVE',term,at,method:'RETAKE_ACTIVATION'}];return next;
 }
 // Assessment services can use this boundary later; no quizzes are implemented in this phase.
 export function recordMasteryResult(p,id,{passed,attemptId,preview=false,at=new Date().toISOString()}={}) {

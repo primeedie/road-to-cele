@@ -2,7 +2,7 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 export const OVERVIEW_SCALE=.2;
 export function overviewCourseMarkup(course,state){
  const term=(course.term-1)%3+1;
- return `<strong class="overview-code">${esc(course.id)}</strong><span class="overview-title">${esc(course.title)}</span><small>Year ${course.year} · Term ${term} · ${esc(state)}</small>`;
+ return `<strong class="overview-code">${esc(course.code||course.id)}</strong><span class="overview-title">${esc(course.title)}</span><small>Year ${course.year} · Term ${term} · ${esc(state)}${course.archivedAttempt?' · failed attempt':course.retake?' · retake':course.shifted?' · shifted plan':''}</small>`;
 }
 export function attachOverviewTooltip(viewport,{getCourse,getScale,requestFrame,cancelFrame}){
  const doc=viewport.ownerDocument,win=doc.defaultView,card=doc.createElement('div');

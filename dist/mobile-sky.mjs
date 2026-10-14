@@ -16,7 +16,7 @@ export function createMobileScene(map,{getState=()=> 'locked',selectedCourse=nul
  });
  const groups=[...map.charts,...(map.branchChart?[{chart:map.branchChart,label:map.branchLabel,branch:map.courses.find(c=>c.specialization)?.specialization}]:[])];
  const charts=groups.map(group=>{
-  const members=nodes.filter(n=>group.branch?n.course.specialization===group.branch:!n.course.specialization&&n.course.term===group.term);
+  const members=nodes.filter(n=>group.courseIds?group.courseIds.includes(n.course.id):group.branch?n.course.specialization===group.branch:!n.course.specialization&&n.course.term===group.term);
   const lights=members.filter(n=>['active-course','completed'].includes(n.state)).map(n=>({anchor:n.p.anchorIndex,strength:n.state==='completed'?1:.7}));
   return {...group,color:color(group.chart.id),bounds:group.chart.orbit.bounds,lights:localLightSegments(group.chart,lights)};
  });
@@ -74,9 +74,10 @@ export function createMobilePainter({makeCanvas,Path,cacheBytes=24*1024*1024}){
   ctx.fillStyle=lit?'#fff':white(accent,.45);ctx.globalAlpha=opacity*(lit?1:.88);ctx.fill(paths['star-center']);
   ctx.globalAlpha=opacity;ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(72,52,complete?6:active?4.5:3,0,Math.PI*2);ctx.fill();ctx.restore();
   ctx.globalAlpha=1;ctx.font='800 30px "CELE WenHei", Arial, sans-serif';ctx.textAlign='center';ctx.textBaseline='top';
-  const labelWidth=Math.max(100,ctx.measureText(node.course.id).width+18),left=125-labelWidth/2,y=node.p.labelY;
+  const code=node.course.code||node.course.id,labelWidth=Math.max(100,ctx.measureText(code).width+18),left=125-labelWidth/2,y=node.p.labelY;
   ctx.fillStyle='#00000088';ctx.fillRect(left,y,labelWidth,43);ctx.globalAlpha=.24;ctx.strokeStyle=accent;ctx.lineWidth=1;ctx.strokeRect(left,y,labelWidth,43);
-  ctx.globalAlpha=1;ctx.fillStyle=complete?'#fff':white(accent,active?.65:.26);ctx.fillText(node.course.id,125,y+5);
+  ctx.globalAlpha=1;ctx.fillStyle=complete?'#fff':white(accent,active?.65:.26);ctx.fillText(code,125,y+5);
+  if(node.course.archivedAttempt||node.course.retake){ctx.font='800 18px "CELE WenHei", Arial, sans-serif';ctx.fillStyle=node.course.archivedAttempt?'#ebb599':'#e3ca96';ctx.fillText(node.course.archivedAttempt?'0.0 · previous attempt':'Retake',125,y+48);}
   const value={image,width,height,bytes:image.width*image.height*4};sprites.set(key,value);bytes+=value.bytes;
   while(bytes>cacheBytes&&sprites.size>1){const [old,item]=sprites.entries().next().value;sprites.delete(old);bytes-=item.bytes;}
   return value;
@@ -111,7 +112,7 @@ export function createMobilePainter({makeCanvas,Path,cacheBytes=24*1024*1024}){
    ctx.fillStyle=group.color;ctx.globalAlpha=.3;for(const p of chart.vertices){ctx.beginPath();ctx.arc(p.x,p.y,p.degree>2?4:2.8,0,Math.PI*2);ctx.fill();}
    ctx.globalAlpha=scene.tracing?.35:1;ctx.lineWidth=Math.max(3,.65/styleScale);
    for(const light of group.lights){const a=chart.vertices[light.from],b=chart.vertices[light.to],gradient=ctx.createLinearGradient(a.x,a.y,b.x,b.y),tone=white(group.color,.58);gradient.addColorStop(0,tone+Math.round(light.start*255).toString(16).padStart(2,'0'));gradient.addColorStop(.5,tone+'00');gradient.addColorStop(1,tone+Math.round(light.end*255).toString(16).padStart(2,'0'));ctx.strokeStyle=gradient;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();}
-   ctx.globalAlpha=1;ctx.textAlign='left';ctx.textBaseline='top';ctx.font='800 24px "CELE WenHei", Arial, sans-serif';ctx.fillStyle='#ccc';ctx.fillText(group.branch||'Year '+['I','II','III','IV'][Math.ceil(group.term/3)-1],group.label.x,group.label.y);
+   ctx.globalAlpha=1;ctx.textAlign='left';ctx.textBaseline='top';ctx.font='800 24px "CELE WenHei", Arial, sans-serif';ctx.fillStyle='#ccc';ctx.fillText(group.branch||'Year '+(['I','II','III','IV'][Math.ceil(group.term/3)-1]||Math.ceil(group.term/3)),group.label.x,group.label.y);
    if(!group.branch){ctx.font='800 18px "CELE WenHei", Arial, sans-serif';ctx.fillStyle='#aaa';ctx.fillText('Term '+String(group.term).padStart(2,'0'),group.label.x+110,group.label.y+3);}
    ctx.font='800 42px "CELE WenHei", Arial, sans-serif';ctx.fillStyle=group.color;ctx.fillText(chart.name,group.label.x,group.label.y+34);
    if(group.branch){ctx.font='800 21px "CELE WenHei", Arial, sans-serif';ctx.fillStyle='#ccc';ctx.fillText('Hide constellation',group.label.x+10,group.label.y+105);ctx.globalAlpha=.3;ctx.strokeStyle=group.color;ctx.lineWidth=1;ctx.strokeRect(group.label.x,group.label.y+92,235,45);ctx.globalAlpha=1;}

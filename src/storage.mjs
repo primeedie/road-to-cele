@@ -6,13 +6,18 @@ export function hydrateProgress(raw) {
  if(!raw || raw.version!==3)throw Error('Unsupported progress format');
  const p=newProgress();
  if(![1,2,3,4].includes(raw.academicYear))throw Error('Invalid academic year');
- if(raw.academicTerm!==undefined&&(!Number.isInteger(raw.academicTerm)||Math.ceil(raw.academicTerm/3)!==raw.academicYear))throw Error('Invalid academic term');
+ if(raw.academicTerm!==undefined&&(!Number.isInteger(raw.academicTerm)||raw.academicTerm<1||raw.academicTerm>60||Math.min(4,Math.ceil(raw.academicTerm/3))!==raw.academicYear))throw Error('Invalid academic term');
  const r=raw.specializationProgression;
  if(!r || !['UNDECIDED','CONFIRMED'].includes(r.specializationStatus) || !Array.isArray(r.previousSpecializationHistory))throw Error('Invalid specialization record');
  if(r.specializationStatus==='CONFIRMED' && (!SPECIALIZATIONS[r.selectedSpecialization] || r.confirmationMethod!=='SELF_REPORTED' || !r.confirmedAt))throw Error('Invalid confirmation');
  if(r.specializationStatus==='UNDECIDED' && r.selectedSpecialization!==null)throw Error('Invalid undecided path');
  for(const key of ['academicRecords','masteryRecords'])if(!raw[key] || typeof raw[key]!=='object' || Array.isArray(raw[key]))throw Error('Invalid records');
  for(const key of ['quizAttempts','integrationAssessments'])if(!Array.isArray(raw[key]))throw Error('Invalid history');
+ for(const record of Object.values(raw.academicRecords)){
+  if(record?.gradeAttempts===undefined)continue;
+  if(!Array.isArray(record.gradeAttempts)||record.gradeAttempts.length>60)throw Error('Invalid term grade history');
+  const terms=new Set();for(const a of record.gradeAttempts){if(!Number.isInteger(a.term)||a.term<1||a.term>60||terms.has(a.term)||!Number.isFinite(a.total)||a.total<0||![0,1,1.5,2,2.5,3,3.5,4].includes(a.grade)||!['PASSED','FAILED'].includes(a.outcome)||!a.confirmedAt||!a.draft||typeof a.draft!=='object'||Array.isArray(a.draft)||!Array.isArray(a.revisions))throw Error('Invalid confirmed term grade');terms.add(a.term);}
+ }
  return structuredClone({...p,...raw,cosmetics:hydrateCosmetics(raw.cosmetics)});
 }
 export function loadProgress(storage) {const raw=storage.getItem(STORAGE_KEY);return raw?hydrateProgress(JSON.parse(raw)):newProgress();}
