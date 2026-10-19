@@ -9,6 +9,11 @@ const cloudConfig=deploymentCloudConfig(process.env,productionDefaults);
 await verifyAttribution('src');
 await mkdir('dist', { recursive: true });
 await cp('src', 'dist', { recursive: true });
+// PDF parsing is loaded only when a student selects a booklet. Keep the worker local.
+await mkdir('dist/vendor',{recursive:true});
+for(const file of ['pdf.mjs','pdf.worker.mjs'])await cp('node_modules/pdfjs-dist/legacy/build/'+file,'dist/vendor/'+file);
+await cp('node_modules/pdfjs-dist/LICENSE','dist/vendor/PDFJS-LICENSE.txt');
+await cp('node_modules/pdfjs-dist/standard_fonts','dist/vendor/standard_fonts',{recursive:true});
 let fontFace=await readFile('src/font-face.css','utf8');
 for(const [extension,format] of [['woff2','woff2'],['woff','woff'],['otf','opentype'],['ttf','truetype']]){
   const fontPath=`assets/fonts/HYWenHei-85W.${extension}`;

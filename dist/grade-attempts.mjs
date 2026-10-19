@@ -1,5 +1,6 @@
 import {COURSE_BY_ID,COURSES} from './curriculum.mjs';
 import {COURSE_GRADING_SCHEMES,gradeDraftValues,gradeForecast,termLabel} from './grade-calculator.mjs';
+import {isBookletAttempt,bookletGradeLabel} from './advising-grade.mjs';
 const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export const courseGradeAttempts=(p,id)=>[...(p.academicRecords[id]?.gradeAttempts||[])].sort((a,b)=>a.term-b.term);
 export const latestCourseGrade=(p,id)=>courseGradeAttempts(p,id).at(-1)||null;
@@ -18,6 +19,7 @@ export function saveCourseGrade(p,id,{term,draft,confirmed=false,correction=fals
  if(course.specialization&&p.specializationProgression.selectedSpecialization!==course.specialization&&!admin)throw Error('This course is outside your selected academic path.');
  if(!Number.isInteger(term)||term<1||term>60)throw Error('Choose a valid journey term.');
  const attempts=courseGradeAttempts(p,id),old=attempts.find(a=>a.term===term);
+ if(isBookletAttempt(old))throw Error('This is an imported final grade without assessment scores. Correct it by reviewing a new booklet import.');
  if(!old&&term!==attemptTerm(p,id))throw Error('Save grades to the term in which this attempt was activated.');
  if(old&&!correction)throw Error('This term already has a confirmed grade. Choose Edit to correct it.');
  if(!old&&attempts.some(a=>a.outcome==='PASSED'))throw Error('A passing attempt is already recorded.');
@@ -36,7 +38,7 @@ export function saveCourseGrade(p,id,{term,draft,confirmed=false,correction=fals
 export function renderGradeHistory(p,id,{selectedTerm=attemptTerm(p,id)}={}){
  const attempts=courseGradeAttempts(p,id),latest=attempts.at(-1),record=p.academicRecords[id];
  const nextTerm=Math.max((latest?.term??0)+1,p.academicTerm??(p.academicYear-1)*3+1);
- const history=attempts.length?'<details class="grade-attempt-history"><summary>Term grades ('+attempts.length+')</summary><div class="grade-attempt-list">'+attempts.map(a=>'<button type="button" data-grade-history="'+a.term+'" aria-pressed="'+(a.term===selectedTerm)+'"><span>'+esc(termLabel(a.term))+'</span><strong class="'+(a.outcome==='PASSED'?'grade-pass':'grade-fail')+'">'+a.grade.toFixed(1)+'</strong><small>'+a.total.toFixed(2)+'% · '+(a.outcome==='PASSED'?'Passed':'Not passed')+(a.revisions?.length?' · corrected':'')+'</small></button>').join('')+'</div>'+(record?.status==='ACTIVE'&&!attempts.some(a=>a.term===record.takenInTerm)?'<button type="button" class="secondary" data-grade-history="'+record.takenInTerm+'">Current attempt · '+esc(termLabel(record.takenInTerm))+'</button>':'')+'</details>':'';
+ const history=attempts.length?'<details class="grade-attempt-history"><summary>Term grades ('+attempts.length+')</summary><div class="grade-attempt-list">'+attempts.map(a=>'<button type="button" data-grade-history="'+a.term+'" aria-pressed="'+(a.term===selectedTerm)+'"><span>'+esc(termLabel(a.term))+'</span><strong class="'+(a.outcome==='PASSED'?'grade-pass':'grade-fail')+'">'+esc(bookletGradeLabel(a))+'</strong><small>'+(a.total===null?'Booklet final grade · ':a.total.toFixed(2)+'% · ')+(a.outcome==='PASSED'?'Passed':'Not passed')+(a.revisions?.length?' · corrected':'')+'</small></button>').join('')+'</div>'+(record?.status==='ACTIVE'&&!attempts.some(a=>a.term===record.takenInTerm)?'<button type="button" class="secondary" data-grade-history="'+record.takenInTerm+'">Current attempt · '+esc(termLabel(record.takenInTerm))+'</button>':'')+'</details>':'';
  const retake=record?.status==='FAILED'&&latest&&latest.term<60?'<div class="grade-retake"><h4>A new term, a fresh attempt</h4><p>Your earlier grade stays in the record. Hard prerequisites require a passing attempt; soft prerequisites recognize that you have taken this course.</p><label>Retake journey term<input type="number" name="retakeTerm" min="'+nextTerm+'" max="60" step="1" value="'+nextTerm+'"></label><button type="button" class="secondary" data-grade-retake>Activate retake</button><small>Updates your current journey term. Confirm actual enrollment and course availability separately.</small></div>':'';
  return history+retake;
 }

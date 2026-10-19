@@ -342,5 +342,8 @@ test('actual website interactions keep exploration separate from academic progre
   change('[data-checklist-batch]','123');assert.equal($('[data-checklist-row="GEFTWEL"]'),null);assert.ok($('[data-checklist-row="PE1CRDO"]'));assert.ok(saved().nonMajorRecords.GEMATMW.taken);
   click('[data-page="journal"]');click('[data-page="checklist"]');assert.ok($('[data-non-major="GEMATMW"][data-field="taken"]').checked);assert.equal($('#checklist-page [data-action="reset-progress"]'),null);
  });
+ await t.test('journal exposes a local booklet preview without changing the student journey on open or cancel',()=>{
+  click('[data-page="journal"]');const before=localStorage.getItem(STORAGE_KEY);click('[data-action="import-booklet"]');assert.equal($('#booklet-dialog').open,true);assert.ok($('#booklet-dialog [data-booklet-file]'));assert.match($('#booklet-dialog').textContent,/PDF is read on this device/);assert.equal($('#booklet-dialog [data-booklet-action="apply"]'),null);click('[data-booklet-action="close"]');assert.equal($('#booklet-dialog').open,false);assert.equal(localStorage.getItem(STORAGE_KEY),before);assert.ok($('#journal-page .academic-summary'));assert.equal(document.querySelectorAll('#journal-page .academic-summary').length,1);
+ });
  dom.window.close();
 });

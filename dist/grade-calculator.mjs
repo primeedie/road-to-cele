@@ -120,6 +120,7 @@ export function gradeFormValues(form,scheme){
  return {scheme:{...scheme,components},scores,target,requirements,targetGrade:form.elements.namedItem('targetGrade')?Number(form.elements.namedItem('targetGrade').value):null,draft};
 }
 export function renderGradeCalculator(course,scheme=COURSE_GRADING_SCHEMES[course.id],{draft={},term=null,saved=null,readOnly=false}={}){
+ if(saved?.method==='BOOKLET_IMPORT')return '<div class="grade-saved-summary" data-tone="'+(saved.outcome==='PASSED'?'positive':'warning')+'"><span>Booklet record · '+esc(termLabel(saved.term))+'</span><strong>'+esc(saved.gradeText||(saved.grade===null?'P':saved.grade.toFixed(1)))+'</strong><span>'+(saved.outcome==='PASSED'?'Passed':'Not passed')+'</span><small>Confirmed by you from your advising booklet</small></div><p class="grade-scope-note">Your booklet records a final grade only. Quiz scores, exam scores and a percentage breakdown were not supplied.</p>';
  if(!scheme)return '<div class="dossier-placeholder grade-pending"><h4>Awaiting '+(course.courseKind==='LAB'?'laboratory':'course')+' grading scheme</h4><p>Upload the syllabus to use its assessment weights and passing rules.</p></div>';
  validateGradingScheme(scheme);
  const compared=id=>scheme.comparison?.ids.includes(id),target=scheme.defaultTarget||scheme.components.at(-1).id;

@@ -4,6 +4,8 @@ import { hydrateCosmetics } from './cosmetics.mjs';
 import {normalizeProfilePhoto} from './profile-photo.mjs';
 import {normalizeNonMajorRecords} from './non-major-checklist.mjs';
 import {validChecklistBatch} from './non-major-courses.mjs';
+import {validBookletAttempt,isBookletAttempt} from './advising-grade.mjs';
+import {normalizeAdvisingNonMajor} from './advising-import.mjs';
 export const STORAGE_KEY='cele-atlas.progress.v3';
 export function hydrateProgress(raw) {
  if(!raw || raw.version!==3)throw Error('Unsupported progress format');
@@ -19,13 +21,15 @@ export function hydrateProgress(raw) {
  for(const record of Object.values(raw.academicRecords)){
   if(record?.gradeAttempts===undefined)continue;
   if(!Array.isArray(record.gradeAttempts)||record.gradeAttempts.length>60)throw Error('Invalid term grade history');
-  const terms=new Set();for(const a of record.gradeAttempts){if(!Number.isInteger(a.term)||a.term<1||a.term>60||terms.has(a.term)||!Number.isFinite(a.total)||a.total<0||![0,1,1.5,2,2.5,3,3.5,4].includes(a.grade)||!['PASSED','FAILED'].includes(a.outcome)||!a.confirmedAt||!a.draft||typeof a.draft!=='object'||Array.isArray(a.draft)||!Array.isArray(a.revisions))throw Error('Invalid confirmed term grade');terms.add(a.term);}
+  const terms=new Set();for(const a of record.gradeAttempts){if(terms.has(a?.term))throw Error('Invalid confirmed term grade');if(isBookletAttempt(a)){if(!validBookletAttempt(a))throw Error('Invalid confirmed term grade');terms.add(a.term);continue;}if(!Number.isInteger(a.term)||a.term<1||a.term>60||!Number.isFinite(a.total)||a.total<0||![0,1,1.5,2,2.5,3,3.5,4].includes(a.grade)||!['PASSED','FAILED'].includes(a.outcome)||!a.confirmedAt||!a.draft||typeof a.draft!=='object'||Array.isArray(a.draft)||!Array.isArray(a.revisions))throw Error('Invalid confirmed term grade');terms.add(a.term);}
  }
  const next={...p,...raw,cosmetics:hydrateCosmetics(raw.cosmetics)},photo=normalizeProfilePhoto(raw.profilePhoto);
  if(photo)next.profilePhoto=photo;else delete next.profilePhoto;
  const checklist=normalizeNonMajorRecords(raw.nonMajorRecords);
  if(Object.keys(checklist).length)next.nonMajorRecords=checklist;else delete next.nonMajorRecords;
  if(!validChecklistBatch(raw.nonMajorBatchId))delete next.nonMajorBatchId;
+ const nonMajorHistory=normalizeAdvisingNonMajor(raw.advisingNonMajor);
+ if(nonMajorHistory.length)next.advisingNonMajor=nonMajorHistory;else delete next.advisingNonMajor;
  return structuredClone(next);
 }
 export function loadProgress(storage) {const raw=storage.getItem(STORAGE_KEY);return raw?hydrateProgress(JSON.parse(raw)):newProgress();}
