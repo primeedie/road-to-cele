@@ -9,3 +9,5 @@ For a presentation-friendly explanation of the skeleton and implementation, see 
 The Non-major checklist records GE, Lasallian, PE, NSTP and student formation courses in one list, with Year Taken / Term dropdowns and batch-specific PE subjects. It saves with the existing account journey and has no effect on technical prerequisites. See [NON_MAJOR_CHECKLIST.md](NON_MAJOR_CHECKLIST.md) for details and supplied-file provenance.
 
 My journal can import a text-based academic advising PDF after a review, update major and non-major records, and show subjects taken in separate summary tables. PDFs are read on the device; only confirmed course rows are saved. Retakes and previous grades are retained. See [ADVISING_IMPORT.md](ADVISING_IMPORT.md).
+
+The CIVINCO portal opens a separate review dimension for MSTE, PSAD (including construction), and HGE. Batch leaderboards rank saved major-course completion with anonymous labels by default, optional name sharing, and a Delete account option in Account. See [LEADERBOARD_SETUP.md](LEADERBOARD_SETUP.md) for the SQL migration and server setup.

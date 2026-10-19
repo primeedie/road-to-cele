@@ -29,3 +29,16 @@ test('Google and existing accounts choose a batch without replacing their journe
   assert.deepEqual(account.model.progress(),before);assert.equal(reads,1);assert.equal(writes,0);assert.equal(published,publishedBefore);assert.equal(account.model.state().user.user_metadata.full_name,'Student');
  }finally{dom.window.close();}
 });
+
+test('identity sharing requires an explicit settings save, can be revoked, and never changes academic progress',async()=>{
+ const dom=new JSDOM('<div id="account-panel"></div><dialog id="account-dialog"></dialog>',{url:'https://road.test/'}),doc=dom.window.document,w=dom.window;
+ w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;};
+ let user={id:'owner',email:'freshmilchh@accounts.road-to-cele.invalid',user_metadata:{batch_id:122,username:'freshmilchh'}},updates=[];
+ const p=newProgress();p.academicRecords.FNDMATH={status:'COMPLETED',events:[]};
+ const client={auth:{onAuthStateChange(){},getSession:async()=>({data:{session:{user}}}),updateUser:async data=>{updates.push(data);user={...user,user_metadata:{...user.user_metadata,...data.data}};return {data:{user}};}},from:()=>({select:()=>({eq:()=>({maybeSingle:async()=>({data:{progress:p,revision:1}})})})}),rpc:async()=>({data:{saved:true,revision:2}})};
+ const account=setupAccount({document:doc,storage:w.localStorage,config:{url:'https://test.supabase.co',publishableKey:'sb_publishable_test'},clientFactory:()=>client,onProgress:()=>{}});
+ try{await account.start();doc.querySelector('[data-account="open"]').click();const before=account.model.progress();assert.equal(doc.querySelector('[name="showLeaderboardIdentity"]').checked,false);
+  for(const share of [true,false]){const form=doc.querySelector('[data-leaderboard-privacy-form]');form.elements.namedItem('showLeaderboardIdentity').checked=share;form.elements.namedItem('showLeaderboardIdentity').dispatchEvent(new w.Event('change',{bubbles:true}));assert.equal(updates.length,share?0:1);form.dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));await new Promise(r=>setTimeout(r,5));assert.equal(account.model.state().user.user_metadata.leaderboard_show_identity,share);assert.equal(doc.querySelector('[name="showLeaderboardIdentity"]').checked,share);}
+  assert.deepEqual(updates,[{data:{leaderboard_show_identity:true}},{data:{leaderboard_show_identity:false}}]);assert.deepEqual(account.model.progress(),before);assert.equal(account.model.state().user.user_metadata.batch_id,122);assert.match(doc.querySelector('.leaderboard-privacy-status').textContent,/anonymous/);
+ }finally{dom.window.close();}
+});

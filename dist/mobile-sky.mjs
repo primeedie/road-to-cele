@@ -8,7 +8,7 @@ const overlaps=(a,b)=>a.maxX>=b.minX&&a.minX<=b.maxX&&a.maxY>=b.minY&&a.minY<=b.
 const white=(hex,amount)=>'#'+[1,3,5].map(i=>Math.round(parseInt(hex.slice(i,i+2),16)*(1-amount)+255*amount).toString(16).padStart(2,'0')).join('');
 export const MOBILE_SKY_QUERY='(max-width: 760px), (pointer: coarse)';
 
-export function createMobileScene(map,{getState=()=> 'locked',selectedCourse=null,connectionKey=null,gateLabel='View gate requirements'}={}){
+export function createMobileScene(map,{getState=()=> 'locked',selectedCourse=null,connectionKey=null,gateLabel='View review access requirements'}={}){
  const trace=traceConnection(map.courses,connectionKey);
  const nodes=map.courses.map(course=>{
   const p=map.positions[course.id];

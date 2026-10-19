@@ -41,7 +41,7 @@ test('overview hover and keyboard cards are readable, escaped, clamped, and disa
  }finally{api.destroy();win.close();}
 });
 
-test('CIVINCO portal occupies a bounded unused column and its actions only open the existing gate',()=>{
+test('CIVINCO portal occupies a bounded unused column and opens review without granting academic progress',()=>{
  for(const branch of [null,'STE','GTE','HWR','TRE','CTM']){
   const map=createOrbitLayout(createSkyMap(branch)),p=map.portal.bounds,b=orbitSceneBounds(map);
   const finalTerm=map.charts.find(c=>c.term===11).chart.orbit.bounds;
@@ -49,7 +49,7 @@ test('CIVINCO portal occupies a bounded unused column and its actions only open 
   assert.ok(p.minY-map.charts.find(c=>c.term===9).chart.orbit.bounds.maxY>=60);
   assert.ok(p.minX>=b.minX&&p.maxX<=b.maxX&&p.minY>=b.minY&&p.maxY<=b.maxY);
   for(const chart of [...map.charts.map(c=>c.chart),...(map.branchChart?[map.branchChart]:[])]){const c=chart.orbit.bounds;assert.ok(p.maxX<=c.minX||p.minX>=c.maxX||p.maxY<=c.minY||p.minY>=c.maxY);}
-  for(const [gate,state] of [[{eligible:false,cleared:false},'locked'],[{eligible:true,cleared:false},'ready'],[{eligible:false,cleared:true},'cleared']]){
+  for(const [gate,state] of [[{eligible:false,cleared:false},'locked'],[{eligible:true,cleared:false},'ready'],[{eligible:false,cleared:true},'locked']]){
    const dom=new JSDOM(civincoPortalMarkup(map.portal,gate)),button=dom.window.document.querySelector('button');assert.equal(button.dataset.page,'gate');assert.equal(button.dataset.gateState,state);assert.equal(button.hasAttribute('data-academic'),false);dom.window.close();
   }
  }

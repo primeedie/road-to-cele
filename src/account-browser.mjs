@@ -7,8 +7,11 @@ import { usernameForm, usernameCredentials, usernameAuthError, USERNAME_DOMAIN, 
 import { recoveryMarkup, recoveryInput, recoveryRequest, downloadRecoveryCodes } from './recovery-account.mjs';
 import {studentBatch,parseBatchId} from './student-profile.mjs';
 import {createProfilePhotoEditor} from './profile-photo.mjs';
+import {sharesLeaderboardIdentity} from './leaderboard-privacy.mjs';
+import {loadBatchLeaderboard} from './leaderboard-service.mjs';
+import {accountDeletionMarkup,requestAccountDeletion,removeDeletedAccountCopies,ACCOUNT_DELETION_PHRASE} from './account-deletion.mjs';
 
-export function setupAccount({storage,document,onProgress,onIdentity=()=>{},onProfilePhotoChange=()=>{},onError=()=>{},config=cloudConfig,clientFactory=null,settingsFetcher=null,recoveryFetcher=null,photoProcessor}) {
+export function setupAccount({storage,document,onProgress,onIdentity=()=>{},onProfilePhotoChange=()=>{},onError=()=>{},config=cloudConfig,clientFactory=null,settingsFetcher=null,recoveryFetcher=null,deletionFetcher=null,photoProcessor}) {
  let client=null,model,photoEditor,error='',starting=false,busy=false,confirmSignout=false,usernameMode='signin';
  const configured=!!config.url;
  const service=configured?{
@@ -17,12 +20,14 @@ export function setupAccount({storage,document,onProgress,onIdentity=()=>{},onPr
  }:null;
  const dialog=document.querySelector('#account-dialog');
  let recoveryScreen=null,codes=[],recoveryAvailable=false,recoveryEpoch=0,paintedUser=null;
- const batchPrompted=new Set();let profileSaved=false;
+ const batchPrompted=new Set();let profileSaved=false,privacySaved=null;
+ let deletionOwner=null,deletionAvailable=false,deletionEpoch=0;
+ const clearDeletion=()=>{deletionOwner=null;deletionAvailable=false;deletionEpoch++;};
  const requestRecovery=(data,token)=>recoveryRequest(data,token,recoveryFetcher?{fetcher:recoveryFetcher}:{});
  function clearRecovery(){recoveryEpoch++;recoveryScreen=null;codes=[];}
  function paint(s) {
   const ownerChanged=paintedUser!==s.user?.id;
-  if(ownerChanged){clearRecovery();paintedUser=s.user?.id;profileSaved=false;}
+  if(ownerChanged){clearRecovery();clearDeletion();paintedUser=s.user?.id;profileSaved=false;privacySaved=null;}
   photoEditor?.sync();
   document.querySelector('#account-panel').innerHTML=accountMarkup(s,{photo:model.progress().profilePhoto});
   onIdentity(s.user);
@@ -33,13 +38,17 @@ export function setupAccount({storage,document,onProgress,onIdentity=()=>{},onPr
   if(dialog.open) {
    const previous=dialog.querySelector('[data-username-form],[data-recovery-form]'),name=previous?.elements.namedItem('username')?.value||'';
    const batch=ownerChanged?null:dialog.querySelector('[name="batchId"]')?.value;
+   const privacyChoice=ownerChanged?null:dialog.querySelector('[name="showLeaderboardIdentity"]')?.checked;
    dialog.innerHTML=`<button class="account-dialog-close" data-account="close" aria-label="Close account">×</button>${confirmSignout?'<h2>Your cloud save is pending</h2><p>Your latest changes are kept on this device. Retry syncing before signing out, or keep the device copy and sign out now.</p><div class="account-choice"><button class="primary" data-account="retry-signout">Retry sync</button><button class="secondary" data-account="logout-anyway">Keep device copy and sign out</button></div>':accountDialogMarkup(s,model.snapshotChoices())+(!s.user&&!s.choice&&configured?usernameForm(usernameMode):'')}<p class="account-dialog-error" role="alert">${error.replace(/[<>&]/g,'')}</p>`;
    if(recoveryScreen&&!s.choice&&!confirmSignout){dialog.innerHTML='<button class="account-dialog-close" data-account="close" aria-label="Close account">×</button>'+recoveryMarkup(recoveryScreen,codes,{available:recoveryAvailable})+'<p class="account-dialog-error" role="alert">'+error.replace(/[<>&]/g,'')+'</p>';}
    else if(s.user?.email?.endsWith('@'+USERNAME_DOMAIN)&&!s.choice&&!confirmSignout)dialog.insertAdjacentHTML('beforeend','<button class="recovery-link" data-account="recovery-codes">Manage recovery codes</button>');
    const form=dialog.querySelector('[data-username-form],[data-recovery-form]');if(form){if(form.elements.namedItem('username'))form.elements.namedItem('username').value=name;form.querySelector('[type="submit"]').disabled=busy;}
    const batchField=dialog.querySelector('[name="batchId"]');if(batchField&&batch&&!(profileSaved&&s.user))batchField.value=batch;
+   const privacyField=dialog.querySelector('[name="showLeaderboardIdentity"]');if(privacyField&&privacyChoice!==null&&privacyChoice!==undefined)privacyField.checked=privacyChoice;
+   const privacyStatus=dialog.querySelector('.leaderboard-privacy-status');if(privacyStatus&&privacySaved!==null)privacyStatus.textContent=privacySaved?'Your account name is now visible on your batch leaderboard.':'Your leaderboard entry is now anonymous.';
    const profile=dialog.querySelector('[data-profile-form]');if(profile){profile.querySelector('[type="submit"]').disabled=busy;if(profileSaved)profile.insertAdjacentHTML('beforeend','<p class="profile-save-state" role="status">Batch saved to your account.</p>');}
    if(s.user&&!s.choice&&!recoveryScreen&&!confirmSignout){const profile=dialog.querySelector('[data-profile-form]');if(profile)profile.insertAdjacentHTML('beforebegin',photoEditor?.markup()||'');}
+   if(deletionOwner===s.user?.id&&!s.choice&&!confirmSignout){dialog.innerHTML='<button class="account-dialog-close" data-account="close" aria-label="Close account">×</button>'+accountDeletionMarkup({available:deletionAvailable,name:accountName(s.user)})+'<p class="account-dialog-error" role="alert">'+error.replace(/[<>&]/g,'')+'</p>';dialog.querySelector('[type="submit"]').disabled=busy||!deletionAvailable;}
   }
  }
  model=createAccountProgress({storage,service,onProgress,onState:paint});
@@ -68,7 +77,13 @@ export function setupAccount({storage,document,onProgress,onIdentity=()=>{},onPr
   const button=event.target.closest('[data-account]'),action=button?.dataset.account;if(!action||busy)return;
   error='';
   try {
-   if(action==='close'){clearRecovery();photoEditor.reset();dialog.close();return;}
+   if(action==='close'){clearRecovery();clearDeletion();photoEditor.reset();dialog.close();return;}
+   if(action==='delete-account'){
+    clearRecovery();clearDeletion();photoEditor.reset();if(!model.state().user||!model.state().ready)return;
+    deletionOwner=model.state().user.id;const epoch=deletionEpoch;paint(model.state());
+    try{const result=await requestAccountDeletion(deletionFetcher?{fetcher:deletionFetcher}:{});if(epoch===deletionEpoch&&deletionOwner===model.state().user?.id){deletionAvailable=result.available===true;paint(model.state());}}catch{if(epoch===deletionEpoch)paint(model.state());}return;
+   }
+   if(action==='cancel-deletion'){clearDeletion();paint(model.state());return;}
    if(action==='recover'||action==='recovery-codes'){
     clearRecovery();const epoch=recoveryEpoch;recoveryScreen=action==='recover'?'recover':'issue';recoveryAvailable=false;paint(model.state());
     try{const result=await requestRecovery();if(epoch===recoveryEpoch){recoveryAvailable=result.available===true;paint(model.state());}}catch{if(epoch===recoveryEpoch)paint(model.state());}
@@ -101,6 +116,38 @@ export function setupAccount({storage,document,onProgress,onIdentity=()=>{},onPr
   }catch {error='That account action could not finish. Your existing journey is retained. Please try again.';paint(model.state());onError(error);}finally{busy=false;button.disabled=false;}
  });
  document.addEventListener('submit',async event=>{
+  const deletionForm=event.target.closest('[data-account-deletion-form]');
+  if(deletionForm){
+   event.preventDefault();if(busy)return;const owner=deletionOwner,epoch=deletionEpoch;error='';
+   try{
+    if(!owner||owner!==model.state().user?.id||!deletionAvailable||!model.state().ready)throw Error('Open account deletion again.');
+    if(deletionForm.elements.namedItem('confirmation').value!==ACCOUNT_DELETION_PHRASE||!deletionForm.elements.namedItem('acknowledge').checked)throw Error('Type DELETE MY ACCOUNT and acknowledge permanent deletion.');
+    busy=true;deletionForm.querySelector('[type="submit"]').disabled=true;const session=await client.auth.getSession();
+    if(epoch!==deletionEpoch||model.state().user?.id!==owner||session.data?.session?.user?.id!==owner)throw Error('Your account changed. Open deletion again.');
+    const result=await requestAccountDeletion({token:session.data.session.access_token,confirmation:ACCOUNT_DELETION_PHRASE,...(deletionFetcher?{fetcher:deletionFetcher}:{})});if(result.deleted!==true)throw Error('Deletion could not be confirmed.');
+    // Invalidate queued writes before clearing only this account's device copies.
+    const currentSession=(await client.auth.getSession()).data?.session;
+    if(model.state().user?.id===owner&&(!currentSession?.user||currentSession.user.id===owner)){await model.setUser(null);if(currentSession?.user)try{await client.auth.signOut({scope:'local'});}catch{/* The account is already deleted; still remove its local copies. */}}
+    let cleaned=true;try{removeDeletedAccountCopies(storage,owner);}catch{cleaned=false;}
+    if(epoch===deletionEpoch||!model.state().user){clearDeletion();dialog.close();}onError(cleaned?'Your account has been deleted.':'Your account was deleted. Some device copies could not be removed; clear this site’s browser data.');
+   }catch(failure){if(model.state().user?.id===owner){error=failure.message;paint(model.state());}}
+   finally{busy=false;const button=dialog.querySelector('[data-account-deletion-form] [type="submit"]');if(button)button.disabled=!deletionAvailable;}
+   return;
+  }
+  const privacyForm=event.target.closest('[data-leaderboard-privacy-form]');
+  if(privacyForm){
+   event.preventDefault();if(busy)return;const owner=model.state().user?.id;error='';privacySaved=null;
+   try{
+    if(!owner||!client||!model.state().ready)throw Error('Finish signing in before changing leaderboard privacy.');
+    const share=privacyForm.elements.namedItem('showLeaderboardIdentity').checked;busy=true;privacyForm.querySelector('[type="submit"]').disabled=true;
+    const result=await client.auth.updateUser({data:{leaderboard_show_identity:share}});
+    if(model.state().user?.id!==owner)return;
+    if(result.error||result.data?.user?.id!==owner||sharesLeaderboardIdentity(result.data.user)!==share)throw Error('Leaderboard privacy could not be saved. Please try again.');
+    privacySaved=share;await model.setUser(result.data.user);paint(model.state());
+   }catch(failure){if(model.state().user?.id===owner){error=failure.message;paint(model.state());}}
+   finally{busy=false;const form=dialog.querySelector('[data-leaderboard-privacy-form]');if(form)form.querySelector('[type="submit"]').disabled=false;}
+   return;
+  }
   const profileForm=event.target.closest('[data-profile-form]');
   if(profileForm){
    event.preventDefault();if(busy)return;error='';profileSaved=false;const owner=model.state().user?.id;
@@ -151,8 +198,9 @@ export function setupAccount({storage,document,onProgress,onIdentity=()=>{},onPr
  document.defaultView.addEventListener('online',()=>{if(model.state().user&&model.state().phase==='offline')model.retry().catch(onError);});
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&model.state().user&&model.state().ready&&!model.state().dirty)model.retry().catch(onError);});
  document.addEventListener('change',event=>{if(event.target.matches('[data-recovery-saved]'))dialog.querySelector('[data-account="finish-codes"]').disabled=!event.target.checked;});
- dialog.addEventListener('close',()=>{clearRecovery();photoEditor.reset();});dialog.addEventListener('cancel',()=>{clearRecovery();photoEditor.reset();});
+ dialog.addEventListener('close',()=>{clearRecovery();clearDeletion();photoEditor.reset();});dialog.addEventListener('cancel',()=>{clearRecovery();clearDeletion();photoEditor.reset();});
  attachBackdropDismiss(dialog,()=>{clearRecovery();dialog.close();});
  paint(model.state());
- return {model,start,getAccessToken:async()=>client?(await client.auth.getSession()).data?.session?.access_token:null};
+ return {model,start,getAccessToken:async()=>client?(await client.auth.getSession()).data?.session?.access_token:null,
+  getBatchLeaderboard:async options=>{const state=model.state(),owner=state.user?.id,batch=studentBatch(state.user);if(!client||!owner||!state.ready||batch===null)throw Error('Sign in and choose your batch before opening the leaderboard.');const result=await loadBatchLeaderboard(client,{...options,batch});if(model.state().user?.id!==owner||studentBatch(model.state().user)!==batch)throw Error('Your account changed. Open the leaderboard again.');return result;}};
 }

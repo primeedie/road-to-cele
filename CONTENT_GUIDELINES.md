@@ -2,6 +2,8 @@
 
 Use supplied DLSU course files as the source. Do not invent syllabus coverage, software requirements, practical proficiency or CIVINCO topic mappings. Keep references to the file and section used for each mapping.
 
+The owner's review-track labels are CIVINCO: MSTE, PSAD (construction is included here), HGE; CELE: MSTC, PSAD, HGE. Keep these tracks separate. These labels alone do not establish any topic or question coverage. The CIVINCO review dimension remains unpopulated until the owner supplies its materials.
+
 Keep source filenames, editions and page references in the internal course data and coverage report. The owner requests that source information not appear in the student course panel.
 
 ## Lecture: Skills for the future

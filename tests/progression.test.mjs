@@ -68,11 +68,11 @@ test('activation coverage opens CIVINCO without mastery but does not imply clear
  assert.equal(gateStatus(p).cleared,false);
  assert.equal(gateStatus(p).hardmodeUnlocked,false);
 });
-test('CIVINCO requires an assessment pass; Hardmode unlocks common domains only after clearance',()=>{
+test('CIVINCO review and assessment history never act as a CELE unlock gate',()=>{
  let p=readyFixture();assert.equal(gateStatus(p).eligible,true);assert.equal(gateStatus(p).hardmodeUnlocked,false);
  assert.throws(()=>recordIntegrationAssessment(p,{passed:true}),/result/);
  p=recordIntegrationAssessment(p,{passed:false,attemptId:'integration-1'});assert.equal(gateStatus(p).cleared,false);
- p=recordIntegrationAssessment(p,{passed:true,attemptId:'integration-2'});assert.equal(gateStatus(p).cleared,true);assert.equal(gateStatus(p).hardmodeUnlocked,true);assert.equal(CELE_DOMAINS.length,3);
+ p=recordIntegrationAssessment(p,{passed:true,attemptId:'integration-2'});assert.equal(gateStatus(p).cleared,true);assert.equal(gateStatus(p).hardmodeUnlocked,false);assert.deepEqual(CELE_DOMAINS,['MSTC','PSAD','HGE']);
 });
 test('transfer requires confirmation and preserves academics, mastery, quizzes and integration history',()=>{
  let p=readyFixture('STE');p=recordMasteryResult(p,'STEMTRX',{passed:true,attemptId:'actual-attempt'});
@@ -83,7 +83,7 @@ test('transfer requires confirmation and preserves academics, mastery, quizzes a
  for(const key of ['academicRecords','masteryRecords','quizAttempts','integrationAssessments'])assert.deepEqual(n[key],p[key]);
  assert.deepEqual(p,before);assert.equal(selected(n),'GTE');assert.equal(n.specializationProgression.previousSpecializationHistory.length,1);
  assert.equal(progressSummary(n).academic.complete,COURSES.filter(c=>!c.specialization).length);
- assert.equal(gateStatus(n).eligible,false);assert.equal(gateStatus(n).hardmodeUnlocked,true);
+ assert.equal(gateStatus(n).eligible,false);assert.equal(gateStatus(n).hardmodeUnlocked,false);assert.equal(n.integrationAssessments[0].passed,true);
  const back=changeSpecialization(n,'STE',{confirmed:true,reason:'Incorrect transfer selection corrected'});assert.equal(progressSummary(back).academic.percent,100);assert.equal(back.quizAttempts.length,1);
 });
 test('future-year courses can be inspected but year browsing cannot grant progression',()=>{

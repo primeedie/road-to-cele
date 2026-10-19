@@ -61,3 +61,11 @@
 .profile-photo-actions button:disabled { opacity:.5;cursor:wait }
 #account-dialog .profile-photo-status { margin:12px 0 0;font-size:12px;line-height:1.6;color:#c0cec3 }
 @media(max-width:760px) { .profile-photo-row { gap:14px }.profile-photo-preview { width:76px;height:76px }.profile-photo-choose { padding:10px 13px }.profile-photo-actions button { flex:1 1 auto } }
+.account-delete-link { display:block;margin-top:28px;padding:12px 0;min-height:44px;border:0;background:none;color:#dda6a0;text-decoration:underline;text-underline-offset:4px;font:12px var(--atlas-type) }
+[data-account-deletion-form] { margin-top:24px;display:grid;gap:18px;font:13px/1.7 var(--atlas-type) }
+[data-account-deletion-form]>label { display:grid;gap:8px;color:#e1c2ba }
+[data-account-deletion-form] input[name="confirmation"] { width:100%;min-height:44px;padding:10px 12px;border:1px solid #d79f8e66;background:#080808;color:#eee;font:14px var(--atlas-type) }
+[data-account-deletion-form] .account-delete-ack { display:flex;gap:12px;align-items:flex-start;color:#d5c4be }
+.account-delete-ack input { width:18px;height:18px;flex:none;margin-top:4px;accent-color:#dcaaa0 }
+.account-delete-confirm { min-height:44px;padding:10px 14px;background:#371b19;border:1px solid #c68e84;color:#f1ccc5;font:12px var(--atlas-type);border-radius:4px }
+.account-delete-confirm:disabled { opacity:.4 }.account-deletion-status { font-size:12px!important;color:#d3b6a5!important }

@@ -1,9 +1,10 @@
-export function portalState(gate){return gate.cleared?'cleared':gate.eligible?'ready':'locked';}
+export function portalState(review){return review.eligible?'ready':'locked';}
+export function civincoPortalLabel(review){return review.eligible?'Enter CIVINCO review':'View review access requirements';}
 export function civincoPortalMarkup(position,gate){
- const state=portalState(gate),label=state==='cleared'?'CELE Hardmode unlocked':state==='ready'?'Ready for integration':'View gate requirements';
+ const state=portalState(gate),label=civincoPortalLabel(gate);
  // Small SVG groups create inward flow without distorting the full map or its hit targets.
  const particles=Array.from({length:8},(_,i)=>`<g class="portal-infall" style="--stream-angle:${i*45}deg;--stream-delay:${-i*1.15}s"><path d="M205 -10Q212 -6 218 0"/><circle cx="218" cy="0" r="${i%3===0?2.8:1.8}"/></g>`).join('');
- return `<button class="civinco-portal gate-${state}" data-page="gate" data-gate-state="${state}" style="left:${position.x}px;top:${position.y}px;width:${position.width}px;height:${position.height}px" aria-label="CIVINCO Gate · ${label}">
+ return `<button class="civinco-portal gate-${state}" data-page="gate" data-gate-state="${state}" style="left:${position.x}px;top:${position.y}px;width:${position.width}px;height:${position.height}px" aria-label="CIVINCO review portal · ${label}">
  <svg viewBox="0 0 720 480" aria-hidden="true">
  <defs>
  <linearGradient id="portal-disk"><stop stop-color="#8f7050" stop-opacity=".3"/><stop offset=".35" stop-color="#f7ce89"/><stop offset=".65" stop-color="#fff6db"/><stop offset="1" stop-color="#b48349" stop-opacity=".4"/></linearGradient>

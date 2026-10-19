@@ -1,0 +1,65 @@
+/* A separate study space: quiet black, distant color, and three review areas. */
+#gate-page { max-width:none;min-height:calc(100dvh - var(--atlas-header));padding:0;background:#000 }
+#gate-page[data-civinco-state="review"] { background:radial-gradient(ellipse at 76% 4%,#17122d77,transparent 52%),radial-gradient(ellipse at 4% 55%,#0a26293d,transparent 50%),#000 }
+.civinco-lobby,.civinco-realm { width:min(1120px,100%);margin:auto;padding:40px 36px 70px;color:#e8e9e7 }
+.civinco-realm h1,.civinco-lobby h1 { font-size:clamp(30px,4.6vw,52px);line-height:1.16;letter-spacing:-.02em;margin:18px 0 20px }
+.civinco-realm h1 em,.civinco-lobby h1 em { color:#adc7dd }
+.civinco-realm p,.civinco-lobby>p,.civinco-access p { font:13px/1.8 var(--atlas-type);color:#b8c1ca;max-width:620px }
+.review-heading { position:relative;padding:12px 0 28px;border-bottom:1px solid #aec3db26 }
+.review-return { display:inline-flex;align-items:center;gap:10px;min-height:44px;padding:8px 0;border:0;border-bottom:1px solid #a4b6cb40;background:none;color:#c6d4df;font:12px var(--atlas-type);border-radius:0 }
+.review-heading>.review-return { margin-bottom:28px }
+.review-return:hover { color:#fff;border-color:#d9e6ef }
+.review-kicker { display:block;font:10px/1.5 var(--atlas-type);letter-spacing:.13em;color:#9daec4 }
+.review-area-switch { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin:28px 0 }
+.review-area { position:relative;display:flex;flex-direction:column;align-items:flex-start;min-height:280px;padding:20px 24px;background:linear-gradient(160deg,#ffffff04,transparent 60%),#020205;border:1px solid #ffffff20;border-radius:3px;color:var(--review-accent);text-align:left;font:inherit;transition:border-color .2s,background-color .2s }
+.review-area:hover,.review-area[aria-pressed="true"] { border-color:var(--review-accent);background-color:#0b0d13 }
+.review-area[aria-pressed="true"] { border-bottom-width:3px }
+.review-area svg { align-self:center;width:122px;height:110px;margin:0 0 18px;fill:none;stroke:currentColor;stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round }
+.review-area .review-orbit { opacity:.17;stroke-dasharray:2 8 }
+.review-area-number { color:#a2abb8;font-size:9px;letter-spacing:.1em }
+.review-area strong { font-size:25px;margin-top:9px;line-height:1.3 }
+.review-area small { color:#c1c4c9;font-size:11px;margin-top:5px;line-height:1.5 }
+.review-area-action { display:flex;justify-content:space-between;gap:20px;width:100%;margin-top:24px;padding-top:14px;border-top:1px solid #ffffff18;color:#c4cbd4;font-size:11px }
+.review-content { border:1px solid #ffffff24;border-top:2px solid var(--review-accent);padding:26px 28px;background:#030507b3 }
+.review-content-heading { display:flex;align-items:center;justify-content:space-between;gap:20px }
+.review-content h2 { font-size:27px;color:var(--review-accent);margin:9px 0 0 }
+.review-material-count { font-size:11px;color:#aab5c1;white-space:nowrap }
+.review-empty { display:flex;gap:22px;align-items:center;padding:28px 0 4px }
+.review-empty-star { font-size:36px;color:var(--review-accent) }
+.review-empty h3 { margin:0 0 9px;font-size:16px;color:#e0e3e5 }
+.review-empty p { margin:5px 0;font-size:12px }
+.review-empty .review-empty-note { color:#95a1af;font-size:11px }
+.review-content .review-construction { color:#e4bc9f;margin:15px 0 0;font-size:12px }
+.review-track-note { border-top:1px solid #ffffff20;margin-top:30px;padding-top:4px;color:#afbac9;font-size:12px }
+.review-track-note summary { cursor:pointer;min-height:48px;padding:14px 0;line-height:1.6 }
+.review-track-table { max-width:460px;overflow:auto }
+.review-track-table table { width:100%;border-collapse:collapse;text-align:left;font-size:12px }
+.review-track-table th,.review-track-table td { padding:12px 16px 12px 0;border-bottom:1px solid #ffffff1a }
+.review-track-table th { color:#b5cede;font-size:11px }
+.review-track-table td { color:#e2e4e6 }.review-track-table small { display:block;color:#ddb496;margin-top:5px;font-size:10px }
+.review-track-note p { font-size:11px }
+.civinco-access { display:grid;grid-template-columns:1fr 1fr;gap:44px;margin:34px 0 20px;padding:28px 0;border-top:1px solid #aec3db26;border-bottom:1px solid #aec3db26 }
+.civinco-access h2 { color:#d8e2ea;margin:14px 0;font-size:24px }
+.civinco-access .gate-check { padding:18px 0;border-color:#ffffff1a }
+.civinco-access .gate-check strong { color:#dce4e9;font-size:12px }
+.civinco-access .gate-check small { color:#a5b3c1;font-size:11px;line-height:1.5 }
+.civinco-access button { margin-top:14px;min-height:44px;font:12px var(--atlas-type) }
+.civinco-lobby>.review-return { margin-top:24px }
+.in-civinco .app-shell>.rail { border-bottom-color:#9abddb35 }
+.in-civinco #gate-page { animation:civinco-arrival .65s ease-out both }
+@keyframes civinco-arrival { from { opacity:.25;transform:translateY(10px) } to { opacity:1;transform:none } }
+.review-area:focus-visible,.review-return:focus-visible,.review-track-note summary:focus-visible { outline:2px solid #c9e2ef;outline-offset:5px }
+#civinco-title:focus { outline:none }
+@media(max-width:760px) {
+ .civinco-lobby,.civinco-realm { padding:26px 18px 50px }
+ .review-heading { padding-top:0 }.review-heading>.review-return { margin-bottom:25px }
+ .review-area-switch { grid-template-columns:1fr;gap:10px;margin:22px 0 }
+ .review-area { display:grid;grid-template-columns:78px 1fr;column-gap:18px;min-height:116px;padding:16px 18px }
+ .review-area svg { grid-column:1;grid-row:1/span 4;width:78px;height:78px;margin:0 }
+ .review-area-number,.review-area strong,.review-area small,.review-area-action { grid-column:2 }
+ .review-area strong { font-size:22px;margin-top:4px }.review-area small { margin-top:2px }
+ .review-area-action { margin-top:10px;padding-top:8px;font-size:10px }
+ .review-content { padding:22px 20px }.review-empty { gap:14px;align-items:flex-start }.review-empty-star { font-size:26px }
+ .civinco-access { grid-template-columns:1fr;gap:12px;padding:24px 0;margin-top:24px }
+}
+@media(prefers-reduced-motion:reduce),(pointer:coarse) { .in-civinco #gate-page { animation:none }.review-area { transition:none } }

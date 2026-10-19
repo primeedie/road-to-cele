@@ -77,7 +77,7 @@ test('CIVINCO requires full activation coverage and at most 24 active units, ind
  const missing=structuredClone(p);delete missing.academicRecords.LBYEC2A;assert.equal(gateStatus(missing).eligible,false);
  const over=structuredClone(p);over.academicRecords.LBYCV3C.status='ACTIVE';assert.equal(gateStatus(over).load.activeUnits,25);assert.equal(gateStatus(over).eligible,false);
  assert.throws(()=>recordIntegrationAssessment(over,{passed:true,attemptId:'blocked'}),/at or below 24/);
- const passed=recordIntegrationAssessment(p,{passed:true,attemptId:'pass'});assert.equal(gateStatus(passed).hardmodeUnlocked,true);
+ const passed=recordIntegrationAssessment(p,{passed:true,attemptId:'pass'});assert.equal(gateStatus(passed).hardmodeUnlocked,false);assert.equal(gateStatus(passed).eligible,true);
  const undecided=structuredClone(p);undecided.specializationProgression=newProgress().specializationProgression;assert.equal(gateStatus(undecided).eligible,false);
 });
 test('imports enforce active-load limits atomically but never reject finished historical terms for their old load',()=>{

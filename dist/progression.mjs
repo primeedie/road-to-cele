@@ -130,15 +130,17 @@ export function progressSummary(p,scope=MASTERY_SCOPE) {
  const mastered=mastery.filter(c=>p.masteryRecords[c.id]?.mastered).length;
  return { academic:{complete,total:academic.length,percent:Math.round(100*complete/academic.length)},mastery:{complete:mastered,total:mastery.length,percent:mastery.length?Math.round(100*mastered/mastery.length):0}, provisional:!selected(p) };
 }
-export function gateStatus(p,scope=MASTERY_SCOPE) {
+export function civincoReviewStatus(p,scope=MASTERY_SCOPE) {
  const summary=progressSummary(p,scope);
  const required=requiredCourses(p),activated={complete:required.filter(c=>begun(p,c.id)).length,total:required.length},load=academicLoad(p);
  const eligible=!!selected(p) && activated.complete===activated.total && load.activeUnits<=24;
  const cleared=p.integrationAssessments.some(a=>a.passed);
- return {eligible,cleared,hardmodeUnlocked:cleared,summary,activated,load};
+ // Retain historical assessment results without turning CIVINCO into a CELE gate.
+ return {eligible,cleared,hardmodeUnlocked:false,summary,activated,load};
 }
+export const gateStatus=civincoReviewStatus; // Compatibility for existing integrations.
 export function recordIntegrationAssessment(p,{passed,attemptId,at=new Date().toISOString()}={}) {
  if(typeof passed!=='boolean' || !attemptId)throw Error('Integration assessment result required');
- if(!gateStatus(p).eligible)throw Error('Activate every required course on your confirmed path and keep the active technical load at or below 24 units before CIVINCO.');
+ if(!civincoReviewStatus(p).eligible)throw Error('Activate every required course on your confirmed path and keep the active technical load at or below 24 units before CIVINCO review.');
  const n=clone(p);n.integrationAssessments.push({passed,attemptId,at,specializationAtAttempt:selected(p)});return n;
 }

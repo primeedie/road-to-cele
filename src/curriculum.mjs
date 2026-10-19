@@ -31,5 +31,7 @@ const split = s => (s || '').split(' ').filter(Boolean);
 export const COURSES = rows.map(([id,title,term,units,h,s,c,specialization]) => ({ id,title,term,year:Math.ceil(term/3),units,specialization:specialization || null,hardPrerequisites:split(h),softPrerequisites:split(s),corequisites:split(c),courseKind:id.startsWith('LBY')?'LAB':'LECTURE',requiredMastery:!id.startsWith('LBY') }));
 export const COURSE_BY_ID = Object.fromEntries(COURSES.map(c => [c.id,c]));
 export const MASTERY_SCOPE = { shared:true, selectedSpecialization:true };
-// Shared CELE review domains. Optional specialist review never contributes to the gate.
-export const CELE_DOMAINS = ['Mathematics, Surveying & Transportation','Hydraulics & Geotechnical Engineering','Structural Engineering & Construction'];
+// Separate review-track labels supplied by the owner on 2026-10-19.
+// Construction belongs under CIVINCO PSAD; topic coverage awaits the review files.
+export const CELE_DOMAINS = ['MSTC','PSAD','HGE'];
+export const CIVINCO_DOMAINS = ['MSTE','PSAD','HGE'];

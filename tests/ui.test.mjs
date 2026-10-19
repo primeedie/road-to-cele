@@ -18,9 +18,9 @@ test('actual website interactions keep exploration separate from academic progre
  const $=s=>document.querySelector(s),click=s=>$(s).click();
  await import('../src/app.js');
  const saved=()=>JSON.parse(localStorage.getItem(STORAGE_KEY));
- await t.test('map portal opens gate requirements without granting completion or changing records',()=>{
+ await t.test('map portal opens review access requirements without granting completion or changing records',()=>{
   assert.equal($('.civinco-portal').dataset.gateState,'locked');click('.civinco-portal');
-  assert.equal($('#gate-page').classList.contains('hidden'),false);assert.ok($('#gate-page button').disabled);
+  assert.equal($('#gate-page').classList.contains('hidden'),false);assert.ok($('#gate-page [data-civinco-enter]').disabled);assert.equal($('#gate-page').dataset.civincoState,'locked');
   assert.equal(localStorage.getItem(STORAGE_KEY),null);click('[data-page="map"]');
  });
  await t.test('expanded tree retains browsing state, protects modal Escape, and returns without changing progress',()=>{
@@ -310,7 +310,7 @@ test('actual website interactions keep exploration separate from academic progre
   $('#path-dialog input[value="CTM"]').checked=true;$('#transfer-reason').value='Accepted academic transfer';$('#acceptance-check').checked=true;$('#path-form').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
   assert.equal(saved().specializationProgression.selectedSpecialization,'CTM');assert.equal(saved().specializationProgression.previousSpecializationHistory.length,2);assert.equal(saved().academicRecords.FNDMATH.status,'COMPLETED');assert.ok($('.branch-card[data-branch="CTM"]').classList.contains('current'));assert.match($('#map-mode').textContent,/ACTIVE/);
   const a=progressSummary(saved()).academic;assert.equal($('#academic-progress').getAttribute('aria-valuenow'),String(a.complete));assert.equal($('#academic-progress').getAttribute('aria-valuemax'),String(a.total));
-  click('[data-page="gate"]');assert.match($('#gate-page').textContent,/Unselected specialization branches never block/);assert.ok($('#gate-page button').disabled);assert.match($('#gate-page').textContent,/LOCKED UNTIL CIVINCO/);
+  click('[data-page="gate"]');assert.match($('#gate-page').textContent,/Unselected specialization branches never block/);assert.ok($('#gate-page [data-civinco-enter]').disabled);assert.doesNotMatch($('#gate-page').textContent,/CELE Hardmode|Integration assessment/);
   assert.match($('#gate-page').textContent,/Every required course activated/);assert.match($('#gate-page').textContent,/Active technical load: at most 24 units/);assert.doesNotMatch($('#gate-page').textContent,/Required Normal Mode mastery|Required academic completion/);
  });
  await t.test('testing students can open and cancel reset, while a raw dialog bypass cannot clear records',()=>{
