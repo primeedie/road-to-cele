@@ -3,7 +3,7 @@ function normalizeRow(row,batch){
  return {rank:row.rank,completed:row.completed_courses,required:row.required_courses,percentage:row.percentage,name:row.display_name||row.anonymous_label,anonymous:!row.display_name,self:row.is_self===true};
 }
 export async function loadBatchLeaderboard(client,{batch,seed,page=0}={}){
- const {data,error}=await client.rpc('get_batch_leaderboard',{p_alias_seed:seed,p_page:page,p_page_size:50});
+ const {data,error}=await client.rpc('get_batch_leaderboard_v2',{p_alias_seed:seed,p_page:page,p_page_size:50});
  if(error){const failure=Error(error.code==='PGRST202'?'The batch leaderboard is awaiting setup.':'The leaderboard could not load. Please try again.');failure.setupRequired=error.code==='PGRST202';throw failure;}
  if(!data||data.batch_id!==batch||!Array.isArray(data.rows)||data.rows.length>50||!Number.isInteger(data.total_users)||data.total_users<0||data.page!==page||data.page_size!==50)throw Error('Your batch changed. Refresh the leaderboard.');
  return {batch,total:data.total_users,page,pageSize:50,rows:data.rows.map(row=>normalizeRow(row,batch)),self:data.self?normalizeRow(data.self,batch):null};

@@ -1,6 +1,7 @@
 // Supabase manages passwords and sessions; this reserved domain is an internal
 // identifier only. Nothing is sent to it or shown as a student's email address.
 import {batchSelect,parseBatchId} from './student-profile.mjs';
+import {customDisplayName} from './display-name.mjs';
 export const USERNAME_DOMAIN='accounts.road-to-cele.invalid';
 export function normalizeUsername(value){
  const username=String(value).trim().toLowerCase();
@@ -13,6 +14,7 @@ export function passwordField(name,label,autocomplete,minlength=1){
 }
 export function accountName(user){
  if(!user)return 'Guest journey';
+ const displayName=customDisplayName(user);if(displayName)return displayName;
  if(user.email?.endsWith('@'+USERNAME_DOMAIN))return user.email.slice(0,-USERNAME_DOMAIN.length-1);
  return user.user_metadata?.full_name||user.email||'Student account';
 }

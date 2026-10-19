@@ -8,6 +8,7 @@ import { recoveryMarkup, recoveryInput, recoveryRequest, downloadRecoveryCodes }
 import {studentBatch,parseBatchId} from './student-profile.mjs';
 import {createProfilePhotoEditor} from './profile-photo.mjs';
 import {sharesLeaderboardIdentity} from './leaderboard-privacy.mjs';
+import {parseDisplayName,customDisplayName} from './display-name.mjs';
 import {loadBatchLeaderboard} from './leaderboard-service.mjs';
 import {accountDeletionMarkup,requestAccountDeletion,removeDeletedAccountCopies,ACCOUNT_DELETION_PHRASE} from './account-deletion.mjs';
 
@@ -39,13 +40,16 @@ export function setupAccount({storage,document,onProgress,onIdentity=()=>{},onPr
    const previous=dialog.querySelector('[data-username-form],[data-recovery-form]'),name=previous?.elements.namedItem('username')?.value||'';
    const batch=ownerChanged?null:dialog.querySelector('[name="batchId"]')?.value;
    const privacyChoice=ownerChanged?null:dialog.querySelector('[name="showLeaderboardIdentity"]')?.checked;
+   const displayDraft=ownerChanged?null:dialog.querySelector('[name="displayName"]')?.value;
    dialog.innerHTML=`<button class="account-dialog-close" data-account="close" aria-label="Close account">×</button>${confirmSignout?'<h2>Your cloud save is pending</h2><p>Your latest changes are kept on this device. Retry syncing before signing out, or keep the device copy and sign out now.</p><div class="account-choice"><button class="primary" data-account="retry-signout">Retry sync</button><button class="secondary" data-account="logout-anyway">Keep device copy and sign out</button></div>':accountDialogMarkup(s,model.snapshotChoices())+(!s.user&&!s.choice&&configured?usernameForm(usernameMode):'')}<p class="account-dialog-error" role="alert">${error.replace(/[<>&]/g,'')}</p>`;
    if(recoveryScreen&&!s.choice&&!confirmSignout){dialog.innerHTML='<button class="account-dialog-close" data-account="close" aria-label="Close account">×</button>'+recoveryMarkup(recoveryScreen,codes,{available:recoveryAvailable})+'<p class="account-dialog-error" role="alert">'+error.replace(/[<>&]/g,'')+'</p>';}
    else if(s.user?.email?.endsWith('@'+USERNAME_DOMAIN)&&!s.choice&&!confirmSignout)dialog.insertAdjacentHTML('beforeend','<button class="recovery-link" data-account="recovery-codes">Manage recovery codes</button>');
    const form=dialog.querySelector('[data-username-form],[data-recovery-form]');if(form){if(form.elements.namedItem('username'))form.elements.namedItem('username').value=name;form.querySelector('[type="submit"]').disabled=busy;}
    const batchField=dialog.querySelector('[name="batchId"]');if(batchField&&batch&&!(profileSaved&&s.user))batchField.value=batch;
    const privacyField=dialog.querySelector('[name="showLeaderboardIdentity"]');if(privacyField&&privacyChoice!==null&&privacyChoice!==undefined)privacyField.checked=privacyChoice;
-   const privacyStatus=dialog.querySelector('.leaderboard-privacy-status');if(privacyStatus&&privacySaved!==null)privacyStatus.textContent=privacySaved?'Your account name is now visible on your batch leaderboard.':'Your leaderboard entry is now anonymous.';
+   const displayField=dialog.querySelector('[name="displayName"]');if(displayField&&displayDraft!==null&&displayDraft!==undefined)displayField.value=displayDraft;
+   const privacyStatus=dialog.querySelector('.leaderboard-privacy-status');if(privacyStatus&&privacySaved!==null)privacyStatus.textContent=privacySaved?'Display name saved. Your chosen name is shared on your batch leaderboard.':'Display name saved. Your leaderboard entry is anonymous.';
+   const privacyForm=dialog.querySelector('[data-leaderboard-privacy-form]');if(privacyForm)privacyForm.querySelector('[type="submit"]').disabled=busy;
    const profile=dialog.querySelector('[data-profile-form]');if(profile){profile.querySelector('[type="submit"]').disabled=busy;if(profileSaved)profile.insertAdjacentHTML('beforeend','<p class="profile-save-state" role="status">Batch saved to your account.</p>');}
    if(s.user&&!s.choice&&!recoveryScreen&&!confirmSignout){const profile=dialog.querySelector('[data-profile-form]');if(profile)profile.insertAdjacentHTML('beforebegin',photoEditor?.markup()||'');}
    if(deletionOwner===s.user?.id&&!s.choice&&!confirmSignout){dialog.innerHTML='<button class="account-dialog-close" data-account="close" aria-label="Close account">×</button>'+accountDeletionMarkup({available:deletionAvailable,name:accountName(s.user)})+'<p class="account-dialog-error" role="alert">'+error.replace(/[<>&]/g,'')+'</p>';dialog.querySelector('[type="submit"]').disabled=busy||!deletionAvailable;}
@@ -145,10 +149,15 @@ export function setupAccount({storage,document,onProgress,onIdentity=()=>{},onPr
    event.preventDefault();if(busy)return;const owner=model.state().user?.id;error='';privacySaved=null;
    try{
     if(!owner||!client||!model.state().ready)throw Error('Finish signing in before changing leaderboard privacy.');
-    const share=privacyForm.elements.namedItem('showLeaderboardIdentity').checked;busy=true;privacyForm.querySelector('[type="submit"]').disabled=true;
-    const result=await client.auth.updateUser({data:{leaderboard_show_identity:share}});
+    const share=privacyForm.elements.namedItem('showLeaderboardIdentity').checked,displayName=parseDisplayName(privacyForm.elements.namedItem('displayName').value);busy=true;privacyForm.querySelector('[type="submit"]').disabled=true;
+    if(share&&displayName){
+     const check=await client.rpc('get_batch_leaderboard_v2',{p_alias_seed:'00000000-0000-4000-8000-000000000000',p_page:0,p_page_size:1});
+     if(model.state().user?.id!==owner)return;
+     if(check.error)throw Error(check.error.code==='PGRST202'?'Display-name sharing is awaiting database setup. You can save with name sharing off for now.':'Display-name sharing could not be checked. Please try again.');
+    }
+    const result=await client.auth.updateUser({data:{display_name:displayName,leaderboard_show_identity:share}});
     if(model.state().user?.id!==owner)return;
-    if(result.error||result.data?.user?.id!==owner||sharesLeaderboardIdentity(result.data.user)!==share)throw Error('Leaderboard privacy could not be saved. Please try again.');
+    if(result.error||result.data?.user?.id!==owner||sharesLeaderboardIdentity(result.data.user)!==share||customDisplayName(result.data.user)!==displayName)throw Error('Display name and privacy could not be saved. Please try again.');
     privacySaved=share;await model.setUser(result.data.user);paint(model.state());
    }catch(failure){if(model.state().user?.id===owner){error=failure.message;paint(model.state());}}
    finally{busy=false;const form=dialog.querySelector('[data-leaderboard-privacy-form]');if(form)form.querySelector('[type="submit"]').disabled=false;}

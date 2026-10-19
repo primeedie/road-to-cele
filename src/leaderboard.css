@@ -21,6 +21,8 @@
 .leaderboard-notes summary { min-height:44px;padding:12px 0;cursor:pointer }.leaderboard-notes p { font-size:12px;max-width:760px;color:#aebbc5 }
 .leaderboard-privacy-form { margin:22px 0;padding:20px 0;border-top:1px solid #ffffff20;border-bottom:1px solid #ffffff20 }
 .leaderboard-privacy-form h3 { color:#c5decf;font-size:16px }.leaderboard-privacy-form label { display:flex;align-items:flex-start;gap:12px;line-height:1.7;font-size:13px;color:#d3dfd8 }
-.leaderboard-privacy-form input { flex:none;margin-top:5px;accent-color:#b3d7c6;width:18px;height:18px }.leaderboard-privacy-form button { min-height:44px;font:12px var(--atlas-type) }
+.leaderboard-privacy-form input[type="checkbox"] { flex:none;margin-top:5px;accent-color:#b3d7c6;width:18px;height:18px }.leaderboard-privacy-form button { min-height:44px;font:12px var(--atlas-type) }
+.leaderboard-privacy-form label:has(input[name="displayName"]) { display:block }
+.leaderboard-privacy-form input[name="displayName"] { display:block;width:100%;min-height:44px;margin-top:8px;background:#090d0e;border:1px solid #b5d5ca55;border-radius:4px;padding:10px 12px;color:#e2ece8;font:14px var(--atlas-type);box-sizing:border-box }
 .leaderboard-privacy-status { color:#bfddc8!important;font-size:12px!important }
 @media(max-width:760px) { #leaderboard-page { padding:26px 18px 50px }.leaderboard-toolbar { gap:8px }.leaderboard-toolbar>span { flex-basis:100% }.leaderboard-table { min-width:430px;font-size:11px }.leaderboard-table th,.leaderboard-table td { padding:16px 10px } }

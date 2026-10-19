@@ -4,15 +4,20 @@
 
 1. Open the Supabase project used by Road to CELE, then **SQL Editor → New query**.
 2. Paste the entire contents of `supabase/migrations/202610190004_batch_leaderboard.sql` and click **Run**. It is safe to run again. Keep the existing student-progress RLS policies.
-3. Sign in to Road to CELE, select your Batch ID in **Account**, and open **Leaderboard → Refresh**. No new Cloudflare variable, service key or redeploy is needed for this SQL-only step once the updated site is live.
+3. Run `supabase/migrations/202610190005_display_names.sql` in a new SQL query. Existing installations that already ran the batch leaderboard migration need only this newer migration. It is safe to run again. It adds the display-name-aware RPC and updates the old RPC to use the same privacy rules.
+4. Sign in to Road to CELE, select your Batch ID in **Account**, and open **Leaderboard → Refresh**. No new Cloudflare variable, service key or redeploy is needed for these SQL-only steps once the updated site is live.
 
 The site shows a setup message until this RPC exists. It never fabricates classmates or accesses other students' private JSON directly.
 
 ## Identity settings
 
-**Account → Leaderboard privacy** defaults to unchecked. Check **Show my account name to other students on my batch leaderboard**, then save to opt in; uncheck and save to return to anonymous entries. Username accounts publish their username. Google accounts use a supplied display name; email addresses are never used as public names. Photos, individual grades, student IDs and private progress records are never returned by the leaderboard RPC.
+**Account → Display name & privacy** includes an optional display name (up to 60 Unicode characters). Save it to replace the account header name. It does not change Google identity, the sign-in username, permissions, batch or academic records. Empty names clear the custom value and restore the existing username or Google name. Email addresses and control characters are rejected.
 
-Consent is the strict boolean `raw_user_meta_data.leaderboard_show_identity`. The RPC reads current Auth data rather than trusting a stale JWT or hiding a returned name in the browser. It returns display names only after consent; opt-out takes effect on the next read. This metadata grants no administrator permissions. A testing reset retains the account's privacy choice; deleting the account removes its leaderboard membership.
+Name sharing defaults to unchecked. Check **Show my display name to other students on my batch leaderboard**, then save to opt in; uncheck and save to return to anonymous entries. A custom name takes priority over both the Google full name and sign-in username. Without one, username accounts publish their username and Google accounts use their supplied name. Email addresses are never used as public names. Photos, individual grades, student IDs and private progress records are never returned by the leaderboard RPC. Invalid custom metadata produces an anonymous name rather than falling back to the real name.
+
+The frontend uses `get_batch_leaderboard_v2`; it shows a setup message until the display-name migration is installed and never falls back to an older response containing a full name. Sharing a custom name checks for that RPC before saving consent. A private display name can still be saved with sharing off. After migration, older frontend clients calling `get_batch_leaderboard` also receive the chosen display name through its compatibility wrapper.
+
+Consent is the strict boolean `raw_user_meta_data.leaderboard_show_identity`; the optional name is `raw_user_meta_data.display_name`. The RPC reads current Auth data rather than trusting a stale JWT or hiding a returned name in the browser. It returns display names only after consent; opt-out takes effect on the next read. This metadata grants no administrator permissions. A testing reset retains the account's privacy choice; deleting the account removes its leaderboard membership.
 
 ## Ranking and anonymous numbers
 
