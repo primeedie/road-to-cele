@@ -46,4 +46,4 @@ export const nonMajorCourses=batch=>[...NON_MAJOR_COMMON,...(validChecklistBatch
 // All supported identities are retained when a student's batch is corrected.
 export const NON_MAJOR_COURSES=Object.freeze([...NON_MAJOR_COMMON,...LEGACY_PE,...CURRENT_PE]);
 export const NON_MAJOR_BY_ID=Object.freeze(Object.fromEntries(NON_MAJOR_COURSES.map(c=>[c.id,c])));
-export const NON_MAJOR_MAX_YEAR=20; // Same 60-term range as the personal journey.
+export const NON_MAJOR_MAX_YEAR=6;

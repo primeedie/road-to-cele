@@ -1,6 +1,6 @@
 # Non-major checklist provenance and behavior
 
-This is a separate, self-reported checklist. It does not modify the ID122 technical curriculum, academic standing, prerequisite checks, mastery, cosmetic milestones or CIVINCO eligibility. Courses appear in one list, with no prescribed year or term. Each row saves Year Taken, local Term 1–3 and an explicit Taken checkbox. A complete date enables the checkbox; clearing either date unchecks that row. Years 1–20 match the existing 60-term journey range.
+This is a separate, self-reported checklist. It does not modify the ID122 technical curriculum, academic standing, prerequisite checks, mastery, cosmetic milestones or CIVINCO eligibility. Courses appear in one list, with no prescribed year or term. Each row saves Year Taken (1–6), local Term 1–3 and an explicit Taken checkbox. A complete date enables the checkbox; clearing either date unchecks that row.
 
 ## Owner-supplied sources (private PDFs; do not publish)
 

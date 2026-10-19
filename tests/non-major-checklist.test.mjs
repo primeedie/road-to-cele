@@ -20,7 +20,8 @@ test('explicit taken status requires both dropdowns, persists partial edits, and
  assert.deepEqual(progressSummary(next),progressSummary(p));assert.deepEqual(gateStatus(next),gateStatus(p));assert.deepEqual(p,before);assert.deepEqual(next.academicRecords,p.academicRecords);assert.deepEqual(next.quizAttempts,p.quizAttempts);
  assert.deepEqual(hydrateProgress(next),next);assert.deepEqual(hydrateProgress(p),p);
  next=setNonMajorRecord(next,'GEMATMW',{term:null});assert.equal(next.nonMajorRecords.GEMATMW.taken,false);next=setNonMajorRecord(next,'GEMATMW',{year:null});assert.equal(next.nonMajorRecords,undefined);
- for(const [id,patch]of [['bad',{year:1}],['constructor',{year:1}],['GEMATMW',{year:0}],['GEMATMW',{year:21}],['GEMATMW',{year:'1'}],['GEMATMW',{term:4}],['GEMATMW',{taken:'true'}],['GEMATMW',{code:'NOPE'}]])assert.throws(()=>setNonMajorRecord(p,id,patch));
+ assert.equal(setNonMajorRecord(p,'GEMATMW',{year:6}).nonMajorRecords.GEMATMW.year,6);
+ for(const [id,patch]of [['bad',{year:1}],['constructor',{year:1}],['GEMATMW',{year:0}],['GEMATMW',{year:7}],['GEMATMW',{year:'1'}],['GEMATMW',{term:4}],['GEMATMW',{taken:'true'}],['GEMATMW',{code:'NOPE'}]])assert.throws(()=>setNonMajorRecord(p,id,patch));
  const damaged=hydrateProgress({...p,nonMajorRecords:{GEMATMW:{year:1,term:999,taken:true},bad:{year:1,term:2,taken:true}},nonMajorBatchId:100});assert.equal(damaged.nonMajorRecords.GEMATMW.taken,false);assert.equal(damaged.nonMajorRecords.bad,undefined);assert.equal(damaged.nonMajorBatchId,undefined);assert.deepEqual(damaged.academicRecords,p.academicRecords);
  assert.deepEqual(normalizeNonMajorRecords([]),{});
 });
