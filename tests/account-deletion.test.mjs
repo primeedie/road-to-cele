@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
 import {JSDOM} from 'jsdom';
 import {handleAccountDeletion} from '../server/account-deletion.mjs';
 import {setupAccount} from '../src/account-browser.mjs';
@@ -10,6 +11,13 @@ import {STORAGE_KEY} from '../src/storage.mjs';
 const owner='11111111-1111-4111-8111-111111111111',other='22222222-2222-4222-8222-222222222222',base='https://road.test',env={SUPABASE_RECOVERY_SECRET_KEY:'sb_secret_server_test'};
 const request=(data={confirmation:'DELETE MY ACCOUNT'},headers={})=>new Request(base+'/api/account-deletion',{method:'POST',headers:{Origin:base,'Content-Type':'application/json',Authorization:'Bearer student-token',...headers},body:JSON.stringify(data)});
 const tick=()=>new Promise(r=>setTimeout(r,10));
+test('Pages routes forward account deletion to its server function',async()=>{
+ const routes=JSON.parse(await readFile(new URL('../src/_routes.json',import.meta.url),'utf8'));
+ assert.ok(routes.include.includes('/api/account-deletion'));
+ assert.ok(!routes.exclude.some(path=>path==='/api/*'||path==='/api/account-deletion'||path==='/*'));
+ const entry=await readFile(new URL('../functions/api/account-deletion.js',import.meta.url),'utf8');
+ assert.match(entry,/handleAccountDeletion/);
+});
 test('deletion requires same-origin explicit confirmation and deletes only the server-verified bearer owner',async()=>{
  let calls=[];const fetcher=async(url,options)=>{calls.push({url,options});if(url.endsWith('/auth/v1/user'))return Response.json({id:owner,email:'private@example.test'});assert.ok(url.endsWith('/auth/v1/admin/users/'+owner));return Response.json({id:owner});};
  assert.equal((await handleAccountDeletion(request(),{}, {fetcher})).status,503);assert.equal(calls.length,0);

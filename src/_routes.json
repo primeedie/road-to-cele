@@ -1,5 +1,5 @@
 {
  "version":1,
- "include":["/api/account-recovery","/api/admin-access"],
+ "include":["/api/account-recovery","/api/admin-access","/api/account-deletion"],
  "exclude":[]
 }
