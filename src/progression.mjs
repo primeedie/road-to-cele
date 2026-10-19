@@ -13,6 +13,19 @@ export function previewBranch(p, branch) {
  return { branch, active:selected(p) === branch, mode:selected(p) === branch ? 'ACTIVE' : 'PREVIEW', courses:COURSES.filter(c=>c.specialization===branch) };
 }
 const begun=(p,id)=>['ACTIVE','COMPLETED','FAILED'].includes(p.academicRecords[id]?.status);
+// Count every open technical enrollment, including old-term records and transferred
+// branches. Moving the journey-term selector must not free enrollment capacity.
+export function academicLoad(p,{adding=[]}={}) {
+ const activeIds=new Set(COURSES.filter(c=>p.academicRecords[c.id]?.status==='ACTIVE').map(c=>c.id));
+ const activeUnits=[...activeIds].reduce((sum,id)=>sum+COURSE_BY_ID[id].units,0);
+ for(const id of adding)if(COURSE_BY_ID[id]&&p.academicRecords[id]?.status!=='COMPLETED')activeIds.add(id);
+ const remainingUnits=requiredCourses(p).filter(c=>p.academicRecords[c.id]?.status!=='COMPLETED').reduce((sum,c)=>sum+c.units,0);
+ const finalTerm=!!selected(p)&&remainingUnits<=24;
+ return {activeUnits,projectedUnits:[...activeIds].reduce((sum,id)=>sum+COURSE_BY_ID[id].units,0),limit:finalTerm?24:21,finalTerm,remainingUnits};
+}
+export function activationLoadReason(load) {
+ return `This activation would leave ${load.projectedUnits} active technical units. The limit is ${load.limit} units${load.finalTerm?' in your final term':'; up to 24 is allowed only when your confirmed path has at most 24 unfinished units'}. Finish or record results for existing active courses first.`;
+}
 // Lecture pairs are enrolled together. Labs retain a directional lecture-first rule.
 export function lectureGroup(id) {
  const ids=new Set([id]),pending=[id];
@@ -52,6 +65,8 @@ export function courseAccess(p,id,{preview=false}={}) {
  }
  if(missingHard.length||missingSoft.length||missingCo.length)return {allowed:false,reason:missingCo.length?'Activate the lecture in this term or an earlier term before its lab.':missingHard.length?'Complete the hard prerequisite courses first.':'Activate or complete the soft prerequisite courses first.',missingHard:[...new Set(missingHard)],missingSoft:[...new Set(missingSoft)],missingCo};
  const coactivate=group.filter(other=>other!==id&&!begun(p,other));
+ const additions=[...(!begun(p,id)?[id]:[]),...coactivate],load=academicLoad(p,{adding:additions});
+ if(additions.length&&load.projectedUnits>load.limit)return {allowed:false,reason:activationLoadReason(load),load};
  return {allowed:true,coactivate,reason:coactivate.length?'Activates together with '+coactivate.join(', ')+'.':c.courseKind==='LAB'?'Lecture taken in this term or an earlier term.':'Available on your academic path.'};
 }
 export function setAcademicYear(p,year) { if(![1,2,3,4].includes(year))throw Error('Invalid year');const n=clone(p); if(year!==p.academicYear)n.academicTerm=(year-1)*3+1;n.academicYear=year;return n; }
@@ -95,7 +110,8 @@ export function startCourseRetake(p,id,term,{admin=false,preview=false,at=new Da
  const next=clone(p);next.academicTerm=term;next.academicYear=Math.min(4,Math.ceil(term/3));
  // Evaluate the ordinary prerequisites against the new term without the failed-status guard.
  next.academicRecords[id]={...next.academicRecords[id],status:'ACTIVE',takenInTerm:term};
- if(!admin){const access=courseAccess(next,id);if(!access.allowed)throw Error(access.reason);
+ if(!admin){const load=academicLoad(next);if(load.projectedUnits>load.limit)throw Error(activationLoadReason(load));
+  const access=courseAccess(next,id);if(!access.allowed)throw Error(access.reason);
   for(const member of access.coactivate||[])next.academicRecords[member]={...(next.academicRecords[member]||{}),status:'ACTIVE',takenInTerm:term,events:[...(next.academicRecords[member]?.events||[]),{status:'ACTIVE',term,at,method:'SELF_REPORTED'}]};
  }
  next.academicRecords[id].events=[...(p.academicRecords[id].events||[]),{status:'ACTIVE',term,at,method:'RETAKE_ACTIVATION'}];return next;
@@ -116,12 +132,13 @@ export function progressSummary(p,scope=MASTERY_SCOPE) {
 }
 export function gateStatus(p,scope=MASTERY_SCOPE) {
  const summary=progressSummary(p,scope);
- const eligible=!!selected(p) && summary.academic.complete===summary.academic.total && summary.mastery.complete===summary.mastery.total;
+ const required=requiredCourses(p),activated={complete:required.filter(c=>begun(p,c.id)).length,total:required.length},load=academicLoad(p);
+ const eligible=!!selected(p) && activated.complete===activated.total && load.activeUnits<=24;
  const cleared=p.integrationAssessments.some(a=>a.passed);
- return {eligible,cleared,hardmodeUnlocked:cleared,summary};
+ return {eligible,cleared,hardmodeUnlocked:cleared,summary,activated,load};
 }
 export function recordIntegrationAssessment(p,{passed,attemptId,at=new Date().toISOString()}={}) {
  if(typeof passed!=='boolean' || !attemptId)throw Error('Integration assessment result required');
- if(!gateStatus(p).eligible)throw Error('Complete the active academic path and required mastery before CIVINCO');
+ if(!gateStatus(p).eligible)throw Error('Activate every required course on your confirmed path and keep the active technical load at or below 24 units before CIVINCO.');
  const n=clone(p);n.integrationAssessments.push({passed,attemptId,at,specializationAtAttempt:selected(p)});return n;
 }

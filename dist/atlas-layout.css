@@ -73,6 +73,9 @@ main { padding:0 }
 #path-card .path-identity strong { font:10px var(--atlas-type) }
 #path-card .path-scope { font:9px var(--atlas-type);color:#aaa }
 #path-card .journey-track { height:3px;border-radius:0;background:#222 }
+#path-card .academic-load { display:inline-flex;gap:4px;white-space:nowrap;color:#aaa }
+#path-card .academic-load b { color:#ddd;font:inherit }
+@media(max-width:1100px) { #path-card .journey-caption { display:none } }
 #path-card .journey-fill { border-radius:0;background:#e2e2dc;box-shadow:none }
 .map-controls { border:1px solid #ffffff30;border-radius:2px;background:#070707df;box-shadow:none;bottom:18px;right:18px }
 .map-controls button { width:42px;min-width:42px;height:42px;border-radius:0;font-size:19px }

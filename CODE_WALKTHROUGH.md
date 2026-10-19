@@ -51,7 +51,9 @@ When a user activates a course, the app asks the rule engine whether it is allow
 - **Laboratory co-requisites:** the lecture must already be active/completed in the same or an earlier recorded term. A lab cannot come first.
 - **Preview:** browsing another branch does not record progress.
 
-Academic completion is self-reported. It is stored separately from app mastery. CIVINCO eligibility uses the confirmed academic path and required mastery; passing its integration assessment unlocks the common CELE Hardmode. Assessment boundaries exist, but the actual quizzes and CIVINCO content still await files.
+Academic completion is self-reported and stored separately from app mastery. CIVINCO access requires a confirmed path, every shared and selected-path technical subject previously activated, and at most 24 currently ACTIVE technical units. Failed and completed attempts count as previously activated; mastery is not an access requirement. Passing the integration assessment still unlocks the common CELE Hardmode. Assessment boundaries exist, but the actual quizzes and CIVINCO content still await files.
+
+Student activation checks add the course and any simultaneous lecture partners before comparing the projected active load with 21 units. Retakes and newly active booklet rows use the same check. The final-term allowance is 24 units when a confirmed path has at most 24 unfinished required technical units, including failures. All ACTIVE technical records count, including earlier terms and transferred branches, so changing a term cannot bypass the limit. Historical completed/failed records and non-major Taken entries do not represent active load. Existing records remain readable and completable; verified Admin experiments bypass the limit in their isolated workspace.
 
 ## How the constellation interface works
 

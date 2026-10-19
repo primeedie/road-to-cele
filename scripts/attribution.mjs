@@ -3,6 +3,7 @@ import {join} from 'node:path';
 import {createHash} from 'node:crypto';
 
 const notice='milch pogiman made this, so u cant steal this lol';
+const ownership='property of freshmilch';
 export async function verifyAttribution(root='src'){
  const [html,app,curriculum,mark,authorship]=await Promise.all(['index.html','app.js','curriculum.mjs','author-mark.mjs','AUTHORSHIP.txt'].map(file=>readFile(join(root,file),'utf8')));
  for(const [file,source] of [['index.html',html],['app.js',app],['curriculum.mjs',curriculum],['author-mark.mjs',mark],['AUTHORSHIP.txt',authorship]]){
@@ -11,6 +12,7 @@ export async function verifyAttribution(root='src'){
  if(!html.includes(`<meta name="road-to-cele-author" content="${notice}">`))throw Error('Embedded author metadata is missing.');
  if(!app.includes("import { installAuthorMark } from './author-mark.mjs';")||!app.includes('installAuthorMark(document);'))throw Error('Runtime author attribution is disconnected.');
  if(!mark.includes(`export const AUTHOR_NOTICE='${notice}';`))throw Error('Runtime author notice has changed.');
+ if(!html.includes(`<!-- ${ownership} -->`)||!app.includes('// '+ownership)||!curriculum.includes('// '+ownership)||!mark.includes(`export const OWNERSHIP_NOTICE='${ownership}';`)||!authorship.includes(ownership))throw Error('The embedded source ownership watermark is missing or changed.');
 }
 
 export async function writeProvenance(root='dist',deployment={}){
@@ -23,5 +25,5 @@ export async function writeProvenance(root='dist',deployment={}){
   }
  }
  await collect(root);
- await writeFile(join(root,'provenance.json'),JSON.stringify({project:'Road to CELE',author:'milch pogiman',notice,scope:'Application authorship; third-party assets retain their own attribution.',algorithm:'SHA-256',deployment,files},null,2)+'\n');
+ await writeFile(join(root,'provenance.json'),JSON.stringify({project:'Road to CELE',author:'milch pogiman',notice,ownership,scope:'Application authorship; third-party assets retain their own attribution.',algorithm:'SHA-256',deployment,files},null,2)+'\n');
 }

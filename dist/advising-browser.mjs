@@ -38,7 +38,7 @@ const mappingOptions=r=>'<option value="">Automatic match</option>'+((/^(GE|LC|P
  dialog.addEventListener('click',async event=>{
   const action=event.target.closest('[data-booklet-action]')?.dataset.bookletAction;if(action==='close'){reset();return;}if(action!=='apply')return;
   try{ready();if(!parsed||!plan)throw Error('Choose a booklet first.');if(JSON.stringify(getProgress())!==baseline){makePlan();message='Your journey changed while reviewing. Check the refreshed preview and confirm again.';paint();return;}
-   const next=applyAdvisingImport(getProgress(),plan,{confirmed:settings.confirmed,selectedKeys:[...choices].filter(([,v])=>v).map(([k])=>k),replaceKeys:[...replacements],activeKeys:[...active],currentTerm:settings.currentTerm,branch:settings.branch||null,batch:effectiveBatch()});
+   const next=applyAdvisingImport(getProgress(),plan,{confirmed:settings.confirmed,selectedKeys:[...choices].filter(([,v])=>v).map(([k])=>k),replaceKeys:[...replacements],activeKeys:[...active],currentTerm:settings.currentTerm,branch:settings.branch||null,batch:effectiveBatch(),admin:getState().admin===true});
    save(next);reset();onSaved(next);
   }catch(error){message=error.message;paint();}
  });

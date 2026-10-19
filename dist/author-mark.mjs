@@ -2,12 +2,13 @@
 // Attribution belongs to the app; third-party fonts and chart data keep their own notices.
 export const AUTHOR_NOTICE='milch pogiman made this, so u cant steal this lol';
 export const AUTHOR_META='road-to-cele-author';
+export const OWNERSHIP_NOTICE='property of freshmilch';
 const installed=new WeakMap();
 
 export function installAuthorMark(document){
  if(installed.has(document))return installed.get(document);
  const host=document.defaultView;
- const credit=Object.freeze({author:'milch pogiman',notice:AUTHOR_NOTICE});
+ const credit=Object.freeze({author:'milch pogiman',notice:AUTHOR_NOTICE,ownership:OWNERSHIP_NOTICE});
  if(!Object.hasOwn(host,'ROAD_TO_CELE_AUTHOR')){
   Object.defineProperty(host,'ROAD_TO_CELE_AUTHOR',{value:credit,writable:false,configurable:false,enumerable:false});
  }

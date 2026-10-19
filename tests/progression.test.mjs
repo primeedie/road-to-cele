@@ -63,9 +63,9 @@ test('unselected branches never block CIVINCO, across all five specializations',
  for(const branch of Object.keys(SPECIALIZATIONS)){const p=readyFixture(branch);assert.equal(gateStatus(p).eligible,true);
  assert.ok(COURSES.filter(c=>c.specialization&&c.specialization!==branch).every(c=>!p.academicRecords[c.id]&&!p.masteryRecords[c.id]));}
 });
-test('academic completion alone does not imply mastery, CIVINCO clearance or Hardmode',()=>{
- const p=academicFixture(confirm());assert.equal(progressSummary(p).mastery.complete,0);assert.equal(gateStatus(p).eligible,false);
- assert.throws(()=>recordIntegrationAssessment(p,{passed:true,attemptId:'early'}),/Complete/);
+test('activation coverage opens CIVINCO without mastery but does not imply clearance or Hardmode',()=>{
+ const p=academicFixture(confirm());assert.equal(progressSummary(p).mastery.complete,0);assert.equal(gateStatus(p).eligible,true);
+ assert.equal(gateStatus(p).cleared,false);
  assert.equal(gateStatus(p).hardmodeUnlocked,false);
 });
 test('CIVINCO requires an assessment pass; Hardmode unlocks common domains only after clearance',()=>{

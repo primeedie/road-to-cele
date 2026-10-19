@@ -2,7 +2,7 @@ import {COURSE_BY_ID,SPECIALIZATIONS} from './curriculum.mjs';
 import {NON_MAJOR_BY_ID,nonMajorCourses,validChecklistBatch} from './non-major-courses.mjs';
 import {normalizeCourseCode,parseBookletGrade} from './advising-parser.mjs';
 import {setNonMajorRecord} from './non-major-checklist.mjs';
-import {confirmSpecialization,changeSpecialization,selected} from './progression.mjs';
+import {confirmSpecialization,changeSpecialization,selected,academicLoad,activationLoadReason} from './progression.mjs';
 import {IMPORT_METHOD} from './advising-grade.mjs';
 export {IMPORT_METHOD,bookletGradeLabel,isBookletAttempt,validBookletAttempt} from './advising-grade.mjs';
 // GE elective equivalents explicitly supplied by the owner.
@@ -40,7 +40,7 @@ export function buildAdvisingPlan(progress,parsed,{batch=null,mappings={}}={}){
  const targets=new Map(),rowKeys=new Set();for(const r of rows){if(rowKeys.has(r.key))throw Error('A course appears more than once in the same term. Review the PDF table.');rowKeys.add(r.key);if(!r.targetId)continue;const key=r.targetId+':'+r.term,other=targets.get(key);if(other){other.issue=r.issue='Two rows map to the same subject and term; choose one mapping.';}else targets.set(key,r);}
  return {rows,warnings:[...(parsed.warnings||[])],suggestedTerm:Math.max(progress.academicTerm??(progress.academicYear-1)*3+1,...rows.filter(r=>!r.issue).map(r=>r.term)),branches:[...new Set(rows.filter(r=>r.kind==='MAJOR').map(r=>COURSE_BY_ID[r.targetId].specialization).filter(Boolean))]};
 }
-export function applyAdvisingImport(progress,plan,{confirmed=false,selectedKeys=[],replaceKeys=[],activeKeys=[],currentTerm,branch=null,batch=null,at=new Date().toISOString()}={}){
+export function applyAdvisingImport(progress,plan,{confirmed=false,selectedKeys=[],replaceKeys=[],activeKeys=[],currentTerm,branch=null,batch=null,admin=false,at=new Date().toISOString()}={}){
  if(!confirmed)throw Error('Confirm the preview before applying your booklet.');
  if(!Number.isInteger(currentTerm)||currentTerm<1||currentTerm>18)throw Error('Choose a current term in Years 1–6.');
  const chosen=new Set(selectedKeys),replace=new Set(replaceKeys),active=new Set(activeKeys),next=structuredClone(progress),affected=new Set(),nonMajorTargets=new Set();let changed=0;
@@ -76,9 +76,13 @@ export function applyAdvisingImport(progress,plan,{confirmed=false,selectedKeys=
  }
  next.academicTerm=currentTerm;next.academicYear=Math.min(4,Math.ceil(currentTerm/3));
  if(validChecklistBatch(batch))next.nonMajorBatchId=batch;
+ let result=next;
  if(branch&&branch!==selected(next)){
   if(!SPECIALIZATIONS[branch]||next.academicYear<3)throw Error('Specialization confirmation begins in Year 3.');
-  return selected(next)?changeSpecialization(next,branch,{confirmed:true,reason:'Confirmed while importing academic advising records',at}):confirmSpecialization(next,branch,{confirmed:true,at});
+  result=selected(next)?changeSpecialization(next,branch,{confirmed:true,reason:'Confirmed while importing academic advising records',at}):confirmSpecialization(next,branch,{confirmed:true,at});
  }
- return next;
+ // Historical results remain importable; only newly opened enrollments use the cap.
+ const opensEnrollment=plan.rows.some(r=>active.has(r.key)&&r.outcome==='UNGRADED'&&r.kind==='MAJOR'&&result.academicRecords[r.targetId]?.status==='ACTIVE'&&progress.academicRecords[r.targetId]?.status!=='ACTIVE');
+ const load=academicLoad(result);if(!admin&&opensEnrollment&&load.activeUnits>load.limit)throw Error(activationLoadReason(load));
+ return result;
 }

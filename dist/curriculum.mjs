@@ -1,4 +1,5 @@
 // milch pogiman made this, so u cant steal this lol
+// property of freshmilch
 export const SPECIALIZATIONS = {
   STE: { name: 'Structural Engineering', region: 'The Spirelands', color: '#af644c', icon: 'bridge', motto: 'Give ideas the strength to stand.' },
   GTE: { name: 'Geotechnical Engineering', region: 'The Stonewilds', color: '#7f8252', icon: 'mountain', motto: 'Discover the world beneath your feet.' },

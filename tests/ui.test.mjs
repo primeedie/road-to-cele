@@ -231,6 +231,7 @@ test('actual website interactions keep exploration separate from academic progre
   click('[data-year="1"]');click('[data-course="FNDMATH"]');
   const chart='.sky-outline[data-constellation="Ori"]';assert.equal($(chart).classList.contains('constellation-lit'),false);
   click('[data-academic="ACTIVE"]');assert.equal(saved().academicRecords.FNDMATH.status,'ACTIVE');
+  assert.match($('[data-academic-load]').textContent,/Active 5.*21 units/);
   assert.ok($('[data-course="FNDMATH"]').classList.contains('active-course'));
   assert.equal(document.querySelectorAll('#course-card [role="tab"]:disabled').length,0);$('#course-tab-0').dispatchEvent(new w.KeyboardEvent('keydown',{key:'End',bubbles:true}));assert.equal($('#course-tab-4').getAttribute('aria-selected'),'true');$('#course-tab-4').dispatchEvent(new w.KeyboardEvent('keydown',{key:'Home',bubbles:true}));
   assert.equal($(chart).classList.contains('constellation-lit'),true);assert.equal($(chart).dataset.litCourses,'1');
@@ -310,6 +311,7 @@ test('actual website interactions keep exploration separate from academic progre
   assert.equal(saved().specializationProgression.selectedSpecialization,'CTM');assert.equal(saved().specializationProgression.previousSpecializationHistory.length,2);assert.equal(saved().academicRecords.FNDMATH.status,'COMPLETED');assert.ok($('.branch-card[data-branch="CTM"]').classList.contains('current'));assert.match($('#map-mode').textContent,/ACTIVE/);
   const a=progressSummary(saved()).academic;assert.equal($('#academic-progress').getAttribute('aria-valuenow'),String(a.complete));assert.equal($('#academic-progress').getAttribute('aria-valuemax'),String(a.total));
   click('[data-page="gate"]');assert.match($('#gate-page').textContent,/Unselected specialization branches never block/);assert.ok($('#gate-page button').disabled);assert.match($('#gate-page').textContent,/LOCKED UNTIL CIVINCO/);
+  assert.match($('#gate-page').textContent,/Every required course activated/);assert.match($('#gate-page').textContent,/Active technical load: at most 24 units/);assert.doesNotMatch($('#gate-page').textContent,/Required Normal Mode mastery|Required academic completion/);
  });
  await t.test('testing students can open and cancel reset, while a raw dialog bypass cannot clear records',()=>{
   const before=localStorage.getItem(STORAGE_KEY);click('[data-page="map"]');assert.equal($('#reset-progress').hidden,false);click('#reset-progress');assert.equal($('#reset-dialog').open,true);assert.match($('#reset-description').textContent,/Testing reset clears/);click('#cancel-reset');assert.equal(localStorage.getItem(STORAGE_KEY),before);
