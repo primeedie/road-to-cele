@@ -16,6 +16,8 @@ Page 2: GEARTAP — Art Appreciation; GEETHIC — Ethics; GESTSOC — Science, T
 
 Three GE elective slots allow the student's actual course code/title, retaining a stable slot ID and the source's 3 units. No named elective offerings are invented.
 
+Owner-approved equivalents for imports: GELECAH accepts GELITPH; GELECSP accepts LCFILIA; GELECST accepts LCFILIB. Preserve the actual subject code on the saved elective slot.
+
 ## Other non-major entries
 
 - LCLSONE/LCLSTWO (page 1), LCLSTRI (page 2): Lasallian Studies 1–3, `(1)` unit each.

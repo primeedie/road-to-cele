@@ -5,7 +5,8 @@ import {setNonMajorRecord} from './non-major-checklist.mjs';
 import {confirmSpecialization,changeSpecialization,selected} from './progression.mjs';
 import {IMPORT_METHOD} from './advising-grade.mjs';
 export {IMPORT_METHOD,bookletGradeLabel,isBookletAttempt,validBookletAttempt} from './advising-grade.mjs';
-const aliases={LBBCH1A:'LBYCH1A',GESPORT:'GESPORTS'};
+// GE elective equivalents explicitly supplied by the owner.
+const aliases={LBBCH1A:'LBYCH1A',GESPORT:'GESPORTS',GELITPH:'GELECAH',LCFILIA:'GELECSP',LCFILIB:'GELECST'};
 export function normalizeAdvisingNonMajor(raw){
  if(!Array.isArray(raw))return [];
  return raw.slice(0,600).filter(r=>r&&/^[A-Z][A-Z0-9]{3,15}$/.test(r.code)&&Number.isInteger(r.term)&&r.term>=1&&r.term<=60&&Number.isFinite(r.units)&&r.units>=0&&r.units<=20&&['PASSED','FAILED'].includes(r.outcome)&&(r.targetId===null||Object.hasOwn(NON_MAJOR_BY_ID,r.targetId))&&parseBookletGrade(r.gradeText).outcome===r.outcome).map(r=>({code:r.code,targetId:r.targetId,title:typeof r.title==='string'?r.title.slice(0,160):'',term:r.term,units:r.units,...parseBookletGrade(r.gradeText),method:IMPORT_METHOD,confirmedAt:typeof r.confirmedAt==='string'?r.confirmedAt.slice(0,40):'',revisions:Array.isArray(r.revisions)?r.revisions.slice(-20):[]}));
@@ -27,11 +28,13 @@ export function buildAdvisingPlan(progress,parsed,{batch=null,mappings={}}={}){
   if(raw.term>18)issue='This entry is outside the Year 1–6 import range.';
   if(course&&course.units!==units)issue='Units differ from the course catalog; review the mapping.';
   const old=kind==='MAJOR'?progress.academicRecords[targetId]?.gradeAttempts?.find(a=>a.term===raw.term):kind==='NON_MAJOR'||kind==='EXTRA'?normalizeAdvisingNonMajor(progress.advisingNonMajor).find(a=>a.code===code&&a.term===raw.term):null;
-  const same=old&&old.grade===grade.grade&&old.outcome===grade.outcome;
+  const sameGrade=old&&old.grade===grade.grade&&old.outcome===grade.outcome;
+  const upgradeMatch=kind==='NON_MAJOR'&&sameGrade&&old.targetId===null&&aliases[code]===targetId;
+  const same=sameGrade&&(kind==='MAJOR'||old.targetId===targetId);
   const date=kind==='NON_MAJOR'?progress.nonMajorRecords?.[targetId]:null;
-  const dateConflict=date?.taken&&(date.year!==Math.ceil(raw.term/3)||date.term!==(raw.term-1)%3+1)&&!old;
+  const dateConflict=date?.taken&&(date.year!==Math.ceil(raw.term/3)||date.term!==(raw.term-1)%3+1||date.code&&normalizeCourseCode(date.code)!==code)&&(!old||old.targetId!==targetId);
   const courseConflict=kind==='MAJOR'&&progress.academicRecords[targetId]?.status==='COMPLETED'&&!progress.academicRecords[targetId]?.gradeAttempts?.length&&grade.outcome==='FAILED';
-  return {key,code,units,term:raw.term,page:raw.page,...grade,targetId,kind,title:course?.title||'Additional non-major course',issue,conflict:!!(!same&&old||dateConflict||courseConflict),same:!!same,old,defaultSelected:!issue&&!same&&!old&&!dateConflict&&!courseConflict&&grade.outcome!=='UNGRADED'};
+  return {key,code,units,term:raw.term,page:raw.page,...grade,targetId,kind,title:course?.title||'Additional non-major course',issue,conflict:!!(!same&&old&&!upgradeMatch||dateConflict||courseConflict),same:!!same,old,defaultSelected:!issue&&!same&&(!old||upgradeMatch)&&!dateConflict&&!courseConflict&&grade.outcome!=='UNGRADED'};
  });
  // Two distinct booklet codes must never silently write the same subject in the same term.
  const targets=new Map(),rowKeys=new Set();for(const r of rows){if(rowKeys.has(r.key))throw Error('A course appears more than once in the same term. Review the PDF table.');rowKeys.add(r.key);if(!r.targetId)continue;const key=r.targetId+':'+r.term,other=targets.get(key);if(other){other.issue=r.issue='Two rows map to the same subject and term; choose one mapping.';}else targets.set(key,r);}
