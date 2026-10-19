@@ -108,3 +108,29 @@
  .constellations-rotating .dossier-sky svg { animation:none }
 }
 @media(prefers-reduced-motion:reduce) { .civinco-portal :is(.portal-orbits,.portal-infall,.portal-stream,.portal-front-stream,.portal-lens-texture,.portal-lens-arcs) { animation:none }.portal-infall { display:none }.portal-stream,.portal-front-stream,.portal-lens-arcs { stroke-dasharray:none }.sky-comet { display:none } }
+
+/* Colored cut faces keep a bright star from washing out to white. */
+.course-node.active-course .star-rays { fill:var(--star-accent,var(--sky-accent));stroke:color-mix(in srgb,var(--star-accent,var(--sky-accent)) 55%,white);opacity:1 }
+.course-node.active-course .star-facet-light { fill:color-mix(in srgb,var(--star-accent,var(--sky-accent)) 50%,white);fill-opacity:1 }
+.course-node.active-course .star-facet-dark { fill:var(--star-accent,var(--sky-accent));fill-opacity:1 }
+.course-node.active-course .star-center { fill:#fff;filter:drop-shadow(0 0 3px var(--star-accent,var(--sky-accent))) }
+.course-node.completed .star-rays { fill:color-mix(in srgb,var(--star-accent,var(--sky-accent)) 75%,white);stroke:color-mix(in srgb,var(--star-accent,var(--sky-accent)) 35%,white);opacity:1 }
+.course-node.completed .star-facet-light { fill:color-mix(in srgb,var(--star-accent,var(--sky-accent)) 25%,white);fill-opacity:1 }
+.course-node.completed .star-facet-dark { fill:color-mix(in srgb,var(--star-accent,var(--sky-accent)) 85%,white);fill-opacity:1 }
+.course-node.completed .star-center { fill:#fff }
+.course-node.active-course .node-code { color:color-mix(in srgb,var(--star-accent,var(--sky-accent)) 55%,white) }
+.course-node.completed .node-code { color:color-mix(in srgb,var(--star-accent,var(--sky-accent)) 35%,white) }
+
+/* Full academic completion reveals a thin holographic echo and a slow light
+   travelling along the catalog lines. The base never blinks or changes width. */
+.sky-outline.constellation-complete .sky-trails { opacity:var(--constellation-brightness);stroke:color-mix(in srgb,var(--sky-accent) 82%,white) }
+.sky-outline.constellation-complete .catalog-stars { opacity:.9 }
+.constellation-hologram { pointer-events:none;fill:none;stroke:var(--sky-accent);stroke-width:var(--chart-stroke,1.8px);stroke-linecap:round;stroke-linejoin:round }
+.constellation-hologram .hologram-wire { transform:translateY(-9px);stroke-dasharray:2 22;opacity:.16 }
+.constellation-hologram .hologram-glint { stroke:color-mix(in srgb,var(--sky-accent) 35%,white);stroke-dasharray:8 92;opacity:.75;animation:constellation-holo-flow 24s linear infinite }
+@keyframes constellation-holo-flow { to { stroke-dashoffset:-100 } }
+.map-viewport:is(.dragging,.zooming,.motion-paused,.tracing-path) .hologram-glint { animation-play-state:paused }
+.tracing-path .constellation-hologram { opacity:.25 }
+@media(prefers-reduced-motion:reduce),(max-width:760px),(pointer:coarse) {
+ .constellation-hologram .hologram-glint { animation:none;stroke-dasharray:none;opacity:.12 }
+}

@@ -51,6 +51,19 @@ test('rotation updates visible and clickable paths together, pauses interaction,
  }finally{rotation.destroy();win.close();}
 });
 
+test('completed holographic paths stay aligned with the constellation during rotation',()=>{
+ const map=createSkyMap(),cluster=map.charts[0],courses=map.courses.filter(c=>c.term===1);
+ const dom=new JSDOM(`<button id="rotate"></button><section id="map-page"><div id="map">${drawConstellation(cluster.chart,{total:courses.length,completed:courses.length})}<svg class="graph-lines"></svg></div></section>`,{pretendToBeVisual:true}),win=dom.window,doc=win.document,viewport=doc.querySelector('#map');
+ win.matchMedia=()=>({matches:false,addEventListener(){},removeEventListener(){}});let scheduled;
+ const rotation=attachConstellationRotation(viewport,doc.querySelector('#rotate'),{requestFrame:fn=>{scheduled=fn;return 1;},cancelFrame:()=>{scheduled=null;}});
+ try{
+  rotation.setMap({...map,courses,charts:[cluster]});scheduled(100);scheduled(200);
+  const lines=[...doc.querySelectorAll('.sky-trails polyline')].map(p=>p.getAttribute('points'));
+  for(const selector of ['.hologram-wire polyline','.hologram-glint polyline'])assert.deepEqual([...doc.querySelectorAll(selector)].map(p=>p.getAttribute('points')),lines);
+  assert.equal(doc.querySelectorAll('.constellation-hologram').length,1);
+ }finally{rotation.destroy();win.close();}
+});
+
 test('mobile maps have no rotation frames or animated body state, including after rebuilding the map',()=>{
  const dom=new JSDOM('<button id="rotate"></button><section id="map-page"><div id="map"><button class="course-node" data-course="TEST" style="left:20px;top:40px"></button></div></section>',{pretendToBeVisual:true,url:'https://road.test/'}),win=dom.window,doc=win.document,viewport=doc.querySelector('#map'),button=doc.querySelector('#rotate');
  win.matchMedia=media=>({matches:media==='(max-width: 760px), (pointer: coarse)',addEventListener(){},removeEventListener(){}});

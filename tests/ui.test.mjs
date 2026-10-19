@@ -350,5 +350,16 @@ test('actual website interactions keep exploration separate from academic progre
  await t.test('confirmed guest testing reset clears academic and checklist records while keeping a backup and companion',()=>{
   const before=saved();click('[data-page="journal"]');click('#journal-page [data-action="reset-progress"]');click('[data-action="confirm-reset"]');const clean=saved();assert.deepEqual(clean.academicRecords,{});assert.equal(clean.nonMajorRecords,undefined);assert.equal(clean.advisingNonMajor,undefined);assert.deepEqual(clean.quizAttempts,[]);assert.equal(clean.academicYear,1);assert.equal(clean.cosmetics.avatar,before.cosmetics.avatar);assert.deepEqual(JSON.parse(localStorage.getItem(STORAGE_KEY+'.testing-reset-backup')).progress,before);assert.equal($('#map-page').classList.contains('hidden'),false);assert.equal($('#reset-dialog').open,false);
  });
+ await t.test('only completing every course reveals a constellation hologram and testing reset removes it',()=>{
+  const firstTerm=COURSES.filter(c=>!c.specialization&&c.term===1),selector='.sky-outline[data-constellation="Ori"]';
+  for(const c of firstTerm){click('[data-course="'+c.id+'"]');click('[data-academic="ACTIVE"]');}
+  assert.equal($(selector).classList.contains('constellation-complete'),false);assert.equal($(selector+' .constellation-hologram'),null);
+  for(const c of firstTerm.slice(0,-1)){click('[data-course="'+c.id+'"]');click('[data-academic="COMPLETED"]');}
+  assert.equal($(selector).classList.contains('constellation-complete'),false);
+  click('[data-course="'+firstTerm.at(-1).id+'"]');click('[data-academic="COMPLETED"]');
+  assert.equal($(selector).classList.contains('constellation-complete'),true);assert.ok($(selector+' .hologram-glint'));assert.equal(document.querySelectorAll('.constellation-complete').length,1);
+  assert.deepEqual(saved().masteryRecords,{});assert.deepEqual(saved().integrationAssessments,[]);assert.equal($('[data-course="FNDMATH"]').style.getPropertyValue('--star-accent'),'#52ade8');
+  click('[data-action="close-inspector"]');click('#reset-progress');click('[data-action="confirm-reset"]');assert.equal(document.querySelector('.constellation-hologram'),null);assert.deepEqual(saved().academicRecords,{});
+ });
  dom.window.close();
 });

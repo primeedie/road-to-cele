@@ -70,6 +70,18 @@ test('canvas surface is screen-sized, capped at 2x density, and falls back to SV
  const f=attachMobileSky(w.document.querySelector('#map'),{contextFactory:()=>{throw Error('No canvas');}});assert.equal(f.active,false);assert.equal(w.document.querySelector('.canvas-sky-mode'),null);f.destroy();w.close();
 });
 
+test('active and completed red star facets retain visible color while completion stays brighter',()=>{
+ const scene=createMobileScene(map),base=scene.nodes.find(n=>n.p.chart==='Vir'),viewport={width:428,height:700},camera=cameraFor(base,viewport,1);
+ const painter=createMobilePainter({makeCanvas,Path:Path2D}),ctx=createCanvas(viewport.width,viewport.height).getContext('2d'),samples=[];
+ for(const state of ['locked','active-course','completed']){
+  const node={...base,state},isolated={...scene,nodes:[node],charts:[],edges:[],portal:null};painter.paint(ctx,isolated,camera,viewport);
+  // The upper right cut face lies away from the intentionally white star core.
+  const x=Math.round(camera.x+(node.p.x+125+3*4/3*node.p.perspective)*camera.scale),y=Math.round(camera.y+(node.p.y+176+(53*4/3-176)*node.p.perspective)*camera.scale);
+  const [r,g,b,a]=ctx.getImageData(x,y,1,1).data;samples.push({chroma:(r-Math.min(g,b))*a/255,light:(r+g+b)*a/255});
+ }
+ assert.ok(samples[1].chroma>samples[0].chroma);assert.ok(samples[2].chroma>samples[0].chroma);assert.ok(samples[1].chroma>60&&samples[2].chroma>60);assert.ok(samples[2].light>samples[1].light);painter.clear();
+});
+
 test('actual mobile app renders a cached surface, selects courses and paths, and frame-batches dragging without changing progress',async()=>{
  const html=await readFile(new URL('../src/index.html',import.meta.url),'utf8'),dom=new JSDOM(html,{url:'https://mobile.test/',pretendToBeVisual:true}),w=dom.window;
  const names=['document','window','localStorage','ResizeObserver','requestAnimationFrame','FormData'],previous=Object.fromEntries(names.map(k=>[k,globalThis[k]]));

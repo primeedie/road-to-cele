@@ -1,6 +1,6 @@
 import {courseConnections,traceConnection} from './connections.mjs';
-import {SKY_COLORS} from './sky-palette.mjs';
-import {localLightSegments,starBadge,NODE_GROUND_X,NODE_GROUND_Y} from './sky-layout.mjs';
+import {SKY_COLORS,STAR_COLORS} from './sky-palette.mjs';
+import {localLightSegments,constellationLighting,starBadge,NODE_GROUND_X,NODE_GROUND_Y} from './sky-layout.mjs';
 
 const color=id=>SKY_COLORS[id]||'#a9b8ce';
 const box=points=>({minX:Math.min(...points.map(p=>p.x)),minY:Math.min(...points.map(p=>p.y)),maxX:Math.max(...points.map(p=>p.x)),maxY:Math.max(...points.map(p=>p.y))});
@@ -12,13 +12,14 @@ export function createMobileScene(map,{getState=()=> 'locked',selectedCourse=nul
  const trace=traceConnection(map.courses,connectionKey);
  const nodes=map.courses.map(course=>{
   const p=map.positions[course.id];
-  return {course,p,state:getState(course),color:color(p.chart),selected:course.id===selectedCourse,muted:!!trace&&!trace.ids.has(course.id),bounds:{minX:p.x-25,minY:p.y-30,maxX:p.x+275,maxY:p.y+p.labelY+55}};
+  return {course,p,state:getState(course),color:color(p.chart),starColor:STAR_COLORS[p.chart]||color(p.chart),selected:course.id===selectedCourse,muted:!!trace&&!trace.ids.has(course.id),bounds:{minX:p.x-25,minY:p.y-30,maxX:p.x+275,maxY:p.y+p.labelY+55}};
  });
  const groups=[...map.charts,...(map.branchChart?[{chart:map.branchChart,label:map.branchLabel,branch:map.courses.find(c=>c.specialization)?.specialization}]:[])];
  const charts=groups.map(group=>{
   const members=nodes.filter(n=>group.courseIds?group.courseIds.includes(n.course.id):group.branch?n.course.specialization===group.branch:!n.course.specialization&&n.course.term===group.term);
   const lights=members.filter(n=>['active-course','completed'].includes(n.state)).map(n=>({anchor:n.p.anchorIndex,strength:n.state==='completed'?1:.7}));
-  return {...group,color:color(group.chart.id),bounds:group.chart.orbit.bounds,lights:localLightSegments(group.chart,lights)};
+  const lighting=constellationLighting({completed:members.filter(n=>n.state==='completed').length,activated:members.filter(n=>n.state==='active-course').length,total:members.length});
+  return {...group,color:color(group.chart.id),bounds:group.chart.orbit.bounds,lighting,lights:localLightSegments(group.chart,lighting.complete?[]:lights)};
  });
  const edges=courseConnections(map.courses).map(edge=>{
   const a=map.positions[edge.from],b=map.positions[edge.to],from={x:a.x+NODE_GROUND_X,y:a.y+NODE_GROUND_Y},to={x:b.x+NODE_GROUND_X,y:b.y+NODE_GROUND_Y},bend=Math.min(180,Math.abs(to.x-from.x)*.4);
@@ -55,11 +56,11 @@ export function createMobilePainter({makeCanvas,Path,cacheBytes=24*1024*1024}){
  const paths=Object.fromEntries([...starBadge().matchAll(/<path class="([^"]+)" d="([^"]+)"/g)].map(([,key,d])=>[key,new Path(d)]));
  const sprites=new Map();let bytes=0;
  function sprite(node,density,overview){
-  const key=[node.course.id,node.color,node.state,node.p.perspective,node.p.labelY,density,overview].join(':');
+  const key=[node.course.id,node.color,node.starColor,node.state,node.p.perspective,node.p.labelY,density,overview].join(':');
   if(sprites.has(key)){const value=sprites.get(key);sprites.delete(key);sprites.set(key,value);return value;}
   const width=300,height=Math.max(300,node.p.labelY+55),image=makeCanvas(Math.ceil(width*density),Math.ceil(height*density)),ctx=image.getContext('2d');
   ctx.scale(density,density);ctx.translate(25,25);
-  const accent=node.color,active=node.state==='active-course',complete=node.state==='completed',lit=active||complete;
+  const accent=node.color,star=node.starColor||accent,active=node.state==='active-course',complete=node.state==='completed',lit=active||complete;
   ctx.save();ctx.translate(125,176);ctx.scale(node.p.perspective,node.p.perspective);ctx.translate(-96,-176);ctx.scale(4/3,4/3);
   ctx.fillStyle='#01030a';ctx.globalAlpha=.75;ctx.beginPath();ctx.ellipse(72,148,55,20,0,0,Math.PI*2);ctx.fill();
   ctx.fillStyle='#132135';ctx.strokeStyle=accent;ctx.globalAlpha=lit?.18:.14;ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(72,132,49,23,0,0,Math.PI*2);ctx.fill();ctx.stroke();
@@ -67,16 +68,16 @@ export function createMobilePainter({makeCanvas,Path,cacheBytes=24*1024*1024}){
   ctx.translate(72,70);const boost=complete?1+.4*overview:active?1+.25*overview:1;ctx.scale(boost,boost);ctx.translate(-72,-52);
   const opacity=lit?1:node.state==='locked'?.5:node.state==='preview'?.55:.65;
   ctx.globalAlpha=opacity*.65;ctx.fillStyle=accent;ctx.save();ctx.translate(0,5);ctx.fill(paths['star-extrusion']);ctx.restore();
-  ctx.globalAlpha=opacity*(lit?1:.8);ctx.fillStyle=complete?'#fff':active?white(accent,.8):accent;ctx.fill(paths['star-rays']);
-  if(lit){ctx.strokeStyle=white(accent,complete?.85:.55);ctx.lineWidth=1.2;ctx.stroke(paths['star-rays']);}
-  ctx.globalAlpha=opacity*(lit?1:.7);ctx.fillStyle=complete?'#fff':active?'#f3faff':white(accent,.68);ctx.fill(paths['star-facet-light']);
-  ctx.fillStyle=white(accent,complete?.82:active?.52:.12);ctx.globalAlpha=opacity;ctx.fill(paths['star-facet-dark']);
+  ctx.globalAlpha=opacity*(lit?1:.8);ctx.fillStyle=complete?white(star,.25):active?star:accent;ctx.fill(paths['star-rays']);
+  if(lit){ctx.strokeStyle=white(star,complete?.65:.45);ctx.lineWidth=1.2;ctx.stroke(paths['star-rays']);}
+  ctx.globalAlpha=opacity*(lit?1:.7);ctx.fillStyle=lit?white(star,complete?.75:.5):white(accent,.68);ctx.fill(paths['star-facet-light']);
+  ctx.fillStyle=lit?white(star,complete?.15:0):white(accent,.12);ctx.globalAlpha=opacity;ctx.fill(paths['star-facet-dark']);
   ctx.fillStyle=lit?'#fff':white(accent,.45);ctx.globalAlpha=opacity*(lit?1:.88);ctx.fill(paths['star-center']);
   ctx.globalAlpha=opacity;ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(72,52,complete?6:active?4.5:3,0,Math.PI*2);ctx.fill();ctx.restore();
   ctx.globalAlpha=1;ctx.font='800 30px "CELE WenHei", Arial, sans-serif';ctx.textAlign='center';ctx.textBaseline='top';
   const code=node.course.code||node.course.id,labelWidth=Math.max(100,ctx.measureText(code).width+18),left=125-labelWidth/2,y=node.p.labelY;
   ctx.fillStyle='#00000088';ctx.fillRect(left,y,labelWidth,43);ctx.globalAlpha=.24;ctx.strokeStyle=accent;ctx.lineWidth=1;ctx.strokeRect(left,y,labelWidth,43);
-  ctx.globalAlpha=1;ctx.fillStyle=complete?'#fff':white(accent,active?.65:.26);ctx.fillText(code,125,y+5);
+  ctx.globalAlpha=1;ctx.fillStyle=lit?white(star,complete?.65:.45):white(accent,.26);ctx.fillText(code,125,y+5);
   if(node.course.archivedAttempt||node.course.retake){ctx.font='800 18px "CELE WenHei", Arial, sans-serif';ctx.fillStyle=node.course.archivedAttempt?'#ebb599':'#e3ca96';ctx.fillText(node.course.archivedAttempt?'0.0 · previous attempt':'Retake',125,y+48);}
   const value={image,width,height,bytes:image.width*image.height*4};sprites.set(key,value);bytes+=value.bytes;
   while(bytes>cacheBytes&&sprites.size>1){const [old,item]=sprites.entries().next().value;sprites.delete(old);bytes-=item.bytes;}
@@ -107,9 +108,11 @@ export function createMobilePainter({makeCanvas,Path,cacheBytes=24*1024*1024}){
   }
   ctx.setLineDash([]);
   for(const group of visible.charts){
-   const {chart}=group;ctx.strokeStyle=group.color;ctx.globalAlpha=(.3-.06*overview)*(scene.tracing?.25:1);ctx.lineWidth=Math.max(1.8,.4/styleScale);
+   const {chart,lighting}=group,complete=lighting.complete;ctx.strokeStyle=complete?white(group.color,.18):group.color;ctx.globalAlpha=(complete?lighting.brightness:.3-.06*overview)*(scene.tracing?.25:1);ctx.lineWidth=Math.max(1.8,.4/styleScale);
    for(const path of chart.paths){ctx.beginPath();path.forEach((id,i)=>{const p=chart.vertices[id];if(i)ctx.lineTo(p.x,p.y);else ctx.moveTo(p.x,p.y);});ctx.stroke();}
-   ctx.fillStyle=group.color;ctx.globalAlpha=.3;for(const p of chart.vertices){ctx.beginPath();ctx.arc(p.x,p.y,p.degree>2?4:2.8,0,Math.PI*2);ctx.fill();}
+   ctx.fillStyle=group.color;ctx.globalAlpha=(complete?.9:.3)*(scene.tracing?.25:1);for(const p of chart.vertices){ctx.beginPath();ctx.arc(p.x,p.y,p.degree>2?4:2.8,0,Math.PI*2);ctx.fill();}
+   // Static holographic echo: no idle animation loop or filtered canvas layers.
+   if(complete){ctx.save();ctx.translate(0,-9);ctx.strokeStyle=group.color;ctx.globalAlpha=.16*(scene.tracing?.25:1);ctx.setLineDash([2,22]);for(const path of chart.paths){ctx.beginPath();path.forEach((id,i)=>{const p=chart.vertices[id];if(i)ctx.lineTo(p.x,p.y);else ctx.moveTo(p.x,p.y);});ctx.stroke();}ctx.restore();}
    ctx.globalAlpha=scene.tracing?.35:1;ctx.lineWidth=Math.max(3,.65/styleScale);
    for(const light of group.lights){const a=chart.vertices[light.from],b=chart.vertices[light.to],gradient=ctx.createLinearGradient(a.x,a.y,b.x,b.y),tone=white(group.color,.58);gradient.addColorStop(0,tone+Math.round(light.start*255).toString(16).padStart(2,'0'));gradient.addColorStop(.5,tone+'00');gradient.addColorStop(1,tone+Math.round(light.end*255).toString(16).padStart(2,'0'));ctx.strokeStyle=gradient;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();}
    ctx.globalAlpha=1;ctx.textAlign='left';ctx.textBaseline='top';ctx.font='800 24px "CELE WenHei", Arial, sans-serif';ctx.fillStyle='#ccc';ctx.fillText(group.branch||'Year '+(['I','II','III','IV'][Math.ceil(group.term/3)-1]||Math.ceil(group.term/3)),group.label.x,group.label.y);

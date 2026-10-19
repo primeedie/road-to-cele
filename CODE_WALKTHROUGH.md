@@ -59,6 +59,8 @@ Student activation checks add the course and any simultaneous lecture partners b
 
 The constellation outlines use attributed catalog geometry. Courses are assigned to their vertices. SVG draws the lines and raised stars; perspective projection, facets and bases create the sense of depth.
 
+Individual active/completed stars illuminate nearby half-segments. Only when every course belonging to one constellation is academically COMPLETED does its whole thin outline brighten and acquire a holographic echo. A slow highlight travels along the desktop outline; it pauses during interaction and becomes static for reduced motion or touch. The mobile canvas uses a still echo with no new idle animation loop. Shared-term and specialization charts earn the effect independently; previews, failed grades and mastery do not count. The effect is derived from records, so a testing reset removes it without separate reward flags. Active/completed star facets use a richer version of their constellation color around a white core, preserving color at a distance.
+
 The map has world coordinates. Panning and zooming transform the world container, while the course identities and records stay the same. Pan limits use the populated map regions. Zoom uses `requestAnimationFrame` and elapsed-time easing; pointer anchoring keeps the location under the cursor steady.
 
 Touch gestures use the latest finger positions once per screen frame. Pinching changes scale and translation together so the sky point under the midpoint follows the fingers, even at a zoom limit. The gesture caches screen bounds at the start and flushes pending movement before release. Scale-dependent line/star styling updates when the gesture ends, while mobile background layers stay still to reduce rendering work.
