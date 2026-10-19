@@ -42,6 +42,7 @@ test('leaderboard response whitelists display fields and rejects cross-batch or 
  const result=await loadBatchLeaderboard({rpc:async(name,input)=>{assert.equal(name,'get_batch_leaderboard');args=input;return {data,error:null};}},{batch:122,seed});assert.equal(result.rows[0].name,'Anon 122 #0023');assert.equal(result.rows[0].private_data,undefined);assert.deepEqual(args,{p_alias_seed:seed,p_page:0,p_page_size:50});
  await assert.rejects(loadBatchLeaderboard({rpc:async()=>({data:{...data,batch_id:123}})},{batch:122,seed}),/batch changed/);
  await assert.rejects(loadBatchLeaderboard({rpc:async()=>({error:{code:'PGRST202'}})},{batch:122,seed}),error=>error.setupRequired===true);
+ const unicode='🌟'.repeat(40),unicodeData={...data,rows:[{...row,display_name:unicode}]};assert.equal((await loadBatchLeaderboard({rpc:async()=>({data:unicodeData})},{batch:122,seed})).rows[0].name,unicode);
 });
 test('leaderboard discards late responses on account/batch changes and preserves alias seed across pages only',async()=>{
  const dom=new JSDOM('<section></section>'),el=dom.window.document.querySelector('section');let state={user:{id:a,user_metadata:{batch_id:122}},ready:true},resolvers=[],requests=[],count=0;
