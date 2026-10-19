@@ -8,6 +8,8 @@ For a presentation-friendly explanation of the skeleton and implementation, see 
 
 ## Architecture
 
+- `src/non-major-courses.mjs` and `src/non-major-checklist.mjs`: a separate 31-row non-major checklist with Year Taken / Term dropdowns, self-reported Taken checks and editable elective names. Account batch IDs119–122 use the older GE PE sequence; IDs123–128 use the newer PE sequence. This affects only checklist display, never the technical graph. Records sync in the existing private progress JSON; guests select their batch locally. See [NON_MAJOR_CHECKLIST.md](NON_MAJOR_CHECKLIST.md) for supplied-file provenance. No database migration is needed.
+
 - `src/curriculum.mjs`: shared course identities, ID122 term placement and H/S/C prerequisites, specialization metadata, configurable required mastery scope, and common CELE review groupings.
 - `src/progression.mjs`: immutable progression transitions. Preview is read-only; specialist progression requires confirmed self-reported acceptance; a separate confirmed transfer transition retains all records. Academic and mastery completion are separate. CIVINCO requires the active technical path, configured mastery, then a common assessment pass.
 - `src/storage.mjs`: versioned local persistence and record hydration. Export a JSON backup from the journal. University acceptance remains self-reported. Google sign-in identifies app accounts only.

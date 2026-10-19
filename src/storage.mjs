@@ -2,6 +2,8 @@ import { newProgress } from './progression.mjs';
 import { SPECIALIZATIONS } from './curriculum.mjs';
 import { hydrateCosmetics } from './cosmetics.mjs';
 import {normalizeProfilePhoto} from './profile-photo.mjs';
+import {normalizeNonMajorRecords} from './non-major-checklist.mjs';
+import {validChecklistBatch} from './non-major-courses.mjs';
 export const STORAGE_KEY='cele-atlas.progress.v3';
 export function hydrateProgress(raw) {
  if(!raw || raw.version!==3)throw Error('Unsupported progress format');
@@ -21,6 +23,9 @@ export function hydrateProgress(raw) {
  }
  const next={...p,...raw,cosmetics:hydrateCosmetics(raw.cosmetics)},photo=normalizeProfilePhoto(raw.profilePhoto);
  if(photo)next.profilePhoto=photo;else delete next.profilePhoto;
+ const checklist=normalizeNonMajorRecords(raw.nonMajorRecords);
+ if(Object.keys(checklist).length)next.nonMajorRecords=checklist;else delete next.nonMajorRecords;
+ if(!validChecklistBatch(raw.nonMajorBatchId))delete next.nonMajorBatchId;
  return structuredClone(next);
 }
 export function loadProgress(storage) {const raw=storage.getItem(STORAGE_KEY);return raw?hydrateProgress(JSON.parse(raw)):newProgress();}

@@ -1,0 +1,63 @@
+/* One checklist, independent of the constellation camera and academic graph. */
+#checklist-page { max-width:1280px;margin:0 auto;padding:42px 30px 80px;color:#dfdfd6;font-family:var(--atlas-type) }
+#checklist-page .checklist-heading { max-width:740px }
+#checklist-page h1 { margin:14px 0 18px;font-size:clamp(28px,4vw,44px);line-height:1.15;color:#f0eee5 }
+#checklist-page h1 em { color:#d6c18e;font-style:normal }
+#checklist-page p { line-height:1.7;font-size:14px }
+#checklist-page .checklist-heading>p { color:#c1beb2 }
+.checklist-progress { display:flex;align-items:center;gap:24px;margin:26px 0 }
+.checklist-progress strong { color:#b6d6c2;font-size:22px;white-space:nowrap }
+.checklist-progress strong span { font-size:13px;color:#bbb9ae }
+.checklist-progress progress { width:min(320px,55%);height:5px;appearance:none;border:0;background:#21231e;accent-color:#a5c6ae }
+.checklist-progress progress::-webkit-progress-bar { background:#21231e }
+.checklist-progress progress::-webkit-progress-value { background:#a5c6ae }
+.checklist-progress progress::-moz-progress-bar { background:#a5c6ae }
+.checklist-batch { display:flex;align-items:center;flex-wrap:wrap;gap:12px 24px;padding:14px 0;border-top:1px solid #ffffff24 }
+.checklist-batch label { display:flex;align-items:center;flex-wrap:wrap;gap:12px;font-size:13px }
+.checklist-batch>span { font-size:13px;color:#bdb8ab }.checklist-batch strong { color:#e1cea4 }
+.checklist-batch small { color:#aaa99e;font-size:11px;line-height:1.6 }
+#checklist-page .checklist-guide { color:#c6bda7;font-size:12px;max-width:780px;margin:16px 0 22px }
+.checklist-table-wrap { border-top:1px solid #ffffff30 }
+.non-major-table { width:100%;border-collapse:collapse;text-align:left;font-size:13px;table-layout:fixed }
+.non-major-table thead th { padding:16px 12px;color:#d9c797;font-size:11px;letter-spacing:.04em;border-bottom:1px solid #ffffff30;text-transform:uppercase }
+.non-major-table thead th:first-child { width:96px }.non-major-table thead th:nth-child(2) { width:122px }.non-major-table thead th:nth-child(4) { width:66px }.non-major-table thead th:nth-child(5),.non-major-table thead th:nth-child(6) { width:120px }
+.non-major-table td,.non-major-table tbody th { padding:18px 12px;vertical-align:top;border-bottom:1px solid #ffffff20;line-height:1.6;overflow-wrap:anywhere }
+.non-major-table .checklist-code { color:#b5ced9;font-size:13px;letter-spacing:.015em;text-align:left }
+.non-major-table .checklist-title { color:#e0d9c7;font-weight:normal }
+.non-major-table .checklist-units { color:#c2bda8 }
+.non-major-table .is-taken .checklist-code { color:#b0d3bb }
+.checklist-taken input { appearance:auto;width:20px;height:20px;accent-color:#a6cdb3;cursor:pointer;margin:10px 0 6px }
+.checklist-taken small { display:block;font-size:10px;color:#a8a79b;line-height:1.4 }
+.checklist-taken>label { display:block;min-width:44px;min-height:44px;cursor:pointer }
+.is-taken .checklist-taken small { color:#b0d3bb }
+#checklist-page select,#checklist-page input[type="text"] { width:100%;min-height:44px;margin:0;background:#090b0b;color:#e4e5dc;border:1px solid #ffffff38;border-radius:4px;padding:9px 10px;font:800 13px var(--atlas-type);box-sizing:border-box;box-shadow:none }
+#checklist-page select { appearance:auto;color-scheme:dark }
+#checklist-page .checklist-batch select { width:135px;font-size:13px }
+#checklist-page :is(input,select,summary):focus-visible { outline:2px solid #a9cbd7;outline-offset:3px }
+#checklist-page :disabled { opacity:.45;cursor:default }
+.checklist-edit { margin-top:10px }.checklist-edit summary { color:#91b6c6;font-size:11px;cursor:pointer;min-height:30px;line-height:30px;width:fit-content }
+.checklist-edit>div { display:grid;gap:12px;padding:8px 0 4px }.checklist-edit label { display:grid;gap:6px;font-size:11px;color:#beb7a5 }
+#checklist-page .checklist-footnote,#checklist-page .checklist-save-note { font-size:11px;color:#aaa99f;max-width:850px;margin-top:18px }
+#checklist-page .checklist-notice { border-left:2px solid #d6c18e;padding:10px 14px;background:#0d0d09;color:#e4cf9f }
+@media(min-width:761px) and (max-width:1000px) { .rail nav { gap:12px }.rail .nav-item { font-size:11px }.rail .brand-prefix { display:none }.app-shell>.rail { gap:16px;padding-inline:16px } }
+@media(max-width:900px) {
+ #checklist-page { padding:30px 17px 70px }.non-major-table { table-layout:auto }
+ .non-major-table thead { position:absolute;width:1px;height:1px;clip-path:inset(50%);overflow:hidden;white-space:nowrap }
+ .non-major-table tbody { display:grid;gap:0 }
+ .non-major-table tr { display:grid;grid-template-columns:62px minmax(0,1fr) minmax(0,1fr);gap:12px;padding:20px 0;border-bottom:1px solid #ffffff28 }
+ .non-major-table td,.non-major-table tbody th { padding:0;border:0;min-width:0 }
+ .non-major-table .checklist-taken { grid-column:1;grid-row:1/4;align-self:start }
+ .non-major-table .checklist-code { grid-column:2/-1;font-size:15px }
+ .non-major-table .checklist-title { grid-column:2/-1;font-size:14px }
+ .non-major-table .checklist-units { grid-column:2/-1;font-size:12px }
+ .non-major-table .checklist-units::before { content:'Units: ';color:#aaa99e }
+ .non-major-table .checklist-year { grid-column:2 }.non-major-table .checklist-term { grid-column:3 }
+ .non-major-table :is(.checklist-year,.checklist-term)::before { content:attr(data-label);display:block;font-size:11px;color:#c9b887;margin-bottom:8px }
+ #checklist-page select,#checklist-page input[type="text"] { font-size:16px }
+ .checklist-taken { min-height:44px }.checklist-taken input { width:24px;height:24px }
+ .checklist-edit summary { min-height:44px;line-height:44px }
+}
+@media(max-width:760px) {
+ .rail nav { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));width:100%;gap:8px }
+ .rail .nav-item { min-width:0;padding-inline:2px;white-space:normal;text-align:center;line-height:1.4 }
+}

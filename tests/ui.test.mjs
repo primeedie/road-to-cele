@@ -332,5 +332,15 @@ test('actual website interactions keep exploration separate from academic progre
   click('[data-action="close-inspector"]');click('[data-course="BASCHEM~'+term+'"]');assert.equal($('.grade-saved-summary strong').textContent,'0.0');assert.equal($('#course-card [name="final"]').value,'40');assert.ok($('.grade-assessments').disabled);
   click('[data-grade-history="'+(term+1)+'"]');assert.equal($('.grade-saved-summary strong').textContent,'2.5');assert.equal($('#course-card [name="final"]').value,'80');
  });
+ await t.test('non-major navigation records year and term without rebuilding the sky or changing prerequisites',()=>{
+  const before=saved(),world=$('#world').firstElementChild;
+  click('[data-page="checklist"]');assert.equal($('#checklist-page').classList.contains('hidden'),false);assert.equal($('#course-card').open,false);
+  const change=(selector,value)=>{const el=$(selector);el.focus();el.value=value;el.dispatchEvent(new w.Event('change',{bubbles:true}));};
+  change('[data-checklist-batch]','122');assert.ok($('[data-checklist-row="GEFTWEL"]'));assert.equal($('[data-checklist-row="PE1CRDO"]'),null);
+  change('[data-non-major="GEMATMW"][data-field="year"]','1');change('[data-non-major="GEMATMW"][data-field="term"]','2');click('[data-non-major="GEMATMW"][data-field="taken"]');
+  assert.deepEqual(saved().nonMajorRecords.GEMATMW,{year:1,term:2,taken:true});assert.deepEqual(saved().academicRecords,before.academicRecords);assert.deepEqual(saved().masteryRecords,before.masteryRecords);assert.deepEqual(saved().specializationProgression,before.specializationProgression);assert.equal($('#world').firstElementChild,world);
+  change('[data-checklist-batch]','123');assert.equal($('[data-checklist-row="GEFTWEL"]'),null);assert.ok($('[data-checklist-row="PE1CRDO"]'));assert.ok(saved().nonMajorRecords.GEMATMW.taken);
+  click('[data-page="journal"]');click('[data-page="checklist"]');assert.ok($('[data-non-major="GEMATMW"][data-field="taken"]').checked);assert.equal($('#checklist-page [data-action="reset-progress"]'),null);
+ });
  dom.window.close();
 });

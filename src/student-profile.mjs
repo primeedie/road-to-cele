@@ -10,5 +10,5 @@ export function batchSelect(value=null){
 }
 export function profileForm(user){
  const batch=studentBatch(user);
- return `<form class="student-profile-form" data-profile-form><h3>${batch===null?'Choose your batch':'Student profile'}</h3>${batchSelect(batch)}<p class="card-note">Your batch is profile information. The current curriculum map follows the ID 122 checklist.</p><button type="submit" class="secondary">Save batch</button></form>`;
+ return `<form class="student-profile-form" data-profile-form><h3>${batch===null?'Choose your batch':'Student profile'}</h3>${batchSelect(batch)}<p class="card-note">Your batch selects the PE subjects in the Non-major checklist. The technical curriculum map still follows the ID 122 checklist.</p><button type="submit" class="secondary">Save batch</button></form>`;
 }
