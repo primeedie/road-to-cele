@@ -4,6 +4,8 @@ A Civil Engineering skill-tree skeleton with a static interface and an optional 
 
 Run `npm ci`, `npm test`, `npm run build`, then `npm start`. On Windows PowerShell use `npm.cmd` if execution policy blocks `npm.ps1`. Open http://localhost:4173.
 
+For production Google sign-in, open Supabase Authentication → URL Configuration. Set Site URL to `https://road-to-cele.pages.dev/` and add that exact URL to Redirect URLs, saving both settings. If sign-in returns to `localhost:3000`, check these settings and start a fresh sign-in from the production website; an already-started OAuth request retains its old destination. This dashboard-only change needs no redeploy. The Google Cloud authorized callback remains `https://brhejyodiwvpyxlzyzvq.supabase.co/auth/v1/callback`. See [Supabase's redirect guide](https://supabase.com/docs/guides/auth/redirect-urls).
+
 For a presentation-friendly explanation of the skeleton and implementation, see [CODE_WALKTHROUGH.md](CODE_WALKTHROUGH.md).
 
 The Non-major checklist records GE, Lasallian, PE, NSTP and student formation courses in one list, with Year Taken / Term dropdowns and batch-specific PE subjects. It saves with the existing account journey and has no effect on technical prerequisites. See [NON_MAJOR_CHECKLIST.md](NON_MAJOR_CHECKLIST.md) for details and supplied-file provenance.

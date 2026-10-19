@@ -5,6 +5,24 @@ import { setupAccount } from '../src/account-browser.mjs';
 import { newProgress } from '../src/progression.mjs';
 import { STORAGE_KEY, saveProgress } from '../src/storage.mjs';
 
+test('Google sign-in clicked during SDK startup waits for the shared connection and remains retryable',async()=>{
+ const dom=new JSDOM('<div id="account-panel"></div><dialog id="account-dialog"></dialog>',{url:'https://road.test/'}),doc=dom.window.document;
+ dom.window.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
+ let resolveClient,factories=0,subscriptions=0,oauthCalls=0,fail=true;const errors=[];
+ const client={auth:{onAuthStateChange:()=>{subscriptions++;},getSession:async()=>({data:{session:null},error:null}),signInWithOAuth:async options=>{oauthCalls++;assert.equal(options.provider,'google');assert.equal(options.options.redirectTo,'https://road.test/');return {error:fail?Error('temporary network failure'):null};}}};
+ const setup=setupAccount({document:doc,storage:dom.window.localStorage,onProgress:()=>{},onError:e=>errors.push(e),config:{url:'https://test.supabase.co',publishableKey:'sb_publishable_test'},clientFactory:()=>{factories++;return new Promise(r=>resolveClient=r);}});
+ try{
+  const connecting=setup.start();doc.querySelector('[data-account="open"]').click();doc.querySelector('[data-account="login"]').click();
+  assert.equal(oauthCalls,0);assert.equal(errors.length,0);assert.equal(doc.querySelector('[data-account="login"]').disabled,true);
+  resolveClient(client);await connecting;await new Promise(r=>setTimeout(r,0));
+  assert.equal(factories,1);assert.equal(subscriptions,1);assert.equal(oauthCalls,1);assert.equal(errors.length,1);
+  assert.equal(doc.querySelector('[data-username-form] [type="submit"]').disabled,false);
+  assert.equal(doc.querySelector('[data-account="login"]').disabled,false);
+  fail=false;doc.querySelector('[data-account="login"]').click();await new Promise(r=>setTimeout(r,0));assert.equal(oauthCalls,2);
+  await setup.start();assert.equal(subscriptions,1);assert.equal(factories,1);
+ }finally{dom.window.close();}
+});
+
 test('account UI uses Google PKCE login, imports only after a choice, and sign-out restores guest',async()=>{
  const dom=new JSDOM('<div id="account-panel"></div><dialog id="account-dialog"></dialog>',{url:'https://road.test/'}),doc=dom.window.document;
  dom.window.HTMLDialogElement.prototype.showModal=function(){this.open=true;};dom.window.HTMLDialogElement.prototype.close=function(){this.open=false;};

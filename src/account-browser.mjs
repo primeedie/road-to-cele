@@ -12,7 +12,7 @@ import {loadBatchLeaderboard} from './leaderboard-service.mjs';
 import {accountDeletionMarkup,requestAccountDeletion,removeDeletedAccountCopies,ACCOUNT_DELETION_PHRASE} from './account-deletion.mjs';
 
 export function setupAccount({storage,document,onProgress,onIdentity=()=>{},onProfilePhotoChange=()=>{},onError=()=>{},config=cloudConfig,clientFactory=null,settingsFetcher=null,recoveryFetcher=null,deletionFetcher=null,photoProcessor}) {
- let client=null,model,photoEditor,error='',starting=false,busy=false,confirmSignout=false,usernameMode='signin';
+ let client=null,model,photoEditor,error='',startPromise=null,busy=false,confirmSignout=false,usernameMode='signin';
  const configured=!!config.url;
  const service=configured?{
   read:id=>cloudService(client).read(id),
@@ -53,23 +53,29 @@ export function setupAccount({storage,document,onProgress,onIdentity=()=>{},onPr
  }
  model=createAccountProgress({storage,service,onProgress,onState:paint});
  photoEditor=createProfilePhotoEditor({document,getState:model.state,getProgress:model.progress,save:model.save,flush:model.flush,onSaved:onProfilePhotoChange,processor:photoProcessor});
- async function start() {
-  if(!configured||starting)return;
+ function start() {
+  if(!configured)return Promise.resolve();
+  // A sign-in click during the SDK import must wait for that same connection.
+  if(startPromise)return startPromise;
   error='';
-  starting=true;
+  startPromise=(async()=>{
   try {
    const createClient=clientFactory||(await import('./supabase-client.mjs')).createClient;
-   client??=createClient(config.url,config.publishableKey,{auth:{flowType:'pkce',detectSessionInUrl:true,persistSession:true,autoRefreshToken:true}});
+   if(!client){
+   client=await createClient(config.url,config.publishableKey,{auth:{flowType:'pkce',detectSessionInUrl:true,persistSession:true,autoRefreshToken:true}});
    // Auth callbacks are synchronous; SDK requests run outside its auth lock.
    client.auth.onAuthStateChange((event,session)=>{
     if(['SIGNED_IN','SIGNED_OUT','USER_UPDATED'].includes(event))setTimeout(()=>model.setUser(session?.user||null).catch(onError),0);
    });
+   }
    const {data,error:authError}=await client.auth.getSession();
    if(authError)throw authError;
    await model.setUser(data.session?.user||null);
    const location=document.defaultView.location,params=new URLSearchParams(location.search),hash=new URLSearchParams(location.hash.slice(1));
    if(params.has('error')||hash.has('error')){error='Google sign-in did not finish. Check that your Google account is allowed to test the app, then try again.';onError(error);for(const key of ['error','error_code','error_description']){params.delete(key);hash.delete(key);}document.defaultView.history.replaceState(null,'',location.pathname+(params.size?'?'+params:'')+(hash.size?'#'+hash:''));}
-  }catch{error='Cloud login could not connect. Your guest records are retained. Please retry connecting.';await model.setUser(null);paint({...model.state(),message:error});onError(error);}finally{starting=false;}
+  }catch{error='Cloud login could not connect. Your guest records are retained. Please retry connecting.';await model.setUser(null);paint({...model.state(),message:error});onError(error);}finally{startPromise=null;}
+  })();
+  return startPromise;
  }
  document.addEventListener('click',async event=>{
   const toggle=event.target.closest('[data-password-toggle]');
@@ -95,8 +101,8 @@ export function setupAccount({storage,document,onProgress,onIdentity=()=>{},onPr
    if(action==='open'){confirmSignout=false;dialog.showModal();paint(model.state());return;}
    if(action==='username-signin'||action==='username-signup'){clearRecovery();usernameMode=action.slice(9);paint(model.state());dialog.querySelector('[name="username"]')?.focus();return;}
    if(action==='login'){
-    if(!client){await start();if(!client)throw Error('Cloud login is still connecting.');}
     busy=true;button.disabled=true;
+    if(!client){await start();if(!client)throw Error('Cloud login is still connecting.');}
     const {error:oauthError}=await client.auth.signInWithOAuth({provider:'google',options:{redirectTo:document.defaultView.location.origin+'/'}});
     if(oauthError)throw oauthError;return;
    }
@@ -113,7 +119,7 @@ export function setupAccount({storage,document,onProgress,onIdentity=()=>{},onPr
    if(['guest','new','cloud','device'].includes(action)){
     await model.resolve(action);if(!model.state().choice&&studentBatch(model.state().user)!==null)dialog.close();return;
    }
-  }catch {error='That account action could not finish. Your existing journey is retained. Please try again.';paint(model.state());onError(error);}finally{busy=false;button.disabled=false;}
+  }catch {busy=false;error='That account action could not finish. Your existing journey is retained. Please try again.';paint(model.state());onError(error);}finally{busy=false;button.disabled=false;}
  });
  document.addEventListener('submit',async event=>{
   const deletionForm=event.target.closest('[data-account-deletion-form]');
