@@ -9,7 +9,7 @@ import {hydrateProgress} from '../src/storage.mjs';
 import {createSkyMap} from '../src/map-curriculum.mjs';
 import {createOrbitLayout,orbitSceneBounds} from '../src/orbit-layout.mjs';
 import {createMobileScene,pickMobileItem} from '../src/mobile-sky.mjs';
-import {COURSE_BY_ID} from '../src/curriculum.mjs';
+import {COURSE_BY_ID,COURSES} from '../src/curriculum.mjs';
 import {renderCoursePanel} from '../src/course-panel.mjs';
 const draft=(quiz,final=40)=>({quiz_count_quizzes:'1',quiz_quizzes_0_score:String(quiz),quiz_quizzes_0_max:'100',final:String(final),final_max:'100',activities:'100',teacher:'95',gradeTarget:'final',gradeStep:'1',targetGrade:'4'});
 const save=(p,d,term=1,options={})=>saveCourseGrade(p,'FNDMATH',{term,draft:d,confirmed:true,...options});
@@ -60,18 +60,20 @@ test('unmet/unchecked passing conditions override numeric grades and neither dra
  assert.ok(s.requirements.length);const req=s.requirements[0].id;assert.throws(()=>saveCourseGrade(base,id,{term:8,draft:{...d,['req_'+req]:''},confirmed:true}),/passing requirements/);
  const next=saveCourseGrade(base,id,{term:8,draft:{...d,['req_'+req]:'not-met'},confirmed:true});assert.equal(next.academicRecords[id].gradeAttempts[0].numericGrade,4);assert.equal(next.academicRecords[id].gradeAttempts[0].grade,0);assert.equal(next.academicRecords[id].status,'FAILED');assert.deepEqual(next.masteryRecords,{});
 });
-test('personal plans retain failed nodes, shift hard chains once per delay, preserve independent soft courses and started records, and extend map bounds',()=>{
- let p=save(recordAcademicProgress(newProgress(),'FNDMATH','ACTIVE'),draft(40));let plan=personalCoursePlan(p),find=id=>plan.courses.find(c=>c.id===id);
- assert.equal(find('FNDMATH').term,2);assert.equal(find('CALENG1').term,3);assert.equal(find('CALENG2').term,4);assert.equal(find('CESURVE').term,2);assert.equal(find('CEECONO').term,3);assert.equal(find('FNDMATH~1').archivedAttempt.grade,0);
- p=startCourseRetake(p,'FNDMATH',2);p=save(p,draft(40),2);plan=personalCoursePlan(p);assert.equal(find('CALENG1').term,4);assert.equal(find('CALENG2').term,5);assert.equal(find('FNDMATH').term,3);
- const late=startCourseRetake(p,'FNDMATH',12);
- for(const branch of [null,'STE','TRE']){
-  const source=createSkyMap(branch,late),map=createOrbitLayout(source),scene=createMobileScene(map),bounds=orbitSceneBounds(map);
-  assert.equal(new Set(map.courses.map(c=>c.id)).size,map.courses.length);assert.ok(map.positions['FNDMATH~1']);assert.ok(map.positions['FNDMATH~2']);assert.ok(map.charts.some(g=>g.term>11));
-  assert.ok(scene.nodes.some(n=>n.course.id==='FNDMATH~1'));assert.ok(scene.edges.every(e=>!e.from.includes('~')&&!e.to.includes('~')));
-  for(const c of map.courses){const pos=map.positions[c.id];assert.ok(Number.isFinite(pos.x)&&Number.isFinite(pos.y));assert.ok(pos.x+125>=bounds.minX&&pos.x+125<=bounds.maxX);}
-  const archive=scene.nodes.find(n=>n.course.id==='FNDMATH~1'),point={x:archive.p.x+125,y:archive.p.y+176+(70*4/3-176)*archive.p.perspective};assert.equal(pickMobileItem(scene,{x:0,y:0,scale:1},point).id,'FNDMATH~1');
+test('retakes and imported terms keep one canonical node in its original shared or specialist constellation',()=>{
+ let p=save(recordAcademicProgress(newProgress(),'FNDMATH','ACTIVE'),draft(40));let plan=personalCoursePlan(p);
+ assert.equal(plan.courses.length,COURSES.length);assert.equal(plan.courses.find(c=>c.id==='FNDMATH').term,1);assert.equal(plan.courses.find(c=>c.id==='CALENG1').term,2);assert.equal(plan.courses.some(c=>c.id.includes('~')),false);
+ p=startCourseRetake(p,'FNDMATH',2);p=save(p,draft(40),2);const late=startCourseRetake(p,'FNDMATH',12);
+ late.academicRecords.HWRRGIS={status:'ACTIVE',takenInTerm:15,gradeAttempts:[{term:12,outcome:'FAILED',grade:0}]};
+ const before=structuredClone(late);
+ for(const branch of [null,'STE','GTE','HWR','TRE','CTM']){
+  const source=createSkyMap(branch,late),map=createOrbitLayout(source),original=createOrbitLayout(createSkyMap(branch)),scene=createMobileScene(map),bounds=orbitSceneBounds(map);
+  assert.equal(map.courses.length,original.courses.length);assert.equal(new Set(map.courses.map(c=>c.id)).size,map.courses.length);assert.ok(map.charts.every(g=>g.term<=11));assert.equal(map.personalPlan,undefined);
+  for(const c of map.courses){const base=COURSE_BY_ID[c.id];assert.ok(base);assert.equal(c.term,base.term);assert.equal(c.year,base.year);assert.deepEqual(map.positions[c.id],original.positions[c.id]);const pos=map.positions[c.id];assert.ok(pos.x+125>=bounds.minX&&pos.x+125<=bounds.maxX);}
+  assert.ok(scene.nodes.every(n=>!n.course.id.includes('~')));assert.ok(scene.edges.every(e=>!e.from.includes('~')&&!e.to.includes('~')));
+  assert.equal(!!source.branchChart,!!branch);if(branch)assert.equal(source.branchChart.id,createSkyMap(branch).branchChart.id);
+  const node=scene.nodes.find(n=>n.course.id==='FNDMATH'),point={x:node.p.x+125,y:node.p.y+176+(70*4/3-176)*node.p.perspective};assert.equal(pickMobileItem(scene,{x:0,y:0,scale:1},point).id,'FNDMATH');
  }
- p.academicRecords.CALENG1={status:'ACTIVE',takenInTerm:3};plan=personalCoursePlan(p);assert.equal(find('CALENG1').term,3);
+ assert.deepEqual(late,before);assert.equal(late.academicRecords.FNDMATH.gradeAttempts.length,2);
  const extended={...newProgress(),academicYear:4,academicTerm:15};assert.equal(hydrateProgress(extended).academicTerm,15);
 });

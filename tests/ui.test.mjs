@@ -311,25 +311,25 @@ test('actual website interactions keep exploration separate from academic progre
   const a=progressSummary(saved()).academic;assert.equal($('#academic-progress').getAttribute('aria-valuenow'),String(a.complete));assert.equal($('#academic-progress').getAttribute('aria-valuemax'),String(a.total));
   click('[data-page="gate"]');assert.match($('#gate-page').textContent,/Unselected specialization branches never block/);assert.ok($('#gate-page button').disabled);assert.match($('#gate-page').textContent,/LOCKED UNTIL CIVINCO/);
  });
- await t.test('students have no reset action and a programmatic reset attempt cannot clear progress',()=>{
-  const before=localStorage.getItem(STORAGE_KEY);click('[data-page="map"]');assert.equal($('#reset-progress').hidden,true);$('#reset-progress').click();assert.equal($('#reset-dialog').open,false);
+ await t.test('testing students can open and cancel reset, while a raw dialog bypass cannot clear records',()=>{
+  const before=localStorage.getItem(STORAGE_KEY);click('[data-page="map"]');assert.equal($('#reset-progress').hidden,false);click('#reset-progress');assert.equal($('#reset-dialog').open,true);assert.match($('#reset-description').textContent,/Testing reset clears/);click('#cancel-reset');assert.equal(localStorage.getItem(STORAGE_KEY),before);
   $('#reset-dialog').open=true;click('[data-action="confirm-reset"]');assert.equal(localStorage.getItem(STORAGE_KEY),before);$('#reset-dialog').close();
-  click('[data-page="journal"]');assert.equal($('#journal-page [data-action="reset-progress"]'),null);assert.equal(localStorage.getItem(STORAGE_KEY),before);
+  click('[data-page="journal"]');assert.ok($('#journal-page [data-action="reset-progress"]'));assert.equal(localStorage.getItem(STORAGE_KEY),before);
  });
 
- await t.test('confirmed grades persist by term, generate a failed node and later retake, and survive course-panel navigation',()=>{
+ await t.test('confirmed grades and retakes share one fixed node with every term available in history',()=>{
   click('[data-page="map"]');click('[data-course="BASCHEM"]');click('[data-academic="ACTIVE"]');click('[data-course-section="3"]');
   let form=$('#course-card [data-grade-course]');const term=Number(form.dataset.gradeTerm);click('[data-add-quiz="exams"]');
   const fill=values=>{for(const [id,value] of Object.entries(values)){form.elements.namedItem(id).value=value;form.elements.namedItem(id).dispatchEvent(new w.Event('input',{bubbles:true}));}};
   fill({quiz_exams_0_score:40,quiz_exams_0_max:100,final:40,final_max:100,output:100,coursework:100});
   assert.ok(form.querySelector('[data-save-grades]').disabled);form.elements.namedItem('gradeConfirmed').checked=true;form.elements.namedItem('gradeConfirmed').dispatchEvent(new w.Event('change',{bubbles:true}));click('[data-save-grades]');
-  assert.equal(saved().academicRecords.BASCHEM.status,'FAILED');assert.equal(saved().academicRecords.BASCHEM.gradeAttempts[0].term,term);assert.equal(saved().academicRecords.BASCHEM.gradeAttempts[0].grade,0);assert.ok($('[data-course="BASCHEM~'+term+'"]'));
+  assert.equal(saved().academicRecords.BASCHEM.status,'FAILED');assert.equal(saved().academicRecords.BASCHEM.gradeAttempts[0].term,term);assert.equal(saved().academicRecords.BASCHEM.gradeAttempts[0].grade,0);assert.equal($('[data-course="BASCHEM~'+term+'"]'),null);assert.equal(document.querySelectorAll('[data-course="BASCHEM"]').length,1);
   click('[data-grade-retake]');assert.equal(saved().academicRecords.BASCHEM.takenInTerm,term+1);assert.equal(saved().academicRecords.BASCHEM.status,'ACTIVE');form=$('#course-card [data-grade-course]');assert.equal(form.querySelectorAll('[data-quiz-row]').length,0);assert.equal(form.elements.namedItem('final').value,'');
   click('[data-add-quiz="exams"]');fill({quiz_exams_0_score:80,quiz_exams_0_max:100,final:80,final_max:100,output:90,coursework:85});
   form.elements.namedItem('targetGrade').value='4';form.elements.namedItem('targetGrade').dispatchEvent(new w.Event('change',{bubbles:true}));assert.match(form.querySelector('.grade-course-outcome').textContent,/2.5/);
   form.elements.namedItem('gradeConfirmed').checked=true;form.elements.namedItem('gradeConfirmed').dispatchEvent(new w.Event('change',{bubbles:true}));click('[data-save-grades]');
   const grades=saved().academicRecords.BASCHEM.gradeAttempts;assert.equal(grades.length,2);assert.equal(grades[0].grade,0);assert.equal(grades[1].grade,2.5);assert.equal(grades[1].term,term+1);assert.equal(saved().academicRecords.BASCHEM.status,'COMPLETED');
-  click('[data-action="close-inspector"]');click('[data-course="BASCHEM~'+term+'"]');assert.equal($('.grade-saved-summary strong').textContent,'0.0');assert.equal($('#course-card [name="final"]').value,'40');assert.ok($('.grade-assessments').disabled);
+  click('[data-action="close-inspector"]');click('[data-course="BASCHEM"]');click('[data-course-section="3"]');click('[data-grade-history="'+term+'"]');assert.equal($('.grade-saved-summary strong').textContent,'0.0');assert.equal($('#course-card [name="final"]').value,'40');assert.ok($('.grade-assessments').disabled);
   click('[data-grade-history="'+(term+1)+'"]');assert.equal($('.grade-saved-summary strong').textContent,'2.5');assert.equal($('#course-card [name="final"]').value,'80');
  });
  await t.test('non-major navigation records year and term without rebuilding the sky or changing prerequisites',()=>{
@@ -344,6 +344,9 @@ test('actual website interactions keep exploration separate from academic progre
  });
  await t.test('journal exposes a local booklet preview without changing the student journey on open or cancel',()=>{
   click('[data-page="journal"]');const before=localStorage.getItem(STORAGE_KEY);click('[data-action="import-booklet"]');assert.equal($('#booklet-dialog').open,true);assert.ok($('#booklet-dialog [data-booklet-file]'));assert.match($('#booklet-dialog').textContent,/PDF is read on this device/);assert.equal($('#booklet-dialog [data-booklet-action="apply"]'),null);click('[data-booklet-action="close"]');assert.equal($('#booklet-dialog').open,false);assert.equal(localStorage.getItem(STORAGE_KEY),before);assert.ok($('#journal-page .academic-summary'));assert.equal(document.querySelectorAll('#journal-page .academic-summary').length,1);
+ });
+ await t.test('confirmed guest testing reset clears academic and checklist records while keeping a backup and companion',()=>{
+  const before=saved();click('[data-page="journal"]');click('#journal-page [data-action="reset-progress"]');click('[data-action="confirm-reset"]');const clean=saved();assert.deepEqual(clean.academicRecords,{});assert.equal(clean.nonMajorRecords,undefined);assert.equal(clean.advisingNonMajor,undefined);assert.deepEqual(clean.quizAttempts,[]);assert.equal(clean.academicYear,1);assert.equal(clean.cosmetics.avatar,before.cosmetics.avatar);assert.deepEqual(JSON.parse(localStorage.getItem(STORAGE_KEY+'.testing-reset-backup')).progress,before);assert.equal($('#map-page').classList.contains('hidden'),false);assert.equal($('#reset-dialog').open,false);
  });
  dom.window.close();
 });

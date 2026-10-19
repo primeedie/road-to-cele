@@ -42,31 +42,13 @@ export function renderGradeHistory(p,id,{selectedTerm=attemptTerm(p,id)}={}){
  const retake=record?.status==='FAILED'&&latest&&latest.term<60?'<div class="grade-retake"><h4>A new term, a fresh attempt</h4><p>Your earlier grade stays in the record. Hard prerequisites require a passing attempt; soft prerequisites recognize that you have taken this course.</p><label>Retake journey term<input type="number" name="retakeTerm" min="'+nextTerm+'" max="60" step="1" value="'+nextTerm+'"></label><button type="button" class="secondary" data-grade-retake>Activate retake</button><small>Updates your current journey term. Confirm actual enrollment and course availability separately.</small></div>':'';
  return history+retake;
 }
-// A personal schedule, not an assertion about the university's course offerings.
+// Actual attempt terms live in grade history; map identities stay on catalog constellations.
 export function personalCoursePlan(p,courses=COURSES){
- const delay={},failedRoots=[],currentTerm=p.academicTerm??(p.academicYear-1)*3+1;
- for(const c of courses){
-  const attempts=courseGradeAttempts(p,c.id),failures=attempts.filter(a=>a.outcome==='FAILED'),latest=attempts.at(-1),record=p.academicRecords[c.id];
-  if(!failures.length){delay[c.id]=Math.max(0,(record?.takenInTerm??c.term)-c.term);continue;}
-  const next=record?.status==='ACTIVE'&&record.takenInTerm>latest.term?record.takenInTerm:latest.outcome==='FAILED'?Math.max(latest.term+1,currentTerm):latest.term;
-  delay[c.id]=Math.max(failures.length,next-c.term);failedRoots.push(c.id);
- }
- // Monotone maximum propagation preserves independent soft paths and avoids
- // double-counting convergent chains. Already-started academic records stay put.
- for(let pass=0;pass<courses.length;pass++){
-  let changed=false;
-  for(const c of courses){if(p.academicRecords[c.id])continue;
-   let next=Math.max(delay[c.id]||0,...c.hardPrerequisites.map(id=>delay[id]||0));
-   for(const id of c.corequisites){const partner=courses.find(other=>other.id===id);if(partner)next=Math.max(next,partner.term+(delay[id]||0)-c.term);}
-   if(next>(delay[c.id]||0)){delay[c.id]=next;changed=true;}
-  }
-  if(!changed)break;
- }
- const planned=courses.map(c=>{
-  const record=p.academicRecords[c.id],latest=latestCourseGrade(p,c.id),failed=record?.status==='FAILED'&&latest;
-  const term=failed?Math.max(latest.term+1,currentTerm):record?.takenInTerm??(c.term+(delay[c.id]||0));
-  return {...c,originalTerm:c.term,term,year:Math.ceil(term/3),retake:courseGradeAttempts(p,c.id).some(a=>a.outcome==='FAILED'),shifted:term!==c.term};
+ const failedRoots=[];
+ const placed=courses.map(c=>{
+  const attempts=courseGradeAttempts(p,c.id),retake=attempts.some(a=>a.outcome==='FAILED');
+  if(retake)failedRoots.push(c.id);
+  return {...c,originalTerm:c.term,retake,shifted:false,attemptCount:attempts.length};
  });
- const historical=courses.flatMap(c=>courseGradeAttempts(p,c.id).filter(a=>a.outcome==='FAILED'&&a.term!==planned.find(n=>n.id===c.id).term).map(a=>({...c,id:c.id+'~'+a.term,canonicalId:c.id,code:c.id,term:a.term,year:Math.ceil(a.term/3),originalTerm:c.term,archivedAttempt:a,hardPrerequisites:[],softPrerequisites:[],corequisites:[],requiredMastery:false})));
- return {courses:[...planned,...historical],delay,failedRoots};
+ return {courses:placed,delay:Object.fromEntries(courses.map(c=>[c.id,0])),failedRoots};
 }

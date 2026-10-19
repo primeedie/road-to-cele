@@ -30,29 +30,8 @@ for(let year=1;year<=4;year++){
  yearBands.push({minY:bounds.minY+shift,maxY:bounds.maxY+shift});
 }
 const branches=new Map();
-const personalMaps=new Map();
-function createPersonalMap(branch,progress){
- const scope=COURSES.filter(c=>!c.specialization||c.specialization===branch),plan=personalCoursePlan(progress,scope);
- const hasGrades=scope.some(c=>progress.academicRecords[c.id]?.gradeAttempts?.length);
- if(!plan.failedRoots.length&&(!hasGrades||!plan.courses.some(c=>c.shifted)))return null;
- const key=JSON.stringify([branch,plan.courses.map(c=>[c.id,c.term,c.archivedAttempt?.outcome])]);if(personalMaps.has(key))return personalMaps.get(key);
- const charts=[],positions={};let overflow=Math.max(4,Math.ceil(Math.max(...plan.courses.map(c=>c.term))/3));
- const terms=[...new Set([...Array.from({length:11},(_,i)=>i+1),...plan.courses.map(c=>c.term)])].sort((a,b)=>a-b);
- for(const term of terms){
-  const members=plan.courses.filter(c=>c.term===term),chartId=TERM_CONSTELLATIONS[term]||TERM_CONSTELLATIONS[((term-1)%11)+1];
-  const template=projectConstellation(chartId,{x:0,y:0,width:chartId==='Leo'?1600:1350,height:chartId==='Leo'?2600:2200},{depth:true}),capacity=template.vertices.length;
-  const pages=Math.max(1,Math.ceil(members.length/capacity));
-  for(let page=0;page<pages;page++){
-   const courses=members.slice(page*capacity,(page+1)*capacity),chart=structuredClone(template),placed=placeCourses(chart,courses),row=page?overflow++:Math.ceil(term/3)-1;
-   Object.assign(positions,placed);charts.push({chart,term,key:'term-'+term+'-'+page,layoutRow:row,courseIds:courses.map(c=>c.id),label:courses.length?clusterLabel(placed,courses):{x:0,y:0}});
-  }
- }
- const map={courses:plan.courses,positions,charts,branchChart:null,branchLabel:null,personalPlan:true};
- personalMaps.set(key,map);if(personalMaps.size>8)personalMaps.delete(personalMaps.keys().next().value);return map;
-}
-export function createSkyMap(branch=null,progress=null){
+function catalogSkyMap(branch=null){
  if(branch && !SPECIALIZATIONS[branch])throw Error('Unknown specialization');
- if(progress){const personal=createPersonalMap(branch,progress);if(personal)return personal;}
  if(!branch)return {courses:[...shared],positions:{...sharedPositions},charts:sharedCharts,branchChart:null,branchLabel:null};
  if(!branches.has(branch)){
   const courses=COURSES.filter(c=>c.specialization===branch);
@@ -64,4 +43,10 @@ export function createSkyMap(branch=null,progress=null){
  }
  const overlay=branches.get(branch);
  return {courses:[...shared,...overlay.courses],positions:{...sharedPositions,...overlay.positions},charts:sharedCharts,branchChart:overlay.chart,branchLabel:overlay.label};
+}
+
+// A retake changes the record, never its star, chart or specialization membership.
+export function createSkyMap(branch=null,progress=null){
+ const map=catalogSkyMap(branch);
+ return progress?{...map,courses:personalCoursePlan(progress,map.courses).courses}:map;
 }

@@ -24,12 +24,12 @@ test('actual admin controls switch isolated journeys, bypass course locks and re
   await import('data:text/javascript;base64,'+Buffer.from(bundle.outputFiles[0].text).toString('base64'));
   for(let i=0;i<50&&!$('[data-admin-view]');i++)await new Promise(r=>timer(r,5));
   assert.ok($('[data-admin-view="admin"]'));const studentBefore=w.localStorage.getItem(accountStorageKey(owner));
-  click('[data-course="CEFOUND"]');assert.ok($('#course-tab-3').disabled);assert.ok($('#course-card [data-academic]').disabled);assert.equal($('#reset-progress').hidden,true);
+  click('[data-course="CEFOUND"]');assert.ok($('#course-tab-3').disabled);assert.ok($('#course-card [data-academic]').disabled);assert.equal($('#reset-progress').hidden,false);
   click('[data-admin-view="admin"]');click('#companion-button');assert.equal($('[data-frame="starbound"]').disabled,false);click('[data-frame="starbound"]');assert.equal(JSON.parse(w.localStorage.getItem(adminStorageKey(owner))).cosmetics.frame,'starbound');click('[data-action="close-wardrobe"]');click('[data-course="CEFOUND"]');assert.equal($('#course-tab-3').disabled,false);assert.equal($('#course-card [data-academic]').disabled,false);
   click('[data-academic="ACTIVE"]');assert.equal(JSON.parse(w.localStorage.getItem(adminStorageKey(owner))).academicRecords.CEFOUND.status,'ACTIVE');assert.equal(w.localStorage.getItem(accountStorageKey(owner)),studentBefore);
-  click('[data-admin-view="student"]');click('[data-course="CEFOUND"]');assert.ok($('#course-tab-3').disabled);assert.equal($('#reset-progress').hidden,true);
+  click('[data-admin-view="student"]');click('[data-course="CEFOUND"]');assert.ok($('#course-tab-3').disabled);assert.equal($('#reset-progress').hidden,false);
   click('[data-admin-view="admin"]');click('#reset-progress');assert.equal($('#reset-dialog').open,true);click('#cancel-reset');assert.equal(JSON.parse(w.localStorage.getItem(adminStorageKey(owner))).academicRecords.CEFOUND.status,'ACTIVE');
   click('#reset-progress');click('[data-action="confirm-reset"]');assert.deepEqual(JSON.parse(w.localStorage.getItem(adminStorageKey(owner))).academicRecords,{});assert.equal(w.localStorage.getItem(accountStorageKey(owner)),studentBefore);
-  await globalThis.adminTestModel.setUser(null);assert.equal($('[data-admin-view]'),null);assert.equal($('#reset-progress').hidden,true);
+  await globalThis.adminTestModel.setUser(null);assert.equal($('[data-admin-view]'),null);assert.equal($('#reset-progress').hidden,false);
  }finally{timers.forEach(clearTimeout);w.close();Object.assign(globalThis,previous);}
 });

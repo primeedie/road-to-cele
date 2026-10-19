@@ -1,5 +1,5 @@
 import { newProgress } from './progression.mjs';
-import { hydrateProgress, loadProgress, saveProgress } from './storage.mjs';
+import { hydrateProgress, loadProgress, saveProgress,STORAGE_KEY } from './storage.mjs';
 
 export const accountStorageKey = id => 'road-to-cele.account.v1.'+id;
 export const hasProgress = p => JSON.stringify(p)!==JSON.stringify(newProgress());
@@ -64,6 +64,19 @@ export function createAccountProgress({storage,service=null,onProgress=()=>{},on
    else {phase=stored?'guest':'local-error';emit();}
   },
   resetGuest() {if(user)throw Error('Guest reset requires guest mode');const clean=newProgress();saveProgress(storage,clean);guestReadable=true;current=clean;dirty=false;phase='guest';message='';emit();return clean;},
+  resetForTesting(){
+   if(!ready||choice)throw Error('Finish loading or choosing your account save before resetting.');
+   const clean=newProgress(),owner=user?.id,key=owner?accountStorageKey(owner):STORAGE_KEY;
+   if(current.profilePhoto)clean.profilePhoto=current.profilePhoto;
+   if(current.nonMajorBatchId)clean.nonMajorBatchId=current.nonMajorBatchId;
+   clean.cosmetics.avatar=current.cosmetics.avatar;
+   const backup={progress:structuredClone(current),revision:base,at:new Date().toISOString()};
+   if(!owner&&!guestReadable)backup.unreadableSave=storage.getItem(STORAGE_KEY);
+   // Both writes must succeed before replacing the active in-memory journey.
+   storage.setItem(key+'.testing-reset-backup',JSON.stringify(backup));
+   storage.setItem(key,JSON.stringify(owner?{progress:clean,revision:base,dirty:true}:clean));
+   current=clean;guestReadable=true;dirty=!!owner;deviceSaved=true;phase=owner?'pending':'guest';message='';emit();if(owner)enqueue();return structuredClone(clean);
+  },
   async resolve(which) {
    if(!user||!choice)throw Error('No save choice is pending.');
    if(choice==='import') {
